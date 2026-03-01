@@ -1,0 +1,46 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom focus styles for accessibility */
+@layer base {
+  *:focus-visible {
+    @apply outline-none ring-2 ring-blue-500 ring-offset-2;
+  }
+
+  /* Reduce motion for users who prefer it */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+/* Form input styling */
+@layer components {
+  input[type='range'] {
+    @apply appearance-none bg-gray-200 h-2 rounded-lg;
+  }
+
+  input[type='range']::-webkit-slider-thumb {
+    @apply appearance-none w-4 h-4 bg-blue-600 rounded-full cursor-pointer;
+  }
+
+  input[type='range']::-moz-range-thumb {
+    @apply w-4 h-4 bg-blue-600 rounded-full cursor-pointer border-0;
+  }
+
+  input[type='text'],
+  select {
+    @apply border border-gray-300 rounded-md px-3 py-2 text-sm;
+  }
+
+  input[type='text']:focus,
+  select:focus {
+    @apply border-blue-500 ring-1 ring-blue-500;
+  }
+}

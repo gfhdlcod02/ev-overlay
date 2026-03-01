@@ -1,0 +1,26 @@
+name = "ev-overlay-api"
+main = "src/index.ts"
+compatibility_date = "2023-12-01"
+
+# KV namespace binding for route caching
+[[kv_namespaces]]
+binding = "ROUTE_CACHE"
+id = "54f913dd4d1b4b7ebe08add84ca13419"
+
+[vars]
+OSRM_BASE_URL = "https://router.project-osrm.org"
+
+# Environment-specific configuration
+[env.production]
+name = "ev-overlay-api-prod"
+
+[[env.production.kv_namespaces]]
+binding = "ROUTE_CACHE"
+id = "route_cache_prod"
+
+[env.staging]
+name = "ev-overlay-api-staging"
+
+[[env.staging.kv_namespaces]]
+binding = "ROUTE_CACHE"
+id = "route_cache_staging"
