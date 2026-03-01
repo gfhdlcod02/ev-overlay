@@ -29,3 +29,11 @@ jobs:
 
       - name: Run lint
         run: pnpm run lint
+
+      - name: Build core package
+        run: pnpm --filter @ev/core build
+
+      - name: Build web app
+        run: pnpm --filter @ev/web build
+        env:
+          VITE_API_URL: ${{ vars.API_URL || 'http://localhost:8787/api' }}
