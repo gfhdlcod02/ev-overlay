@@ -1,13 +1,9 @@
 name: Deploy
 
 on:
-  # Run tests on push to main and PRs
   push:
-    branches: [main]
     tags:
       - 'v[0-9]+.[0-9]+.[0-9]+*'
-  pull_request:
-    branches: [main]
 
 jobs:
   test:
@@ -35,8 +31,6 @@ jobs:
 
   deploy-worker:
     needs: test
-    # Deploy only when a tag is pushed (e.g., v1.0.0)
-    if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -64,8 +58,6 @@ jobs:
 
   deploy-web:
     needs: deploy-worker
-    # Deploy only when a tag is pushed
-    if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
