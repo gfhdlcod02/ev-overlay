@@ -2,7 +2,7 @@
   <div class="bg-white rounded-lg shadow p-6">
     <h2 class="text-xl font-semibold text-gray-900 mb-4">Trip Details</h2>
 
-    <form @submit.prevent="handleSubmit" class="space-y-4">
+    <form class="space-y-4" @submit.prevent="handleSubmit">
       <!-- Origin -->
       <div>
         <label for="origin" class="block text-sm font-medium text-gray-700">
@@ -66,8 +66,8 @@
       <!-- Reset Button -->
       <button
         type="button"
-        @click="handleReset"
         class="w-full py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+        @click="handleReset"
       >
         Reset
       </button>

@@ -10,11 +10,11 @@
       <input
         id="soc"
         :value="socNow"
-        @input="$emit('update:socNow', Number(($event.target as HTMLInputElement).value))"
         type="range"
         min="0"
         max="100"
         class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+        @input="$emit('update:socNow', Number(($event.target as HTMLInputElement).value))"
       />
       <div class="flex justify-between text-xs text-gray-500">
         <span>0%</span>
@@ -30,12 +30,12 @@
       <input
         id="range"
         :value="range100Km"
-        @input="$emit('update:range100Km', Number(($event.target as HTMLInputElement).value))"
         type="range"
         min="100"
         max="800"
         step="10"
         class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+        @input="$emit('update:range100Km', Number(($event.target as HTMLInputElement).value))"
       />
       <div class="flex justify-between text-xs text-gray-500">
         <span>100 km</span>
@@ -51,11 +51,11 @@
       <input
         id="reserve"
         :value="reserveArrival"
-        @input="$emit('update:reserveArrival', Number(($event.target as HTMLInputElement).value))"
         type="range"
         min="0"
         max="50"
         class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+        @input="$emit('update:reserveArrival', Number(($event.target as HTMLInputElement).value))"
       />
       <div class="flex justify-between text-xs text-gray-500">
         <span>0%</span>
@@ -69,8 +69,8 @@
       <select
         id="factor"
         :value="drivingFactor"
-        @change="$emit('update:drivingFactor', Number(($event.target as HTMLSelectElement).value))"
         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
+        @change="$emit('update:drivingFactor', Number(($event.target as HTMLSelectElement).value))"
       >
         <option :value="DrivingFactor.ECO">Eco (City)</option>
         <option :value="DrivingFactor.NORMAL">Normal (Mixed)</option>
