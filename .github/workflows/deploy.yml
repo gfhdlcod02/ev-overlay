@@ -85,6 +85,9 @@ jobs:
         env:
           VITE_API_URL: ${{ vars.API_URL }}
 
+      - name: Install Wrangler
+        run: pnpm add -g wrangler@4.69.0
+
       - name: Deploy to Pages
         uses: cloudflare/wrangler-action@v3
         with:
