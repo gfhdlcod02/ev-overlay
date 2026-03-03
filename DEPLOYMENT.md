@@ -68,6 +68,26 @@ wrangler pages deploy dist --project-name=ev-overlay
 
 ---
 
+## 🏷️ Version Management
+
+The deployment process automatically handles versioning across all packages.
+
+### How It Works
+
+| Step | Command | Description |
+|------|---------|-------------|
+| 1 | `pnpm version:sync` | Syncs root `package.json` version to all workspace packages |
+| 2 | `pnpm build` | Builds all packages with synchronized versions |
+| 3 | `pnpm version:inject` | Injects version into built files (Web + Worker) |
+
+### Version Display
+
+- **Web UI**: Version shown at bottom left corner (e.g., `v1.2.0`)
+- **API Endpoint**: `GET /api/version` returns `{version, commit}`
+- **Static File**: `version.json` in web root for programmatic access
+
+---
+
 ## 🔧 GitHub Actions (Auto Deploy on Tags)
 
 The workflow is configured to:
@@ -76,20 +96,50 @@ The workflow is configured to:
 
 ### How to Deploy
 
-1. Create and push a tag:
+1. Create a release branch from `main`:
 
 ```bash
-# Create a new version tag
-git tag v1.0.0
-
-# Push the tag to trigger deployment
-git push origin v1.0.0
+git checkout main
+git pull
+git checkout -b release/v1.3.0
 ```
 
-2. GitHub Actions will automatically:
+2. Bump version and sync to all packages:
+
+```bash
+npm version 1.3.0 --no-git-tag-version
+pnpm version:sync
+```
+
+3. Commit the version changes:
+
+```bash
+git add -A
+git commit -m "chore(release): v1.3.0"
+```
+
+4. Push branch and create Pull Request:
+
+```bash
+git push -u origin release/v1.3.0
+gh pr create --title "chore(release): v1.3.0" --body "Version bump"
+```
+
+5. After PR is merged, create and push the tag:
+
+```bash
+git checkout main
+git pull
+git tag v1.3.0
+git push --tags
+```
+
+GitHub Actions will automatically:
    - Run tests and linting
+   - Sync version to all packages (`pnpm version:sync`)
    - Deploy Worker to Cloudflare
-   - Build and deploy Web App to Pages
+   - Build and inject version into artifacts (`pnpm version:inject`)
+   - Deploy Web App to Pages
 
 ### GitHub Secrets Setup
 
@@ -151,6 +201,20 @@ cd apps/web && pnpm build && wrangler pages deploy dist
 ---
 
 ## ✅ Verification
+
+### Check Version
+
+After deployment, verify the version:
+
+```bash
+# Check API version
+curl "https://your-worker.workers.dev/api/version"
+# → {"version":"1.2.0","commit":"abc1234"}
+
+# Check Web App version
+curl "https://your-app.pages.dev/version.json"
+# → {"version":"1.2.0","buildTime":"2026-03-03T...","commit":"abc1234"}
+```
 
 ### Test Worker
 

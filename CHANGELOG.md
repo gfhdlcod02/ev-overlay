@@ -4,6 +4,32 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
+## [1.2.0] - 2026-03-03
+
+### Added
+
+- Automated version management system
+  - `pnpm version:sync` - Syncs root version to all workspace packages
+  - `pnpm version:inject` - Injects version into built files
+  - Version display in Web UI (bottom left corner)
+  - API version endpoint (`GET /api/version`)
+  - `version.json` file in web dist for runtime checks
+- Geolocation-based map defaults
+  - Auto-detect user location for origin field
+  - Thailand default view (Bangkok) when permission denied
+  - Smooth flyTo animation to user location
+  - Session persistence with sessionStorage
+- Rate limiting (60 requests/minute per IP)
+- Husky pre-commit hooks to enforce PR workflow
+
+## [1.1.0] - 2026-03-02
+
+### Added
+
+- iOS geolocation coordinate formatting fix
+- API error handling improvements
+- E2E tests for geolocation flows and API errors
+
 ## [1.0.0] - 2026-03-01
 
 ### Added
@@ -29,26 +55,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - ESLint + Prettier code quality tools
 - Playwright for E2E testing
 - Vitest for unit testing
-
-## Future Releases
-
-### [1.1.0] - Planned
-
-- Real charger POI integration
-- Elevation impact on range
-- Traffic-based routing
-
-### [1.2.0] - Planned
-
-- User accounts and saved trips
-- Trip history
-- Vehicle profiles
-
-### [2.0.0] - Planned
-
-- Real-time telemetry integration
-- OBD-II support
-- Mobile app (native)
+- Automated version management with sync/inject scripts
 
 ---
 
@@ -56,3 +63,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 - **Production**: [https://fc6ea9ab.ev-overlay.pages.dev](https://fc6ea9ab.ev-overlay.pages.dev)
 - **API Worker**: [https://ev-overlay-api.gfhdlcod02.workers.dev](https://ev-overlay-api.gfhdlcod02.workers.dev)
+
+---
+
+## Version Management
+
+This project uses automated version management:
+
+1. Update version in root `package.json` using `pnpm version x.x.x`
+2. Script automatically syncs to all workspace packages
+3. CI/CD injects version into built artifacts
+4. Version is displayed in UI and available via API
+
+See [DEPLOYMENT.md](DEPLOYMENT.md) for details.

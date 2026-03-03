@@ -43,6 +43,10 @@ pnpm lint             # Run ESLint
 pnpm lint:fix         # Fix ESLint issues
 pnpm format           # Format with Prettier
 
+# Version Management
+pnpm version:sync     # Sync root version to all packages
+pnpm version:inject   # Inject version into built files
+
 # Git Hooks
 pnpm prepare          # Setup Husky hooks
 ```
@@ -55,6 +59,7 @@ pnpm prepare          # Setup Husky hooks
 - ESLint + Prettier for code quality
 
 ## Recent Changes
+- **2026-03-03**: Added automated version management - sync to all packages, inject to builds, API endpoint
 - **2026-03-03**: Implemented 003-geolocation-map-defaults - Geolocation-based map defaults with Thailand fallback
 - **2026-03-03**: Added Pinia for state management, geolocation composable, sessionStorage persistence
 - **2026-03-03**: Added E2E tests for geolocation flows (grant/deny/timeout scenarios)
@@ -86,5 +91,55 @@ pnpm prepare          # Setup Husky hooks
 - Stored only in sessionStorage (not localStorage)
 - No location data sent to server
 - Respects browser permission model
+
+## Version Management
+
+Version is managed automatically through root `package.json` and synced to all workspace packages.
+
+### Release Workflow
+
+```bash
+# 1. Create release branch
+git checkout -b release/v1.3.0
+
+# 2. Bump version and sync
+npm version 1.3.0 --no-git-tag-version
+pnpm version:sync
+
+# 3. Commit
+git add -A
+git commit -m "chore(release): v1.3.0"
+
+# 4. Create PR
+git push -u origin release/v1.3.0
+gh pr create --title "chore(release): v1.3.0" --body "Version bump"
+
+# 5. After merge, tag and push
+git checkout main
+git pull
+git tag v1.3.0
+git push --tags
+```
+
+### Automated Process
+
+| Step | Script | Description |
+|------|--------|-------------|
+| Pre-build | `pnpm version:sync` | Sync version from root to all package.json files |
+| Build | `pnpm -r build` | Build all packages |
+| Post-build | `pnpm version:inject` | Inject version into built files |
+
+### Version Display
+
+- **Web UI**: Displayed at bottom left corner (e.g., `v1.2.0`)
+- **API**: `GET /api/version` → `{"version":"1.2.0","commit":"abc1234"}`
+- **File**: `apps/web/dist/version.json` for runtime checks
+
+### Related Files
+
+- `scripts/sync-version.js` - Syncs version between packages
+- `scripts/inject-version.js` - Injects version into build artifacts
+- `apps/web/src/App.vue` - Displays version in UI
+- `workers/api/src/index.ts` - API version endpoint
 
 <!-- MANUAL ADDITIONS END -->

@@ -47,6 +47,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
+      - name: Sync versions
+        run: pnpm version:sync
+
       - name: Build core
         run: pnpm --filter @ev/core build
 
@@ -84,6 +87,12 @@ jobs:
         run: pnpm --filter @ev/web build
         env:
           VITE_API_URL: ${{ vars.API_URL }}
+          VITE_APP_VERSION: ${{ github.ref_name }}
+
+      - name: Inject version into builds
+        run: pnpm version:inject
+        env:
+          GITHUB_SHA: ${{ github.sha }}
 
       - name: Install Wrangler
         run: pnpm add -g wrangler@4.69.0

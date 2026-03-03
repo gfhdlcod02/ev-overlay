@@ -10,6 +10,8 @@ import {
   FLY_TO_DURATION_SECS,
   GEOLOCATION_TIMEOUT,
   STORAGE_KEY,
+  formatCoordinate,
+  formatCoordinatePair,
 } from './coordinates'
 
 describe('coordinates', () => {
@@ -111,6 +113,62 @@ describe('coordinates', () => {
 
     it('should have correct storage key', () => {
       expect(STORAGE_KEY).toBe('ev-overlay:location')
+    })
+  })
+
+  describe('formatCoordinate', () => {
+    it('should format coordinate with dot decimal separator', () => {
+      expect(formatCoordinate(13.7563)).toBe('13.756300')
+      expect(formatCoordinate(100.5018)).toBe('100.501800')
+      expect(formatCoordinate(-33.8688)).toBe('-33.868800')
+    })
+
+    it('should format with custom decimal places', () => {
+      expect(formatCoordinate(13.7563, 2)).toBe('13.76')
+      expect(formatCoordinate(13.7563, 4)).toBe('13.7563')
+    })
+
+    it('should handle zero correctly', () => {
+      expect(formatCoordinate(0)).toBe('0.000000')
+      expect(formatCoordinate(0, 2)).toBe('0.00')
+    })
+
+    it('should handle integers correctly', () => {
+      expect(formatCoordinate(13)).toBe('13.000000')
+      expect(formatCoordinate(100)).toBe('100.000000')
+    })
+
+    it('should always use dot as decimal separator', () => {
+      // This test ensures consistency across all locales
+      const result = formatCoordinate(13.7563)
+      expect(result).toContain('.')
+      expect(result).not.toContain(',')
+    })
+  })
+
+  describe('formatCoordinatePair', () => {
+    it('should format lat,lng pair correctly', () => {
+      expect(formatCoordinatePair(13.7563, 100.5018)).toBe('13.756300,100.501800')
+      expect(formatCoordinatePair(-33.8688, 151.2093)).toBe('-33.868800,151.209300')
+    })
+
+    it('should use comma as separator between coordinates', () => {
+      const result = formatCoordinatePair(13.7563, 100.5018)
+      // Should have exactly one comma (the separator)
+      expect(result.split(',').length).toBe(2)
+      // Both parts should have dots as decimal separators
+      const parts = result.split(',')
+      expect(parts[0]).toContain('.')
+      expect(parts[1]).toContain('.')
+    })
+
+    it('should handle negative coordinates correctly', () => {
+      expect(formatCoordinatePair(-90, -180)).toBe('-90.000000,-180.000000')
+      expect(formatCoordinatePair(-33.8688, 151.2093)).toBe('-33.868800,151.209300')
+    })
+
+    it('should handle zero coordinates correctly', () => {
+      expect(formatCoordinatePair(0, 0)).toBe('0.000000,0.000000')
     })
   })
 })

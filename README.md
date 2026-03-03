@@ -231,13 +231,34 @@ See [DEPLOYMENT.md](DEPLOYMENT.md) for step-by-step guide and GitHub Actions set
 
 ### GitHub Actions (Tag-based Deployment)
 
-Deployments are triggered automatically when you push a version tag:
+Deployments are triggered automatically when a version tag is pushed to `main`.
+
+**Release Workflow:**
 
 ```bash
-# Create and push a version tag to deploy
-git tag v1.0.0
-git push origin v1.0.0
+# 1. Create a release branch
+git checkout -b release/v1.3.0
+
+# 2. Bump version and sync to all packages
+npm version 1.3.0 --no-git-tag-version
+pnpm version:sync
+
+# 3. Commit version changes
+git add -A
+git commit -m "chore(release): v1.3.0"
+
+# 4. Push and create PR
+git push -u origin release/v1.3.0
+gh pr create --title "chore(release): v1.3.0" --body "Version bump"
+
+# 5. After PR is merged, create and push tag
+git checkout main
+git pull
+git tag v1.3.0
+git push --tags
 ```
+
+See [DEPLOYMENT.md](DEPLOYMENT.md) for detailed version management documentation.
 
 ## Testing Strategy
 

@@ -122,6 +122,7 @@ export function calculateSafeRange(params: EVParameters): SafeRange {
 | Endpoint | Method | Description |
 |----------|--------|-------------|
 | `/api/route` | GET | Fetch route with caching |
+| `/api/version` | GET | Get API version and commit info |
 
 **Query Parameters**:
 - `origin`: `lat,lng` format
