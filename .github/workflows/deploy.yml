@@ -57,6 +57,7 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           workingDirectory: workers/api
           wranglerVersion: "4.69.0"
+          command: deploy -e production
 
   deploy-web:
     needs: deploy-worker
@@ -89,4 +90,5 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          wranglerVersion: "4.69.0"
           command: pages deploy apps/web/dist --project-name=ev-overlay
