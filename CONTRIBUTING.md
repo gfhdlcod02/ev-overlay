@@ -11,11 +11,43 @@ Thank you for your interest in contributing to Smart EV Overlay! This document p
 
 ## Development Workflow
 
+### Pull Request Required
+
+**Direct commits to `main` are blocked.** All changes must go through a Pull Request.
+
+We use Husky to enforce this locally and GitHub Branch Protection for remote:
+
+| Level | Protection |
+|-------|------------|
+| Local | Husky pre-commit hook blocks direct commits to `main` |
+| Remote | GitHub Branch Protection requires PR to merge to `main` |
+
+### Creating a Pull Request
+
+```bash
+# 1. Create a feature branch from main
+git checkout main
+git pull origin main
+git checkout -b feature/your-feature-name
+
+# 2. Make changes and commit
+# (pre-commit hook runs tests automatically)
+git add .
+git commit -m "feat: add new feature"
+
+# 3. Push to remote
+git push -u origin feature/your-feature-name
+
+# 4. Create PR (using GitHub CLI or web)
+gh pr create
+```
+
 ### Branch Naming
 
 - Features: `feature/description`
 - Bug fixes: `fix/description`
 - Documentation: `docs/description`
+- Chores/Tooling: `chore/description`
 
 ### Commit Messages
 
@@ -50,11 +82,21 @@ pnpm run lint:fix    # Fix auto-fixable issues
 
 ## Pull Request Process
 
-1. Ensure all tests pass
-2. Update documentation as needed
-3. Add changelog entry
-4. Request review from maintainers
-5. Address review feedback
+1. **Pre-commit checks** (run automatically by Husky):
+   - Blocks commits to `main` branch
+   - Runs all tests
+
+2. **Before submitting PR:**
+   - Ensure all tests pass
+   - Run linting: `pnpm run lint`
+   - Update documentation as needed
+   - Add changelog entry for user-facing changes
+
+3. **After PR is created:**
+   - CI checks must pass (tests, lint)
+   - Request review from maintainers
+   - Address review feedback
+   - Squash-merge to `main` when approved
 
 ## Constitution Compliance
 
