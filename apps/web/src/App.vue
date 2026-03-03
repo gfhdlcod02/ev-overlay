@@ -20,7 +20,7 @@
       </template>
 
       <div class="mt-auto pt-4 text-xs text-gray-400 text-center">
-        v{{ appVersion }}
+        {{ appVersion }}
       </div>
     </div>
 
