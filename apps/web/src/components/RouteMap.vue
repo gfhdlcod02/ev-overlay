@@ -6,6 +6,8 @@
 import { ref, onMounted, onUnmounted, watch } from 'vue'
 import L from 'leaflet'
 import type { TripResult } from '@ev/core'
+import { useLocationStore } from '@/stores/location'
+import { THAILAND_DEFAULT, USER_LOCATION_ZOOM, FLY_TO_DURATION_SECS } from '@/utils/coordinates'
 
 const props = defineProps<{
   result: TripResult | null
@@ -15,12 +17,18 @@ const mapContainer = ref<HTMLElement | null>(null)
 let map: L.Map | null = null
 let routeLayer: L.LayerGroup | null = null
 let markersLayer: L.LayerGroup | null = null
+let userMarker: L.Marker | null = null
+
+const locationStore = useLocationStore()
 
 onMounted(() => {
   if (!mapContainer.value) return
 
-  // Initialize map
-  map = L.map(mapContainer.value).setView([39.8283, -98.5795], 4) // Center of US
+  // Initialize map with Thailand default view
+  map = L.map(mapContainer.value).setView(
+    THAILAND_DEFAULT.center,
+    THAILAND_DEFAULT.zoom
+  )
 
   // Add tile layer
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -31,6 +39,14 @@ onMounted(() => {
   // Create layer groups
   routeLayer = L.layerGroup().addTo(map)
   markersLayer = L.layerGroup().addTo(map)
+
+  // Track user interactions with the map
+  map.on('movestart', () => {
+    locationStore.markUserInteracted()
+  })
+  map.on('zoomstart', () => {
+    locationStore.markUserInteracted()
+  })
 
   // Update map if we already have a result
   if (props.result) {
@@ -45,26 +61,68 @@ onUnmounted(() => {
   }
 })
 
+// Watch for route result changes
 watch(
   () => props.result,
   (newResult) => {
     if (newResult) {
       updateMap(newResult)
     } else {
-      clearMap()
+      clearRouteDisplay()
     }
   }
 )
 
-function clearMap() {
+// Watch for location changes to auto-center map
+watch(
+  () => locationStore.canAutoCenter,
+  (canAutoCenter) => {
+    if (canAutoCenter && locationStore.position && map) {
+      const { lat, lng } = locationStore.position
+      map.flyTo([lat, lng], USER_LOCATION_ZOOM, {
+        duration: FLY_TO_DURATION_SECS,
+        easeLinearity: 0.25,
+      })
+    }
+  }
+)
+
+// Watch for position changes to update user marker
+watch(
+  () => locationStore.position,
+  (position) => {
+    updateUserMarker(position)
+  }
+)
+
+function clearRouteDisplay() {
   if (routeLayer) {
     routeLayer.clearLayers()
   }
   if (markersLayer) {
     markersLayer.clearLayers()
   }
-  if (map) {
-    map.setView([39.8283, -98.5795], 4)
+}
+
+function updateUserMarker(position: { lat: number; lng: number } | null) {
+  // Remove existing user marker
+  if (userMarker) {
+    userMarker.remove()
+    userMarker = null
+  }
+
+  // Add new user marker if position available
+  if (position && map) {
+    const icon = L.divIcon({
+      className: 'user-location-marker',
+      html: `<div class="w-4 h-4 bg-blue-500 rounded-full border-2 border-white shadow-lg ring-2 ring-blue-300 animate-pulse"></div>`,
+      iconSize: [16, 16],
+      iconAnchor: [8, 8],
+    })
+
+    userMarker = L.marker([position.lat, position.lng], { icon })
+      .bindPopup('<b>Your Location</b>')
+      .addTo(map)
   }
 }
 
@@ -132,6 +190,11 @@ function updateMap(result: TripResult) {
 
 <style scoped>
 :deep(.charging-stop-marker) {
+  background: transparent;
+  border: none;
+}
+
+:deep(.user-location-marker) {
   background: transparent;
   border: none;
 }

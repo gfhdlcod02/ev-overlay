@@ -8,14 +8,66 @@
         <label for="origin" class="block text-sm font-medium text-gray-700">
           Origin
         </label>
-        <input
-          id="origin"
-          v-model="input.origin"
-          type="text"
-          placeholder="Enter starting location"
-          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-          :aria-invalid="input.origin === ''"
-        />
+        <div class="relative mt-1">
+          <input
+            id="origin"
+            v-model="input.origin"
+            type="text"
+            :placeholder="originPlaceholder"
+            class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 pr-10"
+            :aria-invalid="input.origin === ''"
+            :disabled="isLocating"
+          />
+          <!-- Loading spinner -->
+          <div
+            v-if="isLocating"
+            class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none"
+          >
+            <svg
+              class="animate-spin h-5 w-5 text-blue-500"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                class="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                stroke-width="4"
+              ></circle>
+              <path
+                class="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              ></path>
+            </svg>
+          </div>
+          <!-- Checkmark for current location -->
+          <div
+            v-else-if="isCurrentLocation"
+            class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none"
+            title="Using your current location"
+          >
+            <svg
+              class="h-5 w-5 text-green-500"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                clip-rule="evenodd"
+              />
+            </svg>
+          </div>
+        </div>
+        <!-- Error notice -->
+        <p v-if="locationError" class="mt-1 text-sm text-amber-600">
+          {{ locationError }}
+        </p>
       </div>
 
       <!-- Destination -->
@@ -76,12 +128,66 @@
 </template>
 
 <script setup lang="ts">
+import { computed, watch } from 'vue'
 import { useTripInput } from '../composables/useTripInput'
 import { useRoutePlanning } from '../composables/useRoutePlanning'
+import { useLocationStore } from '../stores/location'
 import EVParameterInputs from './EVParameterInputs.vue'
 
-const { input, canSubmit, validationErrors, status, updateInput, setLoading } = useTripInput()
-const { planTrip, resetInput } = useRoutePlanning()
+const { input, canSubmit, validationErrors, status, updateInput, resetInput, setLoading } = useTripInput()
+const { planTrip, resetInput: resetRoutePlanning } = useRoutePlanning()
+const locationStore = useLocationStore()
+
+// Computed properties for geolocation UI
+const isLocating = computed(() => locationStore.status === 'loading')
+const isCurrentLocation = computed(() => {
+  return locationStore.isLocationAvailable && input.value.origin === formatLocationForInput(locationStore.position)
+})
+const locationError = computed(() => {
+  if (locationStore.status === 'denied') {
+    return 'Location access denied. Enter address manually.'
+  }
+  if (locationStore.status === 'error' && locationStore.error) {
+    return 'Could not get location. Enter address manually.'
+  }
+  return null
+})
+
+const originPlaceholder = computed(() => {
+  if (isLocating.value) return 'Locating...'
+  return 'Enter starting location'
+})
+
+/**
+ * Format a UserLocation for input field display
+ * Returns "lat,lng" format for precise coordinates
+ */
+function formatLocationForInput(position: { lat: number; lng: number } | null): string {
+  if (!position) return ''
+  return `${position.lat.toFixed(6)},${position.lng.toFixed(6)}`
+}
+
+/**
+ * Watch for location changes and auto-populate origin when available
+ * Only populates if:
+ * - Origin is currently empty
+ * - Location is accurate (<= 1000m)
+ * - Permission is granted
+ */
+watch(
+  () => locationStore.position,
+  (newPosition) => {
+    if (
+      newPosition &&
+      locationStore.isAccurate &&
+      input.value.origin === ''
+    ) {
+      const locationString = formatLocationForInput(newPosition)
+      updateInput('origin', locationString)
+    }
+  },
+  { immediate: true }
+)
 
 async function handleSubmit() {
   if (!canSubmit.value) return
@@ -91,5 +197,6 @@ async function handleSubmit() {
 
 function handleReset() {
   resetInput()
+  resetRoutePlanning()
 }
 </script>

@@ -8,12 +8,14 @@ A Cloudflare-first web application that helps EV drivers plan trips by visualizi
 ## Features
 
 - **Trip Planning**: Enter origin, destination, and EV parameters (SoC, range, reserve, driving mode)
+- **Geolocation Map Defaults**: Auto-detects user location to set origin and center map (Thailand default)
 - **Safe Range Calculation**: Deterministic conservative range estimates with safety margins
 - **Route Visualization**: Interactive map with safe (green) and risky (red) segment coloring
 - **Charging Stops**: Automatic placement of virtual charging stops along route
 - **Google Maps Handoff**: One-click navigation with waypoints
 - **Responsive Design**: Works on desktop and mobile devices
 - **Fast Performance**: Route caching with 7-day TTL
+- **Rate Limiting**: 60 requests/minute per IP for API protection
 
 ## Quick Start
 
@@ -32,6 +34,9 @@ cd ev-overlay
 
 # Install dependencies
 pnpm install
+
+# Setup git hooks (Husky)
+pnpm prepare
 
 # Start development server
 pnpm dev
@@ -97,6 +102,9 @@ ev-overlay/
 │   ├── src/
 │   │   ├── components/     # Vue components
 │   │   ├── composables/    # Vue composables
+│   │   ├── stores/         # Pinia stores (location, etc.)
+│   │   ├── types/          # TypeScript type definitions
+│   │   ├── utils/          # Utility functions
 │   │   ├── services/       # API client
 │   │   └── App.vue         # Main application
 │   └── tests/e2e/          # Playwright E2E tests
@@ -108,12 +116,10 @@ ev-overlay/
 │   │   └── providers/      # OSRM integration
 │   └── tests/integration/  # Integration tests
 │
-└── specs/001-smart-ev-overlay/  # Feature documentation
-    ├── spec.md             # Feature specification
-    ├── plan.md             # Implementation plan
-    ├── data-model.md       # Data models
-    ├── tasks.md            # Task list
-    └── contracts/          # API contracts
+└── specs/                       # Feature documentation
+    ├── 001-smart-ev-overlay/    # Initial EV overlay feature
+    ├── 002-rate-limiting/       # API rate limiting
+    └── 003-geolocation-map-defaults/  # Geolocation & map defaults
 ```
 
 ## Architecture
@@ -256,6 +262,7 @@ git push origin v1.0.0
 ### E2E Tests (apps/web)
 
 - Complete user flow
+- **Geolocation flows** (permission grant/deny, auto-populate, map recenter)
 - Mobile viewport
 - Error states
 - Google Maps handoff
@@ -275,14 +282,18 @@ This project follows the [Smart EV Overlay Constitution](.specify/memory/constit
 9. ✅ **Playwright Testing**: E2E tests for critical paths
 10. ✅ **Code Quality**: ESLint/Prettier, strict TS
 11. ✅ **Code Security**: No secrets, dependency scanning
+12. ✅ **PR Workflow**: Husky pre-commit hooks enforce branch protection
 
 ## Contributing
 
-1. Follow the Constitution principles
-2. Write tests for new features
-3. Ensure all tests pass before PR
-4. Follow existing code style
-5. Update documentation as needed
+Please read [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
+
+Quick summary:
+1. **Direct commits to `main` are blocked** - use Pull Requests
+2. Husky pre-commit hook runs tests automatically
+3. Follow the Constitution principles
+4. Write tests for new features
+5. Follow existing code style
 
 ## License
 
