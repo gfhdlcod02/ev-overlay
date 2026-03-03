@@ -1,4 +1,4 @@
-# Implementation Plan: [FEATURE]
+# Implementation Plan: API Rate Limiting
 
 **Branch**: `002-rate-limiting` | **Date**: 2026-03-01 | **Spec**: [spec.md](./spec.md)
 **Input**: Feature specification from `/specs/002-rate-limiting/spec.md`

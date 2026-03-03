@@ -38,15 +38,15 @@ Phase 3: US1 - Prevent API Abuse (P1)
 
 ### Implementation for User Story 1
 
-- [ ] T001 [P] [US1] Create `workers/api/src/handlers/rate-limit.ts` with `RateLimitEntry` interface and rate limiting constants (60 req/min, 60s window)
+- [x] T001 [P] [US1] Create `workers/api/src/handlers/rate-limit.ts` with `RateLimitEntry` interface and rate limiting constants (60 req/min, 60s window)
 
-- [ ] T002 [P] [US1] Create `workers/api/src/handlers/rate-limit.ts` with `checkRateLimit()` function implementing sliding window logic using KV storage
+- [x] T002 [P] [US1] Create `workers/api/src/handlers/rate-limit.ts` with `checkRateLimit()` function implementing sliding window logic using KV storage
 
-- [ ] T003 [US1] Create `workers/api/src/handlers/rate-limit.ts` with helper function `getRateLimitHeaders()` to generate X-RateLimit-* headers
+- [x] T003 [US1] Create `workers/api/src/handlers/rate-limit.ts` with helper function `getRateLimitHeaders()` to generate X-RateLimit-* headers
 
-- [ ] T004 [US1] Integrate rate limiting into `workers/api/src/index.ts` - call `checkRateLimit()` before route handler, pass KV namespace
+- [x] T004 [US1] Integrate rate limiting into `workers/api/src/index.ts` - call `checkRateLimit()` before route handler, pass KV namespace
 
-- [ ] T005 [US1] Update `workers/api/src/handlers/route.ts` to accept and return rate limit headers in responses
+- [x] T005 [US1] Update `workers/api/src/handlers/route.ts` to accept and return rate limit headers in responses
 
 **Checkpoint**: Rate limiting should reject requests over 60/min with 429 status
 
@@ -60,13 +60,13 @@ Phase 3: US1 - Prevent API Abuse (P1)
 
 ### Implementation for User Story 2
 
-- [ ] T006 [P] [US2] Create rate limit error response format in `workers/api/src/handlers/rate-limit.ts` - `createRateLimitError()` function returning `{ error: { code: "RATE_LIMIT_EXCEEDED", message, retryAfter } }`
+- [x] T006 [P] [US2] Create rate limit error response format in `workers/api/src/handlers/rate-limit.ts` - `createRateLimitError()` function returning `{ error: { code: "RATE_LIMIT_EXCEEDED", message, retryAfter } }`
 
-- [ ] T007 [US2] Add `Retry-After` header to 429 responses in `workers/api/src/handlers/rate-limit.ts` - calculate seconds until window reset
+- [x] T007 [US2] Add `Retry-After` header to 429 responses in `workers/api/src/handlers/rate-limit.ts` - calculate seconds until window reset
 
-- [ ] T008 [US2] Update `workers/api/src/index.ts` to return proper 429 response with error body and headers when rate limit exceeded
+- [x] T008 [US2] Update `workers/api/src/index.ts` to return proper 429 response with error body and headers when rate limit exceeded
 
-- [ ] T009 [US2] Ensure all responses (200, 429, errors) include rate limit headers by updating `addCorsHeaders` or response wrapper in `workers/api/src/handlers/cors.ts`
+- [x] T009 [US2] Ensure all responses (200, 429, errors) include rate limit headers by updating response wrapper in `workers/api/src/index.ts`
 
 **Checkpoint**: All API responses include rate limit headers; 429 responses include clear error message and retry timing
 
@@ -80,13 +80,13 @@ Phase 3: US1 - Prevent API Abuse (P1)
 
 ### Tests
 
-- [ ] T010 Create `workers/api/tests/integration/rate-limit.test.ts` with tests for: allowing requests under limit, rejecting at limit (429), and window reset after 60s
+- [x] T010 Create `workers/api/tests/integration/rate-limit.test.ts` with tests for: allowing requests under limit, rejecting at limit (429), and window reset after 60s
 
-- [ ] T011 Create `workers/api/tests/integration/rate-limit.test.ts` with tests for: KV failure fail-open behavior, and header presence in all responses
+- [x] T011 Create `workers/api/tests/integration/rate-limit.test.ts` with tests for: KV failure fail-open behavior, and header presence in all responses
 
 ### Polish
 
-- [ ] T012 Run tests with `pnpm --filter @ev/api test` and verify all pass; update `CLAUDE.md` with rate limiting status
+- [x] T012 Run tests with `pnpm --filter @ev/api test` and verify all pass; update `CLAUDE.md` with rate limiting status
 
 ---
 
