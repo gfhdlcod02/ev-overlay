@@ -14,10 +14,10 @@
     "@ev/core": "workspace:*"
   },
   "devDependencies": {
-    "@cloudflare/workers-types": "^4.20231218.0",
-    "miniflare": "^3.20231218.0",
+    "@cloudflare/workers-types": "^4.20260301.1",
+    "miniflare": "^4.20260305.0",
     "typescript": "^5.3.3",
-    "vitest": "^1.1.0",
-    "wrangler": "^3.22.1"
+    "vitest": "^4.0.18",
+    "wrangler": "^4.69.0"
   }
 }
