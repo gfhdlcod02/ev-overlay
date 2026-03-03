@@ -88,11 +88,20 @@ jobs:
       - name: Build core
         run: pnpm --filter @ev/core build
 
+      - name: Create .env.production
+        run: |
+          echo "VITE_API_URL=${{ vars.API_URL }}" > apps/web/.env.production
+          echo "VITE_APP_VERSION=${{ github.ref_name }}" >> apps/web/.env.production
+          cat apps/web/.env.production
+
       - name: Build Web App
         run: pnpm --filter @ev/web build
-        env:
-          VITE_API_URL: ${{ vars.API_URL }}
-          VITE_APP_VERSION: ${{ github.ref_name }}
+
+      - name: Check built output
+        run: |
+          echo "Checking built JS for API URL:"
+          grep -oE 'const [a-z]+="[^"]*api[^"]*"' apps/web/dist/assets/index-*.js | head -3 || echo "Pattern not found"
+          grep -oE '/api/route|https://.*workers.dev/api' apps/web/dist/assets/index-*.js | head -3 || echo "API pattern not found"
 
       - name: Inject version into builds
         run: pnpm version:inject
