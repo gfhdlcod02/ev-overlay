@@ -27,16 +27,6 @@ try {
   console.log(`  ⚠️  Web dist not found, skipping`);
 }
 
-// Inject into worker (replace placeholders in built source)
-const workerSource = 'workers/api/dist/index.js';
-try {
-  let content = readFileSync(workerSource, 'utf8');
-  content = content.replace(/__APP_VERSION__/g, version);
-  content = content.replace(/__GIT_COMMIT__/g, commit);
-  writeFileSync(workerSource, content);
-  console.log(`  ✓ Injected version into worker`);
-} catch (e) {
-  console.log(`  ⚠️  Worker build not found, skipping`);
-}
+// Note: Worker version is injected in source before build via inject-version-worker.js
 
 console.log(`\n✅ Version injection complete`);

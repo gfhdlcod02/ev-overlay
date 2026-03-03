@@ -126,8 +126,9 @@ git push --tags
 | Step | Script | Description |
 |------|--------|-------------|
 | Pre-build | `pnpm version:sync` | Sync version from root to all package.json files |
+| Pre-deploy (Worker) | `node scripts/inject-version-worker.js` | Inject version into Worker source |
 | Build | `pnpm -r build` | Build all packages |
-| Post-build | `pnpm version:inject` | Inject version into built files |
+| Post-build (Web) | `pnpm version:inject` | Inject version into web dist files |
 
 ### Version Display
 
@@ -138,7 +139,8 @@ git push --tags
 ### Related Files
 
 - `scripts/sync-version.js` - Syncs version between packages
-- `scripts/inject-version.js` - Injects version into build artifacts
+- `scripts/inject-version-worker.js` - Injects version into Worker source (pre-deploy)
+- `scripts/inject-version.js` - Injects version into web dist files (post-build)
 - `apps/web/src/App.vue` - Displays version in UI
 - `workers/api/src/index.ts` - API version endpoint
 

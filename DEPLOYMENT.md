@@ -137,8 +137,10 @@ git push --tags
 GitHub Actions will automatically:
    - Run tests and linting
    - Sync version to all packages (`pnpm version:sync`)
+   - Inject version into Worker source (`scripts/inject-version-worker.js`)
    - Deploy Worker to Cloudflare
-   - Build and inject version into artifacts (`pnpm version:inject`)
+   - Build web app
+   - Inject version into web artifacts (`pnpm version:inject`)
    - Deploy Web App to Pages
 
 ### GitHub Secrets Setup

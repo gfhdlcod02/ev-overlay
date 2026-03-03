@@ -53,6 +53,11 @@ jobs:
       - name: Build core
         run: pnpm --filter @ev/core build
 
+      - name: Inject version into worker source
+        run: node scripts/inject-version-worker.js
+        env:
+          GITHUB_SHA: ${{ github.sha }}
+
       - name: Deploy Worker
         uses: cloudflare/wrangler-action@v3
         with:
