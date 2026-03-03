@@ -1,6 +1,6 @@
 {
   "name": "@ev/web",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "description": "Vue 3 frontend for EV trip planning",
   "type": "module",
   "scripts": {

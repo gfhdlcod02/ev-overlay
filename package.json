@@ -1,6 +1,6 @@
 {
   "name": "ev-overlay",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "description": "Smart EV Overlay for Google Maps - Cloudflare-first trip planning",
   "private": true,
   "type": "module",
