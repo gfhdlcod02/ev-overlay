@@ -1,0 +1,19 @@
+# Block direct commits to main branch
+branch="$(git rev-parse --abbrev-ref HEAD)"
+
+if [ "$branch" = "main" ]; then
+  echo ""
+  echo "❌ ไม่สามารถ commit โดยตรงที่ branch 'main' ได้"
+  echo ""
+  echo "กรุณาสร้าง branch ใหม่แล้วเปิด Pull Request:"
+  echo ""
+  echo "  git checkout -b <branch-name>"
+  echo "  git commit -m \"your message\""
+  echo "  git push -u origin <branch-name>"
+  echo "  gh pr create"
+  echo ""
+  exit 1
+fi
+
+# Run tests before commit
+npm test
