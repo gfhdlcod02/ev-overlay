@@ -77,3 +77,21 @@ export const GEOLOCATION_TIMEOUT = 5000
  * sessionStorage key for location data
  */
 export const STORAGE_KEY = 'ev-overlay:location'
+
+/**
+ * Format a number to fixed decimal places using dot as decimal separator
+ * Works around locale issues where toFixed() might use comma in some locales
+ */
+export function formatCoordinate(value: number, decimals: number = 6): string {
+  // Use toFixed and force replace comma with dot to handle locale issues
+  // This ensures consistent coordinate format across all browsers/locales
+  return value.toFixed(decimals).replace(/,/g, '.')
+}
+
+/**
+ * Format coordinates as "lat,lng" string for API usage
+ * Ensures consistent formatting regardless of browser locale
+ */
+export function formatCoordinatePair(lat: number, lng: number): string {
+  return `${formatCoordinate(lat)},${formatCoordinate(lng)}`
+}

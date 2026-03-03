@@ -8,6 +8,10 @@ import {
 
 export { Env }
 
+// Version is replaced during build (defaults to 'dev' if not injected)
+const VERSION = '__APP_VERSION__'.startsWith('__') ? 'dev' : '__APP_VERSION__'
+const COMMIT = '__GIT_COMMIT__'.startsWith('__') ? 'local' : '__GIT_COMMIT__'
+
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url)
@@ -23,7 +27,15 @@ export default {
 
     try {
       // Route requests
-      if (url.pathname === '/api/route') {
+      if (url.pathname === '/api/version') {
+        response = new Response(
+          JSON.stringify({
+            version: VERSION,
+            commit: COMMIT,
+          }),
+          { status: 200, headers: { 'Content-Type': 'application/json' } }
+        )
+      } else if (url.pathname === '/api/route') {
         // Check rate limit only for /api/route endpoint
         const rateLimitResult = await checkRateLimit(request, env)
         rateLimitHeaders = getRateLimitHeaders(rateLimitResult)

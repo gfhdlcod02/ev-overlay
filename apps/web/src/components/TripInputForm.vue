@@ -132,6 +132,7 @@ import { computed, watch } from 'vue'
 import { useTripInput } from '../composables/useTripInput'
 import { useRoutePlanning } from '../composables/useRoutePlanning'
 import { useLocationStore } from '../stores/location'
+import { formatCoordinatePair } from '../utils/coordinates'
 import EVParameterInputs from './EVParameterInputs.vue'
 
 const { input, canSubmit, validationErrors, status, updateInput, resetInput, setLoading } = useTripInput()
@@ -161,10 +162,11 @@ const originPlaceholder = computed(() => {
 /**
  * Format a UserLocation for input field display
  * Returns "lat,lng" format for precise coordinates
+ * Uses dot as decimal separator regardless of locale
  */
 function formatLocationForInput(position: { lat: number; lng: number } | null): string {
   if (!position) return ''
-  return `${position.lat.toFixed(6)},${position.lng.toFixed(6)}`
+  return formatCoordinatePair(position.lat, position.lng)
 }
 
 /**

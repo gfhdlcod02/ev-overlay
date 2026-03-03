@@ -1,7 +1,7 @@
 <template>
   <div class="min-h-screen bg-gray-100 flex flex-col lg:flex-row">
     <!-- Left Panel: Inputs and Summary -->
-    <div class="w-full lg:w-96 p-4 space-y-4 lg:h-screen lg:overflow-y-auto">
+    <div class="w-full lg:w-96 p-4 space-y-4 lg:h-screen lg:overflow-y-auto flex flex-col">
       <h1 class="text-2xl font-bold text-gray-900">EV Trip Planner</h1>
 
       <TripInputForm />
@@ -18,6 +18,10 @@
         <TripSummary :result="result" />
         <ChargingStopList :stops="result.stops" />
       </template>
+
+      <div class="mt-auto pt-4 text-xs text-gray-400 text-center">
+        {{ appVersion }}
+      </div>
     </div>
 
     <!-- Right Panel: Map -->
@@ -37,6 +41,8 @@ import TripSummary from './components/TripSummary.vue'
 import ChargingStopList from './components/ChargingStopList.vue'
 import ErrorDisplay from './components/ErrorDisplay.vue'
 import LoadingState from './components/LoadingState.vue'
+
+const appVersion = import.meta.env.VITE_APP_VERSION || 'dev'
 
 const { result, status, error } = useTripInput()
 const { requestLocation } = useGeolocation({

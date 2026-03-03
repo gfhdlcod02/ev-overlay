@@ -5,7 +5,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "pnpm -r build",
+    "version:sync": "node scripts/sync-version.js",
+    "version:inject": "node scripts/inject-version.js",
+    "build": "pnpm version:sync && pnpm -r build && pnpm version:inject",
     "dev": "pnpm --filter @ev/web dev",
     "dev:all": "concurrently \"pnpm --filter @ev/api dev\" \"pnpm --filter @ev/web dev\" --names API,WEB --prefix-colors cyan,green",
     "test": "pnpm -r test",
