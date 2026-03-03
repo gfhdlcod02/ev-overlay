@@ -13,7 +13,8 @@
     "lint": "eslint . --ext .ts,.vue,.tsx",
     "lint:fix": "eslint . --ext .ts,.vue,.tsx --fix",
     "format": "prettier --write \"**/*.{ts,vue,json,md}\"",
-    "format:check": "prettier --check \"**/*.{ts,vue,json,md}\""
+    "format:check": "prettier --check \"**/*.{ts,vue,json,md}\"",
+    "prepare": "husky"
   },
   "devDependencies": {
     "@types/node": "^25.3.3",
@@ -22,6 +23,7 @@
     "eslint": "^8.55.0",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-vue": "^9.19.2",
+    "husky": "^9.1.7",
     "prettier": "^3.1.1",
     "typescript": "^5.3.3",
     "vitest": "^4.0.18"
