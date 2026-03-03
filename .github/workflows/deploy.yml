@@ -57,7 +57,7 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           workingDirectory: workers/api
           wranglerVersion: "4.69.0"
-          command: deploy -e production
+          command: deploy
 
   deploy-web:
     needs: deploy-worker
