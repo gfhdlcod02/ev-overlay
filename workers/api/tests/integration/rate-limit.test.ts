@@ -155,11 +155,11 @@ describe('Rate Limiting', () => {
       let result = await checkRateLimit(request, env)
       expect(result.allowed).toBe(false)
 
-      // Simulate window expiration by manually expiring the entry
+      // Simulate window expiration by manually setting old timestamps
       const key = getRateLimitKey('192.168.1.1')
+      const now = Date.now()
       const expiredEntry = {
-        count: RATE_LIMIT_MAX,
-        windowStart: Date.now() - (RATE_LIMIT_WINDOW + 1) * 1000,
+        requests: Array(RATE_LIMIT_MAX).fill(now - (RATE_LIMIT_WINDOW + 1) * 1000),
       }
       await mockKV.put(key, JSON.stringify(expiredEntry), { expirationTtl: 1 })
 

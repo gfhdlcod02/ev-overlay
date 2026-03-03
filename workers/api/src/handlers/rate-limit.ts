@@ -4,12 +4,10 @@ import type { Env } from './route'
 export const RATE_LIMIT_MAX = 60 // requests per minute
 export const RATE_LIMIT_WINDOW = 60 // seconds
 
-// Rate limit entry stored in KV
+// Rate limit entry stored in KV - uses sliding window with request timestamps
 export interface RateLimitEntry {
-  /** Number of requests in current window */
-  count: number
-  /** Timestamp (ms) when window started */
-  windowStart: number
+  /** Array of request timestamps (ms) within the current window */
+  requests: number[]
 }
 
 // Result of rate limit check
@@ -18,7 +16,7 @@ export interface RateLimitResult {
   allowed: boolean
   /** Remaining requests in window */
   remaining: number
-  /** Unix timestamp (seconds) when window resets */
+  /** Unix timestamp (seconds) when oldest request expires */
   resetTime: number
 }
 
@@ -45,15 +43,28 @@ export function getRateLimitKey(ip: string): string {
 }
 
 /**
- * Check if rate limit entry is within current window
+ * Filter out timestamps outside the rolling window
  */
-function isWithinWindow(entry: RateLimitEntry, now: number): boolean {
-  return now - entry.windowStart <= RATE_LIMIT_WINDOW * 1000
+function filterRecentRequests(timestamps: number[], now: number, windowMs: number): number[] {
+  const cutoff = now - windowMs
+  return timestamps.filter(ts => ts > cutoff)
+}
+
+/**
+ * Calculate reset time based on oldest request in window
+ */
+function calculateResetTime(requests: number[], windowMs: number): number {
+  if (requests.length === 0) {
+    return Math.floor((Date.now() + windowMs) / 1000)
+  }
+  const oldestRequest = Math.min(...requests)
+  return Math.floor((oldestRequest + windowMs) / 1000)
 }
 
 /**
  * Check rate limit for a client
- * Uses sliding window algorithm with KV storage
+ * Uses TRUE rolling window algorithm with KV storage
+ * Only counts requests within the last 60 seconds
  */
 export async function checkRateLimit(
   request: Request,
@@ -62,16 +73,16 @@ export async function checkRateLimit(
   const clientIP = getClientIP(request)
   const key = getRateLimitKey(clientIP)
   const now = Date.now()
+  const windowMs = RATE_LIMIT_WINDOW * 1000
 
   try {
     // Get existing rate limit entry
     const entry = await env.ROUTE_CACHE.get(key, 'json') as RateLimitEntry | null
 
-    if (!entry) {
-      // No entry - create new window
+    if (!entry || !entry.requests) {
+      // No entry - create new with first request
       const newEntry: RateLimitEntry = {
-        count: 1,
-        windowStart: now
+        requests: [now]
       }
       await env.ROUTE_CACHE.put(key, JSON.stringify(newEntry), {
         expirationTtl: RATE_LIMIT_WINDOW
@@ -80,32 +91,17 @@ export async function checkRateLimit(
       return {
         allowed: true,
         remaining: RATE_LIMIT_MAX - 1,
-        resetTime: Math.floor((now + RATE_LIMIT_WINDOW * 1000) / 1000)
+        resetTime: Math.floor((now + windowMs) / 1000)
       }
     }
 
-    // Check if within current window
-    if (!isWithinWindow(entry, now)) {
-      // Window expired - reset
-      const newEntry: RateLimitEntry = {
-        count: 1,
-        windowStart: now
-      }
-      await env.ROUTE_CACHE.put(key, JSON.stringify(newEntry), {
-        expirationTtl: RATE_LIMIT_WINDOW
-      })
+    // Filter to only recent requests (true rolling window)
+    const recentRequests = filterRecentRequests(entry.requests, now, windowMs)
 
-      return {
-        allowed: true,
-        remaining: RATE_LIMIT_MAX - 1,
-        resetTime: Math.floor((now + RATE_LIMIT_WINDOW * 1000) / 1000)
-      }
-    }
-
-    // Within window - check count
-    if (entry.count >= RATE_LIMIT_MAX) {
+    // Check if limit exceeded
+    if (recentRequests.length >= RATE_LIMIT_MAX) {
       // Rate limit exceeded
-      const resetTime = Math.floor((entry.windowStart + RATE_LIMIT_WINDOW * 1000) / 1000)
+      const resetTime = calculateResetTime(recentRequests, windowMs)
       return {
         allowed: false,
         remaining: 0,
@@ -113,19 +109,19 @@ export async function checkRateLimit(
       }
     }
 
-    // Increment count
+    // Add current request and update KV
+    const updatedRequests = [...recentRequests, now]
     const updatedEntry: RateLimitEntry = {
-      count: entry.count + 1,
-      windowStart: entry.windowStart
+      requests: updatedRequests
     }
     await env.ROUTE_CACHE.put(key, JSON.stringify(updatedEntry), {
       expirationTtl: RATE_LIMIT_WINDOW
     })
 
-    const resetTime = Math.floor((entry.windowStart + RATE_LIMIT_WINDOW * 1000) / 1000)
+    const resetTime = calculateResetTime(updatedRequests, windowMs)
     return {
       allowed: true,
-      remaining: RATE_LIMIT_MAX - updatedEntry.count,
+      remaining: RATE_LIMIT_MAX - updatedRequests.length,
       resetTime
     }
   } catch (e) {
@@ -134,7 +130,7 @@ export async function checkRateLimit(
     return {
       allowed: true,
       remaining: RATE_LIMIT_MAX,
-      resetTime: Math.floor((now + RATE_LIMIT_WINDOW * 1000) / 1000)
+      resetTime: Math.floor((now + windowMs) / 1000)
     }
   }
 }

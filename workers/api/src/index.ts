@@ -18,29 +18,30 @@ export default {
       return corsResponse
     }
 
-    // Check rate limit for all requests
-    const rateLimitResult = await checkRateLimit(request, env)
-    const rateLimitHeaders = getRateLimitHeaders(rateLimitResult)
-
-    // If rate limited, return 429 response
-    if (!rateLimitResult.allowed) {
-      const retryAfter = rateLimitHeaders['Retry-After'] || '60'
-      const errorBody = createRateLimitError(parseInt(retryAfter, 10))
-      const rateLimitedResponse = new Response(JSON.stringify(errorBody), {
-        status: 429,
-        headers: {
-          'Content-Type': 'application/json',
-          ...rateLimitHeaders,
-        },
-      })
-      return addCorsHeaders(rateLimitedResponse)
-    }
-
     let response: Response
+    let rateLimitHeaders: ReturnType<typeof getRateLimitHeaders> | undefined
 
     try {
       // Route requests
       if (url.pathname === '/api/route') {
+        // Check rate limit only for /api/route endpoint
+        const rateLimitResult = await checkRateLimit(request, env)
+        rateLimitHeaders = getRateLimitHeaders(rateLimitResult)
+
+        // If rate limited, return 429 response
+        if (!rateLimitResult.allowed) {
+          const retryAfter = rateLimitHeaders['Retry-After'] || '60'
+          const errorBody = createRateLimitError(parseInt(retryAfter, 10))
+          const rateLimitedResponse = new Response(JSON.stringify(errorBody), {
+            status: 429,
+            headers: {
+              'Content-Type': 'application/json',
+              ...rateLimitHeaders,
+            },
+          })
+          return addCorsHeaders(rateLimitedResponse)
+        }
+
         response = await handleRoute(request, env)
       } else {
         response = new Response(
@@ -58,17 +59,20 @@ export default {
       )
     }
 
-    // Add rate limit headers to response
-    const responseWithHeaders = new Response(response.body, {
-      status: response.status,
-      statusText: response.statusText,
-      headers: {
-        ...Object.fromEntries(response.headers.entries()),
-        ...rateLimitHeaders,
-      },
-    })
+    // Add rate limit headers to response (if they were set)
+    if (rateLimitHeaders) {
+      const responseWithHeaders = new Response(response.body, {
+        status: response.status,
+        statusText: response.statusText,
+        headers: {
+          ...Object.fromEntries(response.headers.entries()),
+          ...rateLimitHeaders,
+        },
+      })
+      return addCorsHeaders(responseWithHeaders)
+    }
 
     // Add CORS headers to all responses
-    return addCorsHeaders(responseWithHeaders)
+    return addCorsHeaders(response)
   },
 }
