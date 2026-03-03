@@ -1,5 +1,10 @@
 import { handleRoute, type Env } from './handlers/route'
 import { handleCors, addCorsHeaders } from './handlers/cors'
+import {
+  checkRateLimit,
+  getRateLimitHeaders,
+  createRateLimitError,
+} from './handlers/rate-limit'
 
 export { Env }
 
@@ -11,6 +16,24 @@ export default {
     const corsResponse = handleCors(request)
     if (corsResponse) {
       return corsResponse
+    }
+
+    // Check rate limit for all requests
+    const rateLimitResult = await checkRateLimit(request, env)
+    const rateLimitHeaders = getRateLimitHeaders(rateLimitResult)
+
+    // If rate limited, return 429 response
+    if (!rateLimitResult.allowed) {
+      const retryAfter = rateLimitHeaders['Retry-After'] || '60'
+      const errorBody = createRateLimitError(parseInt(retryAfter, 10))
+      const rateLimitedResponse = new Response(JSON.stringify(errorBody), {
+        status: 429,
+        headers: {
+          'Content-Type': 'application/json',
+          ...rateLimitHeaders,
+        },
+      })
+      return addCorsHeaders(rateLimitedResponse)
     }
 
     let response: Response
@@ -35,7 +58,17 @@ export default {
       )
     }
 
+    // Add rate limit headers to response
+    const responseWithHeaders = new Response(response.body, {
+      status: response.status,
+      statusText: response.statusText,
+      headers: {
+        ...Object.fromEntries(response.headers.entries()),
+        ...rateLimitHeaders,
+      },
+    })
+
     // Add CORS headers to all responses
-    return addCorsHeaders(response)
+    return addCorsHeaders(responseWithHeaders)
   },
 }
