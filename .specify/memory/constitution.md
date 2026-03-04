@@ -1,12 +1,13 @@
-<!--
-================================================================================
-SYNC IMPACT REPORT
-================================================================================
+# <!--
+
+# SYNC IMPACT REPORT
+
 Version Change: 1.2.0 → 1.3.0 (MINOR: new principle added)
 
 Modified Principles: None
 
 New Principles Added:
+
 - XI. Code Security Standards
 
 Added Sections: None
@@ -14,12 +15,12 @@ Added Sections: None
 Removed Sections: None
 
 Templates Requiring Updates:
-✅ .specify/templates/plan-template.md - Constitution Check section aligns with principles
-✅ .specify/templates/spec-template.md - Requirements section aligns with security principles
-✅ .specify/templates/tasks-template.md - Task categorization reflects security principles
+[PASS] .specify/templates/plan-template.md - Constitution Check section aligns with principles
+[PASS] .specify/templates/spec-template.md - Requirements section aligns with security principles
+[PASS] .specify/templates/tasks-template.md - Task categorization reflects security principles
 
-Deferred Items: None
-================================================================================
+# Deferred Items: None
+
 -->
 
 # Smart EV Overlay Constitution
@@ -29,6 +30,7 @@ Deferred Items: None
 This constitution governs the development of **Smart EV Overlay for Google Maps**, a pre-trip planning web application that helps EV drivers visualize safe travel ranges and identify optimal charging stops along their route.
 
 **MVP Scope MUST Include:**
+
 - Trip input UI (origin/destination, SoC, range@100%, reserve%, driving factor preset)
 - Route retrieval via Worker proxy to a routing provider (public OSRM acceptable)
 - Deterministic EV estimation with conservative safety margins
@@ -37,6 +39,7 @@ This constitution governs the development of **Smart EV Overlay for Google Maps*
 - Clear error states for all failure modes
 
 **MVP Scope MUST Exclude:**
+
 - Real-time charger availability, queue prediction, reservations
 - OEM telemetry / OBD integrations
 - Elevation/traffic/weather modeling beyond user-controlled factors
@@ -83,11 +86,13 @@ This constitution governs the development of **Smart EV Overlay for Google Maps*
 **All EV estimation logic MUST be deterministic, mathematically verifiable, and free of machine learning.**
 
 The core formula:
+
 ```
 safeRangeKm = ((socNow - reserveArrival)/100) * (range100Km / factor)
 ```
 
 Additional rules:
+
 - Multi-stop heuristic: assume chargeToPercent=80% for subsequent legs
 - Enforce max stops (5) with graceful fallback
 - No probabilistic scoring or ML-based predictions in MVP
@@ -138,6 +143,7 @@ workers/api      - Edge API layer
 ```
 
 Rules:
+
 - `core` MUST have zero dependencies on browser or Node APIs
 - `core` MUST be 100% unit testable without mocks
 - `web` MUST NOT call routing providers directly; always through Worker
@@ -168,6 +174,7 @@ Rules:
 **A feature is complete ONLY when all quality criteria are met.**
 
 Every feature MUST:
+
 - Meet acceptance behavior + edge-case handling
 - Have appropriate tests (core logic unit tests at minimum)
 - Have explicit loading/success/error UI states
@@ -175,6 +182,7 @@ Every feature MUST:
 - Work on mobile + desktop modern browsers
 
 **Test Policy:**
+
 - Unit tests REQUIRED for core: safeRange, distance accumulation, stop placement, URL builder
 - Minimal integration tests for worker: normalize response + cache HIT/MISS
 
@@ -268,12 +276,12 @@ Every feature MUST:
 
 ### Version History
 
-| Version | Date | Change Summary |
-|---------|------|----------------|
-| 1.0.0 | 2026-02-28 | Initial ratification |
-| 1.1.0 | 2026-02-28 | Add Playwright Web Testing principle (IX) |
-| 1.2.0 | 2026-03-01 | Add Code Quality Standards principle (X) |
-| 1.3.0 | 2026-03-01 | Add Code Security Standards principle (XI) |
+| Version | Date       | Change Summary                             |
+| ------- | ---------- | ------------------------------------------ |
+| 1.0.0   | 2026-02-28 | Initial ratification                       |
+| 1.1.0   | 2026-02-28 | Add Playwright Web Testing principle (IX)  |
+| 1.2.0   | 2026-03-01 | Add Code Quality Standards principle (X)   |
+| 1.3.0   | 2026-03-01 | Add Code Security Standards principle (XI) |
 
 ---
 
