@@ -20,6 +20,7 @@ Thank you for your interest in contributing to Smart EV Overlay! This document p
 ### Commit Messages
 
 Follow conventional commits:
+
 ```
 feat: add new charging stop algorithm
 fix: correct distance calculation bug

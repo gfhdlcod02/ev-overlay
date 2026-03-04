@@ -17,9 +17,9 @@ Thank you for your interest in contributing to Smart EV Overlay! This document p
 
 We use Husky to enforce this locally and GitHub Branch Protection for remote:
 
-| Level | Protection |
-|-------|------------|
-| Local | Husky pre-commit hook blocks direct commits to `main` |
+| Level  | Protection                                              |
+| ------ | ------------------------------------------------------- |
+| Local  | Husky pre-commit hook blocks direct commits to `main`   |
 | Remote | GitHub Branch Protection requires PR to merge to `main` |
 
 ### Creating a Pull Request
@@ -52,6 +52,7 @@ gh pr create
 ### Commit Messages
 
 Follow conventional commits:
+
 ```
 feat: add new charging stop algorithm
 fix: correct distance calculation bug

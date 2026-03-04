@@ -16,6 +16,7 @@ Instead, please report it via:
 2. **Email**: Contact the repository owner directly
 
 Please include:
+
 - Description of the vulnerability
 - Steps to reproduce
 - Potential impact
