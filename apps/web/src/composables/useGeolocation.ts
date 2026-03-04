@@ -3,10 +3,7 @@ import type { ComputedRef } from 'vue'
 import { useLocationStore } from '@/stores/location'
 import type { UserLocation, GeolocationError } from '@/types/location'
 import { GeolocationStatus, PermissionState } from '@/types/location'
-import {
-  GEOLOCATION_TIMEOUT,
-  isAccuracyAcceptable,
-} from '@/utils/coordinates'
+import { GEOLOCATION_TIMEOUT, isAccuracyAcceptable } from '@/utils/coordinates'
 
 /**
  * Options for useGeolocation composable
@@ -51,13 +48,8 @@ export interface UseGeolocationReturn {
  * })
  * ```
  */
-export function useGeolocation(
-  options: UseGeolocationOptions = {}
-): UseGeolocationReturn {
-  const {
-    timeout = GEOLOCATION_TIMEOUT,
-    accuracyThreshold = 1000,
-  } = options
+export function useGeolocation(options: UseGeolocationOptions = {}): UseGeolocationReturn {
+  const { timeout = GEOLOCATION_TIMEOUT, accuracyThreshold = 1000 } = options
 
   const store = useLocationStore()
 
@@ -87,10 +79,10 @@ export function useGeolocation(
     // Set loading state
     store.setStatus(GeolocationStatus.LOADING)
 
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       navigator.geolocation.getCurrentPosition(
         // Success callback
-        (geoPosition) => {
+        geoPosition => {
           // Check accuracy threshold
           if (!isAccuracyAcceptable(geoPosition.coords.accuracy, accuracyThreshold)) {
             store.setError({
@@ -105,7 +97,7 @@ export function useGeolocation(
           resolve()
         },
         // Error callback
-        (positionError) => {
+        positionError => {
           const err: GeolocationError = {
             code: positionError.code,
             message: getErrorMessage(positionError),

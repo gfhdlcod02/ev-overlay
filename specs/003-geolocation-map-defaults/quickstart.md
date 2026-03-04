@@ -20,43 +20,40 @@ No additional dependencies required. Uses native browser APIs.
 Create the composable that wraps the native Geolocation API:
 
 ```typescript
-import { computed } from 'vue';
-import { useLocationStore } from '@/stores/location';
-import type { UserLocation, GeolocationStatus } from '@/types/location';
+import { computed } from 'vue'
+import { useLocationStore } from '@/stores/location'
+import type { UserLocation, GeolocationStatus } from '@/types/location'
 
 export interface UseGeolocationOptions {
-  timeout?: number;
-  accuracyThreshold?: number;
+  timeout?: number
+  accuracyThreshold?: number
 }
 
 export function useGeolocation(options: UseGeolocationOptions = {}) {
-  const {
-    timeout = 5000,
-    accuracyThreshold = 1000
-  } = options;
+  const { timeout = 5000, accuracyThreshold = 1000 } = options
 
-  const store = useLocationStore();
+  const store = useLocationStore()
 
   const requestLocation = async (): Promise<void> => {
     if (!navigator.geolocation) {
-      store.setError({ code: 2, message: 'Geolocation not supported' } as GeolocationPositionError);
-      return;
+      store.setError({ code: 2, message: 'Geolocation not supported' } as GeolocationPositionError)
+      return
     }
 
-    store.setStatus('loading');
+    store.setStatus('loading')
 
     navigator.geolocation.getCurrentPosition(
-      (position) => {
+      position => {
         if (position.coords.accuracy <= accuracyThreshold) {
-          store.setPosition(position);
+          store.setPosition(position)
         } else {
-          store.setError({ code: 2, message: 'Insufficient accuracy' } as GeolocationPositionError);
+          store.setError({ code: 2, message: 'Insufficient accuracy' } as GeolocationPositionError)
         }
       },
-      (error) => store.setError(error),
+      error => store.setError(error),
       { timeout, enableHighAccuracy: false }
-    );
-  };
+    )
+  }
 
   return {
     position: computed(() => store.position),
@@ -65,8 +62,8 @@ export function useGeolocation(options: UseGeolocationOptions = {}) {
     isGranted: computed(() => store.status === 'success'),
     isDenied: computed(() => store.status === 'denied'),
     requestLocation,
-    clearLocation: store.reset
-  };
+    clearLocation: store.reset,
+  }
 }
 ```
 
@@ -75,31 +72,25 @@ export function useGeolocation(options: UseGeolocationOptions = {}) {
 **File**: `apps/web/src/stores/location.ts`
 
 ```typescript
-import { defineStore } from 'pinia';
-import { ref, computed } from 'vue';
-import type { UserLocation, GeolocationStatus, PermissionState } from '@/types/location';
+import { defineStore } from 'pinia'
+import { ref, computed } from 'vue'
+import type { UserLocation, GeolocationStatus, PermissionState } from '@/types/location'
 
-const STORAGE_KEY = 'ev-overlay:location';
+const STORAGE_KEY = 'ev-overlay:location'
 
 export const useLocationStore = defineStore('location', () => {
   // State
-  const position = ref<UserLocation | null>(null);
-  const status = ref<GeolocationStatus>('idle');
-  const error = ref<GeolocationPositionError | null>(null);
-  const hasUserInteracted = ref(false);
-  const permission = ref<PermissionState>('prompt');
+  const position = ref<UserLocation | null>(null)
+  const status = ref<GeolocationStatus>('idle')
+  const error = ref<GeolocationPositionError | null>(null)
+  const hasUserInteracted = ref(false)
+  const permission = ref<PermissionState>('prompt')
 
   // Getters
-  const isLocationAvailable = computed(() => position.value !== null);
-  const isAccurate = computed(() =>
-    position.value !== null && position.value.accuracy <= 1000
-  );
-  const locationLabel = computed(() =>
-    isLocationAvailable.value ? 'Current Location' : null
-  );
-  const canAutoCenter = computed(() =>
-    isLocationAvailable.value && !hasUserInteracted.value
-  );
+  const isLocationAvailable = computed(() => position.value !== null)
+  const isAccurate = computed(() => position.value !== null && position.value.accuracy <= 1000)
+  const locationLabel = computed(() => (isLocationAvailable.value ? 'Current Location' : null))
+  const canAutoCenter = computed(() => isLocationAvailable.value && !hasUserInteracted.value)
 
   // Actions
   function setPosition(geoPosition: GeolocationPosition) {
@@ -107,73 +98,82 @@ export const useLocationStore = defineStore('location', () => {
       lat: geoPosition.coords.latitude,
       lng: geoPosition.coords.longitude,
       accuracy: geoPosition.coords.accuracy,
-      timestamp: geoPosition.timestamp
-    };
-    status.value = 'success';
-    error.value = null;
-    saveToStorage();
+      timestamp: geoPosition.timestamp,
+    }
+    status.value = 'success'
+    error.value = null
+    saveToStorage()
   }
 
   function setError(err: GeolocationPositionError) {
-    error.value = err;
+    error.value = err
     switch (err.code) {
-      case 1: status.value = 'denied'; break;
-      case 2: status.value = 'error'; break;
-      case 3: status.value = 'timeout'; break;
+      case 1:
+        status.value = 'denied'
+        break
+      case 2:
+        status.value = 'error'
+        break
+      case 3:
+        status.value = 'timeout'
+        break
     }
   }
 
   function setStatus(newStatus: GeolocationStatus) {
-    status.value = newStatus;
+    status.value = newStatus
   }
 
   function markUserInteracted() {
-    hasUserInteracted.value = true;
+    hasUserInteracted.value = true
   }
 
   function reset() {
-    position.value = null;
-    status.value = 'idle';
-    error.value = null;
-    hasUserInteracted.value = false;
-    sessionStorage.removeItem(STORAGE_KEY);
+    position.value = null
+    status.value = 'idle'
+    error.value = null
+    hasUserInteracted.value = false
+    sessionStorage.removeItem(STORAGE_KEY)
   }
 
   function saveToStorage() {
     if (position.value && (status.value === 'success' || status.value === 'denied')) {
-      sessionStorage.setItem(STORAGE_KEY, JSON.stringify({
-        v: 1,
-        lat: position.value.lat,
-        lng: position.value.lng,
-        accuracy: position.value.accuracy,
-        status: status.value,
-        savedAt: Date.now()
-      }));
+      sessionStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify({
+          v: 1,
+          lat: position.value.lat,
+          lng: position.value.lng,
+          accuracy: position.value.accuracy,
+          status: status.value,
+          savedAt: Date.now(),
+        })
+      )
     }
   }
 
   // Hydrate from storage on init
   function hydrateFromStorage() {
-    const stored = sessionStorage.getItem(STORAGE_KEY);
+    const stored = sessionStorage.getItem(STORAGE_KEY)
     if (stored) {
       try {
-        const data = JSON.parse(stored);
+        const data = JSON.parse(stored)
         if (data.v === 1) {
           position.value = {
             lat: data.lat,
             lng: data.lng,
             accuracy: data.accuracy,
-            timestamp: data.savedAt
-          };
-          status.value = data.status;
+            timestamp: data.savedAt,
+          }
+          status.value = data.status
         }
       } catch {
-        sessionStorage.removeItem(STORAGE_KEY);
+        sessionStorage.removeItem(STORAGE_KEY)
       }
     }
   }
 
-  hydrateFromStorage();
+  hydrateFromStorage()
 
   return {
     position,
@@ -189,9 +189,9 @@ export const useLocationStore = defineStore('location', () => {
     setError,
     setStatus,
     markUserInteracted,
-    reset
-  };
-});
+    reset,
+  }
+})
 ```
 
 ### Step 3: Update Map Component
@@ -202,33 +202,36 @@ Add default view and auto-recenter logic:
 
 ```typescript
 // Add to script setup
-import { useLocationStore } from '@/stores/location';
-import { watch, onMounted } from 'vue';
+import { useLocationStore } from '@/stores/location'
+import { watch, onMounted } from 'vue'
 
 const THAILAND_DEFAULT = {
   center: [13.7563, 100.5018] as [number, number],
-  zoom: 6
-};
+  zoom: 6,
+}
 
-const locationStore = useLocationStore();
+const locationStore = useLocationStore()
 
 // Initialize map with Thailand default
 onMounted(() => {
-  map.setView(THAILAND_DEFAULT.center, THAILAND_DEFAULT.zoom);
-});
+  map.setView(THAILAND_DEFAULT.center, THAILAND_DEFAULT.zoom)
+})
 
 // Watch for location changes and auto-center
-watch(() => locationStore.canAutoCenter, (canAutoCenter) => {
-  if (canAutoCenter && locationStore.position) {
-    const { lat, lng } = locationStore.position;
-    map.flyTo([lat, lng], 13, { duration: 1.5 });
+watch(
+  () => locationStore.canAutoCenter,
+  canAutoCenter => {
+    if (canAutoCenter && locationStore.position) {
+      const { lat, lng } = locationStore.position
+      map.flyTo([lat, lng], 13, { duration: 1.5 })
+    }
   }
-});
+)
 
 // Track user interaction
 map.on('movestart zoomstart', () => {
-  locationStore.markUserInteracted();
-});
+  locationStore.markUserInteracted()
+})
 ```
 
 ### Step 4: Update Route Planner Origin Field
@@ -256,26 +259,26 @@ map.on('movestart zoomstart', () => {
 </template>
 
 <script setup>
-import { computed, onMounted } from 'vue';
-import { useLocationStore } from '@/stores/location';
-import { useGeolocation } from '@/composables/useGeolocation';
+import { computed, onMounted } from 'vue'
+import { useLocationStore } from '@/stores/location'
+import { useGeolocation } from '@/composables/useGeolocation'
 
-const locationStore = useLocationStore();
-const { requestLocation } = useGeolocation();
+const locationStore = useLocationStore()
+const { requestLocation } = useGeolocation()
 
 const originLabel = computed(() => {
   if (locationStore.locationLabel) {
-    return locationStore.locationLabel;
+    return locationStore.locationLabel
   }
-  return '';
-});
+  return ''
+})
 
 // Auto-request on mount
 onMounted(() => {
   if (locationStore.status === 'idle') {
-    requestLocation();
+    requestLocation()
   }
-});
+})
 </script>
 ```
 
@@ -316,33 +319,33 @@ onMounted(() => {
 Create `apps/web/e2e/geolocation.spec.ts`:
 
 ```typescript
-import { test, expect } from '@playwright/test';
+import { test, expect } from '@playwright/test'
 
 test.describe('Geolocation defaults', () => {
   test('shows Thailand default on load', async ({ page }) => {
-    await page.goto('/route');
+    await page.goto('/route')
     // Verify map is centered on Thailand (approximate check)
-    const mapCenter = await page.evaluate(() => window.map.getCenter());
-    expect(mapCenter.lat).toBeCloseTo(13.75, 0);
-    expect(mapCenter.lng).toBeCloseTo(100.50, 0);
-  });
+    const mapCenter = await page.evaluate(() => window.map.getCenter())
+    expect(mapCenter.lat).toBeCloseTo(13.75, 0)
+    expect(mapCenter.lng).toBeCloseTo(100.5, 0)
+  })
 
   test('auto-populates origin when permission granted', async ({ page, context }) => {
     // Grant permission
-    await context.grantPermissions(['geolocation']);
-    await page.goto('/route');
+    await context.grantPermissions(['geolocation'])
+    await page.goto('/route')
 
     // Mock geolocation
     await page.evaluate(() => {
-      navigator.geolocation.getCurrentPosition = (success) => {
+      navigator.geolocation.getCurrentPosition = success => {
         success({
           coords: { latitude: 13.7, longitude: 100.5, accuracy: 100 },
-          timestamp: Date.now()
-        } as GeolocationPosition);
-      };
-    });
+          timestamp: Date.now(),
+        } as GeolocationPosition)
+      }
+    })
 
-    await expect(page.locator('[data-testid="origin-input"]')).toHaveValue('Current Location');
-  });
-});
+    await expect(page.locator('[data-testid="origin-input"]')).toHaveValue('Current Location')
+  })
+})
 ```

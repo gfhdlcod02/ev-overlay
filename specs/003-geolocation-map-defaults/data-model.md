@@ -11,61 +11,61 @@
 
 Represents the geographic position of the user with metadata.
 
-| Field | Type | Description | Validation |
-|-------|------|-------------|------------|
-| `lat` | `number` | Latitude in decimal degrees | -90 to 90 |
-| `lng` | `number` | Longitude in decimal degrees | -180 to 180 |
-| `accuracy` | `number` | Accuracy radius in meters | >= 0 |
-| `timestamp` | `number` | Unix timestamp of reading | >= 0 |
+| Field       | Type     | Description                  | Validation  |
+| ----------- | -------- | ---------------------------- | ----------- |
+| `lat`       | `number` | Latitude in decimal degrees  | -90 to 90   |
+| `lng`       | `number` | Longitude in decimal degrees | -180 to 180 |
+| `accuracy`  | `number` | Accuracy radius in meters    | >= 0        |
+| `timestamp` | `number` | Unix timestamp of reading    | >= 0        |
 
 ### MapViewState
 
 Represents the current viewport configuration of the map.
 
-| Field | Type | Description | Validation |
-|-------|------|-------------|------------|
-| `center` | `[number, number]` | [lat, lng] center point | Valid coordinates |
-| `zoom` | `number` | Zoom level | 1-20 typical for Leaflet |
-| `isDefault` | `boolean` | Whether showing default (Thailand) view | - |
-| `hasUserInteracted` | `boolean` | Whether user manually panned/zoomed | - |
+| Field               | Type               | Description                             | Validation               |
+| ------------------- | ------------------ | --------------------------------------- | ------------------------ |
+| `center`            | `[number, number]` | [lat, lng] center point                 | Valid coordinates        |
+| `zoom`              | `number`           | Zoom level                              | 1-20 typical for Leaflet |
+| `isDefault`         | `boolean`          | Whether showing default (Thailand) view | -                        |
+| `hasUserInteracted` | `boolean`          | Whether user manually panned/zoomed     | -                        |
 
 ### OriginInput
 
 Represents the starting point selection state.
 
-| Field | Type | Description | Validation |
-|-------|------|-------------|------------|
-| `value` | `UserLocation \| null` | Selected location or null | - |
-| `label` | `string` | Display label ("Current Location" or address) | Non-empty if value set |
-| `source` | `'geolocation' \| 'manual' \| null` | How the value was set | Enum |
+| Field    | Type                                | Description                                   | Validation             |
+| -------- | ----------------------------------- | --------------------------------------------- | ---------------------- |
+| `value`  | `UserLocation \| null`              | Selected location or null                     | -                      |
+| `label`  | `string`                            | Display label ("Current Location" or address) | Non-empty if value set |
+| `source` | `'geolocation' \| 'manual' \| null` | How the value was set                         | Enum                   |
 
 ### GeolocationState (Pinia Store State)
 
 Complete state managed by the geolocation store.
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `status` | `GeolocationStatus` | Current status of geolocation request |
-| `position` | `UserLocation \| null` | Last known position |
-| `error` | `GeolocationError \| null` | Error details if failed |
-| `permission` | `PermissionState` | Browser permission state |
+| Field        | Type                       | Description                           |
+| ------------ | -------------------------- | ------------------------------------- |
+| `status`     | `GeolocationStatus`        | Current status of geolocation request |
+| `position`   | `UserLocation \| null`     | Last known position                   |
+| `error`      | `GeolocationError \| null` | Error details if failed               |
+| `permission` | `PermissionState`          | Browser permission state              |
 
 ### Enums
 
 ```typescript
 enum GeolocationStatus {
-  IDLE = 'idle',           // Initial state
-  LOADING = 'loading',     // Request in progress
-  SUCCESS = 'success',     // Position obtained
-  ERROR = 'error',         // Technical error
-  DENIED = 'denied',       // Permission denied
-  TIMEOUT = 'timeout'      // Request timed out
+  IDLE = 'idle', // Initial state
+  LOADING = 'loading', // Request in progress
+  SUCCESS = 'success', // Position obtained
+  ERROR = 'error', // Technical error
+  DENIED = 'denied', // Permission denied
+  TIMEOUT = 'timeout', // Request timed out
 }
 
 enum PermissionState {
-  PROMPT = 'prompt',       // Not yet requested
-  GRANTED = 'granted',     // Permission granted
-  DENIED = 'denied'        // Permission denied
+  PROMPT = 'prompt', // Not yet requested
+  GRANTED = 'granted', // Permission granted
+  DENIED = 'denied', // Permission denied
 }
 ```
 
@@ -109,12 +109,12 @@ enum PermissionState {
 
 ```typescript
 interface SessionStoredLocation {
-  v: 1;                          // Schema version
-  lat: number;
-  lng: number;
-  accuracy: number;
-  status: 'granted' | 'denied';
-  savedAt: number;               // Unix timestamp
+  v: 1 // Schema version
+  lat: number
+  lng: number
+  accuracy: number
+  status: 'granted' | 'denied'
+  savedAt: number // Unix timestamp
 }
 
 // Key: 'ev-overlay:location'
@@ -142,11 +142,11 @@ interface SessionStoredLocation {
 
 ## Default Values
 
-| Entity | Field | Default Value |
-|--------|-------|---------------|
-| MapViewState | `center` | `[13.7563, 100.5018]` (Bangkok) |
-| MapViewState | `zoom` | `6` |
-| MapViewState | `isDefault` | `true` |
-| MapViewState | `hasUserInteracted` | `false` |
-| GeolocationState | `status` | `IDLE` |
-| OriginInput | `source` | `null` |
+| Entity           | Field               | Default Value                   |
+| ---------------- | ------------------- | ------------------------------- |
+| MapViewState     | `center`            | `[13.7563, 100.5018]` (Bangkok) |
+| MapViewState     | `zoom`              | `6`                             |
+| MapViewState     | `isDefault`         | `true`                          |
+| MapViewState     | `hasUserInteracted` | `false`                         |
+| GeolocationState | `status`            | `IDLE`                          |
+| OriginInput      | `source`            | `null`                          |
