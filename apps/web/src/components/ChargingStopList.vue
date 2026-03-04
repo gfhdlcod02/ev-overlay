@@ -15,9 +15,7 @@
         </div>
 
         <div class="flex-1 min-w-0">
-          <p class="text-sm font-medium text-gray-900">
-            Stop {{ stop.sequence }}
-          </p>
+          <p class="text-sm font-medium text-gray-900">Stop {{ stop.sequence }}</p>
           <p class="text-xs text-gray-500">
             {{ stop.distanceFromStartKm.toFixed(1) }} km from start
           </p>
@@ -25,9 +23,7 @@
             <span class="text-orange-600">
               Arrival: {{ stop.arrivalChargePercent.toFixed(1) }}%
             </span>
-            <span class="text-green-600">
-              Charge to: {{ stop.chargeToPercent }}%
-            </span>
+            <span class="text-green-600"> Charge to: {{ stop.chargeToPercent }}% </span>
           </div>
         </div>
       </div>

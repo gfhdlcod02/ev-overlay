@@ -37,7 +37,7 @@ const mockShortRouteResponse = {
 test.describe('Full Trip Planning Flow', () => {
   test.beforeEach(async ({ page }) => {
     // Mock API calls
-    await page.route('**/api/route**', async (route) => {
+    await page.route('**/api/route**', async route => {
       const url = route.request().url()
       // Return short route for San Jose destination
       if (url.includes('San+Jose') || url.includes('37.3382')) {
@@ -56,31 +56,39 @@ test.describe('Full Trip Planning Flow', () => {
     })
 
     // Mock geocoding API
-    await page.route('**://nominatim.openstreetmap.org/**', async (route) => {
+    await page.route('**://nominatim.openstreetmap.org/**', async route => {
       const url = route.request().url()
       if (url.includes('San+Francisco')) {
         await route.fulfill({
           status: 200,
           contentType: 'application/json',
-          body: JSON.stringify([{ lat: '37.7749', lon: '-122.4194', display_name: 'San Francisco, CA' }]),
+          body: JSON.stringify([
+            { lat: '37.7749', lon: '-122.4194', display_name: 'San Francisco, CA' },
+          ]),
         })
       } else if (url.includes('Los+Angeles')) {
         await route.fulfill({
           status: 200,
           contentType: 'application/json',
-          body: JSON.stringify([{ lat: '34.0522', lon: '-118.2437', display_name: 'Los Angeles, CA' }]),
+          body: JSON.stringify([
+            { lat: '34.0522', lon: '-118.2437', display_name: 'Los Angeles, CA' },
+          ]),
         })
       } else if (url.includes('San+Jose')) {
         await route.fulfill({
           status: 200,
           contentType: 'application/json',
-          body: JSON.stringify([{ lat: '37.3382', lon: '-121.8863', display_name: 'San Jose, CA' }]),
+          body: JSON.stringify([
+            { lat: '37.3382', lon: '-121.8863', display_name: 'San Jose, CA' },
+          ]),
         })
       } else {
         await route.fulfill({
           status: 200,
           contentType: 'application/json',
-          body: JSON.stringify([{ lat: '37.7749', lon: '-122.4194', display_name: 'Mock Location' }]),
+          body: JSON.stringify([
+            { lat: '37.7749', lon: '-122.4194', display_name: 'Mock Location' },
+          ]),
         })
       }
     })
@@ -134,7 +142,7 @@ test.describe('Full Trip Planning Flow', () => {
 
   test('should show no stops needed for trip within range', async ({ page }) => {
     // Mock a very short route that won't need charging
-    await page.route('**/api/route**', async (route) => {
+    await page.route('**/api/route**', async route => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',

@@ -7,8 +7,8 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src'),
-      '@ev/core': resolve(__dirname, '../../packages/core/src')
-    }
+      '@ev/core': resolve(__dirname, '../../packages/core/src'),
+    },
   },
   server: {
     port: 3000,
@@ -16,8 +16,8 @@ export default defineConfig({
       '/api': {
         target: 'http://127.0.0.1:8787',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, '/api')
-      }
-    }
-  }
+        rewrite: path => path.replace(/^\/api/, '/api'),
+      },
+    },
+  },
 })

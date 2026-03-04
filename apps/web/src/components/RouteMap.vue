@@ -25,10 +25,7 @@ onMounted(() => {
   if (!mapContainer.value) return
 
   // Initialize map with Thailand default view
-  map = L.map(mapContainer.value).setView(
-    THAILAND_DEFAULT.center,
-    THAILAND_DEFAULT.zoom
-  )
+  map = L.map(mapContainer.value).setView(THAILAND_DEFAULT.center, THAILAND_DEFAULT.zoom)
 
   // Add tile layer
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -64,7 +61,7 @@ onUnmounted(() => {
 // Watch for route result changes
 watch(
   () => props.result,
-  (newResult) => {
+  newResult => {
     if (newResult) {
       updateMap(newResult)
     } else {
@@ -76,7 +73,7 @@ watch(
 // Watch for location changes to auto-center map
 watch(
   () => locationStore.canAutoCenter,
-  (canAutoCenter) => {
+  canAutoCenter => {
     if (canAutoCenter && locationStore.position && map) {
       const { lat, lng } = locationStore.position
       map.flyTo([lat, lng], USER_LOCATION_ZOOM, {
@@ -90,7 +87,7 @@ watch(
 // Watch for position changes to update user marker
 watch(
   () => locationStore.position,
-  (position) => {
+  position => {
     updateUserMarker(position)
   }
 )
@@ -138,7 +135,7 @@ function updateMap(result: TripResult) {
   for (const segment of result.segments) {
     const segmentCoords = coordinates
       .slice(segment.startIdx, segment.endIdx + 1)
-      .map((c) => [c[1], c[0]] as [number, number]) // [lng, lat] -> [lat, lng]
+      .map(c => [c[1], c[0]] as [number, number]) // [lng, lat] -> [lat, lng]
 
     L.polyline(segmentCoords, {
       color: segment.color,
@@ -180,9 +177,7 @@ function updateMap(result: TripResult) {
 
   // Fit bounds to show entire route
   if (coordinates.length > 0) {
-    const bounds = L.latLngBounds(
-      coordinates.map((c) => [c[1], c[0]] as [number, number])
-    )
+    const bounds = L.latLngBounds(coordinates.map(c => [c[1], c[0]] as [number, number]))
     map.fitBounds(bounds, { padding: [50, 50] })
   }
 }

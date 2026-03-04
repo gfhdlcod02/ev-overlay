@@ -65,10 +65,7 @@ export function useTripInput() {
     })
   })
 
-  function updateInput<K extends keyof TripInput>(
-    field: K,
-    value: TripInput[K]
-  ): void {
+  function updateInput<K extends keyof TripInput>(field: K, value: TripInput[K]): void {
     state.input[field] = value
     // Clear error when input changes
     if (state.error) {

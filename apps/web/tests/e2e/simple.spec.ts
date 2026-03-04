@@ -21,7 +21,7 @@ const mockRouteResponse = {
 test.describe('Basic UI Tests', () => {
   test.beforeEach(async ({ page }) => {
     // Mock API calls
-    await page.route('**/api/route**', async (route) => {
+    await page.route('**/api/route**', async route => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
@@ -55,8 +55,8 @@ test.describe('Basic UI Tests', () => {
 
   test('should show loading state on submit', async ({ page }) => {
     // Add a delayed mock so loading state is visible
-    await page.route('**/api/route**', async (route) => {
-      await new Promise((resolve) => setTimeout(resolve, 500))
+    await page.route('**/api/route**', async route => {
+      await new Promise(resolve => setTimeout(resolve, 500))
       await route.fulfill({
         status: 200,
         contentType: 'application/json',

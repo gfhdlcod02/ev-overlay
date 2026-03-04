@@ -8,11 +8,7 @@
 
       <ErrorDisplay :error="error" />
 
-      <LoadingState
-        v-if="status === 'loading'"
-        :loading="true"
-        message="Planning your route..."
-      />
+      <LoadingState v-if="status === 'loading'" :loading="true" message="Planning your route..." />
 
       <template v-if="result && status === 'success'">
         <TripSummary :result="result" />
@@ -59,8 +55,15 @@ onMounted(() => {
 <style>
 /* Global styles */
 html {
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
-    'Helvetica Neue', Arial, sans-serif;
+  font-family:
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    Roboto,
+    'Helvetica Neue',
+    Arial,
+    sans-serif;
 }
 
 body {

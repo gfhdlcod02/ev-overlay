@@ -5,7 +5,7 @@ test.describe('API Configuration', () => {
     // Track network requests
     const apiRequests: string[] = []
 
-    page.on('request', (request) => {
+    page.on('request', request => {
       const url = request.url()
       if (url.includes('/route')) {
         apiRequests.push(url)
@@ -13,7 +13,7 @@ test.describe('API Configuration', () => {
     })
 
     // Mock the API response
-    await page.route('**/api/route**', async (route) => {
+    await page.route('**/api/route**', async route => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
@@ -51,14 +51,9 @@ test.describe('API Configuration', () => {
     // Should contain the workers.dev domain in production
     // or localhost in development
     const isValidUrl =
-      apiUrl.includes('workers.dev') ||
-      apiUrl.includes('localhost') ||
-      apiUrl.includes('127.0.0.1')
+      apiUrl.includes('workers.dev') || apiUrl.includes('localhost') || apiUrl.includes('127.0.0.1')
 
-    expect(
-      isValidUrl,
-      `API URL should point to valid endpoint, got: ${apiUrl}`
-    ).toBe(true)
+    expect(isValidUrl, `API URL should point to valid endpoint, got: ${apiUrl}`).toBe(true)
   })
 
   test('API URL should be configured in built application', async ({ page }) => {
@@ -72,7 +67,7 @@ test.describe('API Configuration', () => {
 
     // Check if the page loaded without errors
     const consoleErrors: string[] = []
-    page.on('console', (msg) => {
+    page.on('console', msg => {
       if (msg.type() === 'error') {
         consoleErrors.push(msg.text())
       }
