@@ -29,4 +29,20 @@ export interface TripPlanningState {
   error: RouteError | null
 }
 
+// Cache-related types for request deduplication and caching
+export interface CacheEntry<T> {
+  result: T
+  timestamp: number
+}
+
+export interface PendingRequest<T> {
+  promise: Promise<T>
+  controller: AbortController
+}
+
+export interface CacheConfig {
+  maxSize: number
+  ttlMs: number
+}
+
 export { type EVParameters, DrivingFactor, type Location, type TripResult }

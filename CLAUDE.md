@@ -3,8 +3,11 @@
 Auto-generated from all feature plans. Last updated: 2026-03-03
 
 ## Active Technologies
+
 - TypeScript 5.3 + Vue 3.4, Leaflet 1.9, Vite 5 (003-geolocation-map-defaults)
 - sessionStorage (browser session only) (003-geolocation-map-defaults)
+- TypeScript 5.3, Node 20+ + Vue 3.4, Vite 5, Leaflet 1.9 (existing stack) (004-simplify-search-form)
+- Client-side memory cache (Map/WeakMap), sessionStorage for location (004-simplify-search-form)
 
 - **Frontend**: Vue 3.4, Vite 5, Leaflet 1.9
 - **Backend**: Cloudflare Workers runtime
@@ -23,7 +26,8 @@ workers/api/       # Cloudflare Worker API
 specs/             # Feature documentation
 ├── 001-smart-ev-overlay/
 ├── 002-rate-limiting/
-└── 003-geolocation-map-defaults/  # Current feature
+├── 003-geolocation-map-defaults/
+└── 004-simplify-search-form/      # Current feature
 ```
 
 ## Commands
@@ -59,19 +63,17 @@ pnpm prepare          # Setup Husky hooks
 - ESLint + Prettier for code quality
 
 ## Recent Changes
+
+- 004-simplify-search-form: Added TypeScript 5.3, Node 20+ + Vue 3.4, Vite 5, Leaflet 1.9 (existing stack)
 - **2026-03-03**: Added automated version management - sync to all packages, inject to builds, API endpoint
 - **2026-03-03**: Implemented 003-geolocation-map-defaults - Geolocation-based map defaults with Thailand fallback
-- **2026-03-03**: Added Pinia for state management, geolocation composable, sessionStorage persistence
-- **2026-03-03**: Added E2E tests for geolocation flows (grant/deny/timeout scenarios)
-- **2026-03-03**: Added unit tests for coordinate validation and location store
-- **2026-03-03**: Added Husky pre-commit hook to enforce PR workflow
-- **002-rate-limiting**: Added API rate limiting (60 req/min per IP)
 
 <!-- MANUAL ADDITIONS START -->
 
 ## Geolocation Map Defaults (003-geolocation-map-defaults)
 
 ### Features
+
 - **Thailand Default View**: Map shows Thailand centered at Bangkok `[13.7563, 100.5018]` on initial load
 - **Auto-populate Origin**: Origin field auto-fills with coordinates when geolocation permission granted
 - **Map Auto-recenter**: Smooth flyTo animation (1.5s) to user location when available
@@ -80,6 +82,7 @@ pnpm prepare          # Setup Husky hooks
 - **Session Persistence**: Location data persisted in sessionStorage (cleared on tab close)
 
 ### Key Files
+
 - `apps/web/src/types/location.ts` - Geolocation type definitions
 - `apps/web/src/stores/location.ts` - Pinia store for location state
 - `apps/web/src/composables/useGeolocation.ts` - Geolocation API composable
@@ -87,6 +90,7 @@ pnpm prepare          # Setup Husky hooks
 - `apps/web/tests/e2e/geolocation.spec.ts` - E2E tests for geolocation flows
 
 ### Privacy & Security
+
 - Location data **never leaves the client**
 - Stored only in sessionStorage (not localStorage)
 - No location data sent to server
@@ -123,12 +127,12 @@ git push --tags
 
 ### Automated Process
 
-| Step | Script | Description |
-|------|--------|-------------|
-| Pre-build | `pnpm version:sync` | Sync version from root to all package.json files |
-| Pre-deploy (Worker) | `node scripts/inject-version-worker.js` | Inject version into Worker source |
-| Build | `pnpm -r build` | Build all packages |
-| Post-build (Web) | `pnpm version:inject` | Inject version into web dist files |
+| Step                | Script                                  | Description                                      |
+| ------------------- | --------------------------------------- | ------------------------------------------------ |
+| Pre-build           | `pnpm version:sync`                     | Sync version from root to all package.json files |
+| Pre-deploy (Worker) | `node scripts/inject-version-worker.js` | Inject version into Worker source                |
+| Build               | `pnpm -r build`                         | Build all packages                               |
+| Post-build (Web)    | `pnpm version:inject`                   | Inject version into web dist files               |
 
 ### Version Display
 
@@ -143,5 +147,25 @@ git push --tags
 - `scripts/inject-version.js` - Injects version into web dist files (post-build)
 - `apps/web/src/App.vue` - Displays version in UI
 - `workers/api/src/index.ts` - API version endpoint
+
+## Simplify Search Form (004-simplify-search-form)
+
+### Features
+- **Plain Text Inputs**: Origin and Destination are plain text inputs with no autocomplete/typeahead
+- **Request Deduplication**: Identical in-flight requests share the same promise
+- **LRU Cache**: 60-second TTL, max 50 entries for search results
+- **Request Cancellation**: AbortController cancels stale requests when new searches start
+- **Preserved UX**: Existing validation, geolocation auto-populate, and error handling unchanged
+
+### Key Files
+- `apps/web/src/services/request-cache.ts` - LRU cache with TTL implementation
+- `apps/web/src/services/api-client.ts` - Deduplication and cancellation logic
+- `apps/web/src/components/TripInputForm.vue` - Plain text inputs with autocomplete="off"
+- `apps/web/src/composables/useRoutePlanning.ts` - AbortError handling
+
+### Technical Decisions
+- Native Map for pending request deduplication (no new dependencies)
+- AbortController for cancellation (native API)
+- Case-insensitive, trimmed, collapsed whitespace for cache key normalization
 
 <!-- MANUAL ADDITIONS END -->

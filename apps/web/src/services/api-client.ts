@@ -1,6 +1,21 @@
 import type { Location, Route } from '@ev/core'
+import { SearchCache, normalizeSearchKey } from './request-cache'
+import type { PendingRequest } from '../types'
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || '/api'
+
+// Cache configuration: 60 seconds TTL, max 50 entries
+const CACHE_TTL_MS = 60000
+const CACHE_MAX_SIZE = 50
+
+// Global cache instance
+const routeCache = new SearchCache<Route>({
+  ttlMs: CACHE_TTL_MS,
+  maxSize: CACHE_MAX_SIZE,
+})
+
+// Global pending requests map for deduplication
+const pendingRequests = new Map<string, PendingRequest<Route>>()
 
 export interface RouteRequest {
   origin: string
@@ -51,9 +66,75 @@ async function parseErrorResponse(response: Response): Promise<string> {
 }
 
 /**
- * Fetch route from API with geocoding
+ * Check if error is an AbortError (user cancelled)
  */
-export async function fetchRoute(request: RouteRequest): Promise<Route> {
+function isAbortError(error: unknown): boolean {
+  return error instanceof Error && error.name === 'AbortError'
+}
+
+/**
+ * Fetch route from API with caching, deduplication, and cancellation
+ */
+export async function fetchRoute(
+  request: RouteRequest,
+  options: { signal?: AbortSignal } = {}
+): Promise<Route> {
+  const cacheKey = normalizeSearchKey(request.origin, request.destination)
+
+  // Check cache first
+  const cached = routeCache.get(cacheKey)
+  if (cached) {
+    return cached
+  }
+
+  // Check for pending request (deduplication)
+  const pending = pendingRequests.get(cacheKey)
+  if (pending) {
+    // Return the existing promise
+    try {
+      return await pending.promise
+    } catch (error) {
+      // If the pending request was aborted, we should try again
+      if (isAbortError(error)) {
+        // Continue to make a new request
+      } else {
+        throw error
+      }
+    }
+  }
+
+  // Create new request
+  const controller = new AbortController()
+
+  // Link external signal if provided
+  if (options.signal) {
+    options.signal.addEventListener('abort', () => {
+      controller.abort()
+    })
+  }
+
+  const promise = fetchRouteInternal(request, controller.signal, cacheKey)
+
+  // Register as pending
+  pendingRequests.set(cacheKey, { promise, controller })
+
+  try {
+    const result = await promise
+    return result
+  } finally {
+    // Clean up pending request
+    pendingRequests.delete(cacheKey)
+  }
+}
+
+/**
+ * Internal fetch implementation
+ */
+async function fetchRouteInternal(
+  request: RouteRequest,
+  signal: AbortSignal,
+  cacheKey: string
+): Promise<Route> {
   let response: Response
 
   try {
@@ -67,8 +148,13 @@ export async function fetchRoute(request: RouteRequest): Promise<Route> {
       headers: {
         Accept: 'application/json',
       },
+      signal,
     })
   } catch (e) {
+    // Don't throw for abort errors - let them propagate naturally
+    if (isAbortError(e)) {
+      throw e
+    }
     // Network error - API unreachable
     throw new Error(
       'Service Error: Cannot connect to API server. Please ensure the API is running (pnpm dev:all).'
@@ -88,7 +174,47 @@ export async function fetchRoute(request: RouteRequest): Promise<Route> {
   }
 
   const data: RouteResponse = await response.json()
+
+  // Cache the result
+  routeCache.set(cacheKey, data.route)
+
   return data.route
+}
+
+/**
+ * Cancel any pending route request for the given origin/destination
+ */
+export function cancelRouteRequest(origin: string, destination: string): void {
+  const cacheKey = normalizeSearchKey(origin, destination)
+  const pending = pendingRequests.get(cacheKey)
+  if (pending) {
+    pending.controller.abort()
+    pendingRequests.delete(cacheKey)
+  }
+}
+
+/**
+ * Cancel all pending route requests
+ */
+export function cancelAllRouteRequests(): void {
+  for (const [, pending] of pendingRequests) {
+    pending.controller.abort()
+  }
+  pendingRequests.clear()
+}
+
+/**
+ * Clear the route cache
+ */
+export function clearRouteCache(): void {
+  routeCache.clear()
+}
+
+/**
+ * Get cache statistics (for debugging/monitoring)
+ */
+export function getRouteCacheStats(): { size: number; maxSize: number; ttlMs: number } {
+  return routeCache.getStats()
 }
 
 /**

@@ -5,9 +5,7 @@
     <form class="space-y-4" @submit.prevent="handleSubmit">
       <!-- Origin -->
       <div>
-        <label for="origin" class="block text-sm font-medium text-gray-700">
-          Origin
-        </label>
+        <label for="origin" class="block text-sm font-medium text-gray-700"> Origin </label>
         <div class="relative mt-1">
           <input
             id="origin"
@@ -17,6 +15,9 @@
             class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 pr-10"
             :aria-invalid="input.origin === ''"
             :disabled="isLocating"
+            autocomplete="off"
+            autocorrect="off"
+            spellcheck="false"
           />
           <!-- Loading spinner -->
           <div
@@ -82,6 +83,9 @@
           placeholder="Enter destination"
           class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
           :aria-invalid="input.destination === ''"
+          autocomplete="off"
+          autocorrect="off"
+          spellcheck="false"
         />
       </div>
 
@@ -135,14 +139,18 @@ import { useLocationStore } from '../stores/location'
 import { formatCoordinatePair } from '../utils/coordinates'
 import EVParameterInputs from './EVParameterInputs.vue'
 
-const { input, canSubmit, validationErrors, status, updateInput, resetInput, setLoading } = useTripInput()
+const { input, canSubmit, validationErrors, status, updateInput, resetInput, setLoading } =
+  useTripInput()
 const { planTrip, resetInput: resetRoutePlanning } = useRoutePlanning()
 const locationStore = useLocationStore()
 
 // Computed properties for geolocation UI
 const isLocating = computed(() => locationStore.status === 'loading')
 const isCurrentLocation = computed(() => {
-  return locationStore.isLocationAvailable && input.value.origin === formatLocationForInput(locationStore.position)
+  return (
+    locationStore.isLocationAvailable &&
+    input.value.origin === formatLocationForInput(locationStore.position)
+  )
 })
 const locationError = computed(() => {
   if (locationStore.status === 'denied') {
@@ -178,12 +186,8 @@ function formatLocationForInput(position: { lat: number; lng: number } | null): 
  */
 watch(
   () => locationStore.position,
-  (newPosition) => {
-    if (
-      newPosition &&
-      locationStore.isAccurate &&
-      input.value.origin === ''
-    ) {
+  newPosition => {
+    if (newPosition && locationStore.isAccurate && input.value.origin === '') {
       const locationString = formatLocationForInput(newPosition)
       updateInput('origin', locationString)
     }
