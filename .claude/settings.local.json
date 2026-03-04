@@ -1,7 +1,11 @@
 {
   "permissions": {
     "allow": [
-      "Bash(.specify/scripts/powershell/check-prerequisites.ps1:*)"
+      "Bash(.specify/scripts/powershell/check-prerequisites.ps1:*)",
+      "Bash(.specify/scripts/powershell/setup-plan.ps1:*)",
+      "Bash(pnpm format:*)",
+      "Bash(pnpm test:*)",
+      "Bash(pnpm:*)"
     ]
   }
 }
