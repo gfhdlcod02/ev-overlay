@@ -32,7 +32,9 @@ test.describe('User Story 1: Default Map View on Load', () => {
 })
 
 test.describe('User Story 2: Origin Auto-populate', () => {
-  test('should auto-populate origin when permission granted and accuracy sufficient', async ({ browser }) => {
+  test('should auto-populate origin when permission granted and accuracy sufficient', async ({
+    browser,
+  }) => {
     // Create context with geolocation granted
     const context = await browser.newContext({
       geolocation: {
@@ -395,7 +397,9 @@ test.describe('User Story 5: Loading State and Error Feedback', () => {
 })
 
 test.describe('Integration: End-to-End Geolocation Flow', () => {
-  test('complete flow: default view → geolocation success → origin populated', async ({ browser }) => {
+  test('complete flow: default view → geolocation success → origin populated', async ({
+    browser,
+  }) => {
     // Grant geolocation
     const context = await browser.newContext({
       geolocation: {

@@ -135,7 +135,14 @@ describe('getSegmentStats', () => {
   it('should calculate stats for all safe segments', () => {
     const segments = [
       { startKm: 0, endKm: 50, status: 'safe' as const, startIdx: 0, endIdx: 1, color: '#22c55e' },
-      { startKm: 50, endKm: 100, status: 'safe' as const, startIdx: 1, endIdx: 2, color: '#22c55e' },
+      {
+        startKm: 50,
+        endKm: 100,
+        status: 'safe' as const,
+        startIdx: 1,
+        endIdx: 2,
+        color: '#22c55e',
+      },
     ]
 
     const stats = getSegmentStats(segments)
@@ -149,7 +156,14 @@ describe('getSegmentStats', () => {
   it('should calculate stats for mixed segments', () => {
     const segments = [
       { startKm: 0, endKm: 60, status: 'safe' as const, startIdx: 0, endIdx: 1, color: '#22c55e' },
-      { startKm: 60, endKm: 100, status: 'risky' as const, startIdx: 1, endIdx: 2, color: '#ef4444' },
+      {
+        startKm: 60,
+        endKm: 100,
+        status: 'risky' as const,
+        startIdx: 1,
+        endIdx: 2,
+        color: '#ef4444',
+      },
     ]
 
     const stats = getSegmentStats(segments)

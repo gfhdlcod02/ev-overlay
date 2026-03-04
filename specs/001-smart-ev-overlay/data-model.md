@@ -28,27 +28,28 @@
 
 Raw user input before validation.
 
-| Field | Type | Description |
-|-------|------|-------------|
-| origin | string | Free-text origin (address or place name) |
-| destination | string | Free-text destination (address or place name) |
-| socNow | number | Current state of charge (0-100) |
-| range100Km | number | Vehicle range at 100% charge (km) |
-| reserveArrival | number | Minimum charge on arrival (0-50, default 20) |
-| drivingFactor | DrivingFactor | Eco=1.05, Normal=1.15, Highway=1.25 |
+| Field          | Type          | Description                                   |
+| -------------- | ------------- | --------------------------------------------- |
+| origin         | string        | Free-text origin (address or place name)      |
+| destination    | string        | Free-text destination (address or place name) |
+| socNow         | number        | Current state of charge (0-100)               |
+| range100Km     | number        | Vehicle range at 100% charge (km)             |
+| reserveArrival | number        | Minimum charge on arrival (0-50, default 20)  |
+| drivingFactor  | DrivingFactor | Eco=1.05, Normal=1.15, Highway=1.25           |
 
 ### EVParameters
 
 Validated and normalized trip settings.
 
-| Field | Type | Constraints |
-|-------|------|-------------|
-| socNow | number | 0 ≤ socNow ≤ 100 |
-| range100Km | number | range100Km > 0 |
+| Field          | Type   | Constraints             |
+| -------------- | ------ | ----------------------- |
+| socNow         | number | 0 ≤ socNow ≤ 100        |
+| range100Km     | number | range100Km > 0          |
 | reserveArrival | number | 0 ≤ reserveArrival ≤ 50 |
-| factor | number | factor ≥ 1.0 |
+| factor         | number | factor ≥ 1.0            |
 
 **Validation Rules**:
+
 - socNow > reserveArrival (otherwise error: insufficient charge)
 - All numeric fields must be finite numbers
 
@@ -56,13 +57,14 @@ Validated and normalized trip settings.
 
 Geographic coordinate.
 
-| Field | Type | Description |
-|-------|------|-------------|
-| lat | number | Latitude (-90 to 90) |
-| lng | number | Longitude (-180 to 180) |
+| Field   | Type    | Description                       |
+| ------- | ------- | --------------------------------- |
+| lat     | number  | Latitude (-90 to 90)              |
+| lng     | number  | Longitude (-180 to 180)           |
 | address | string? | Human-readable address (optional) |
 
 **Coordinate Format**:
+
 - Free-text: Full address strings (e.g., "1600 Amphitheatre Parkway, Mountain View, CA")
 - Lat/Lng: Decimal degrees with comma separator, latitude range [-90, 90], longitude range [-180, 180]
 - Examples: "37.7749,-122.4194", "40.7128, -74.0060" (whitespace optional)
@@ -71,15 +73,16 @@ Geographic coordinate.
 
 Provider response with normalized geometry.
 
-| Field | Type | Description |
-|-------|------|-------------|
-| origin | Location | Start point (geocoded) |
-| destination | Location | End point (geocoded) |
-| distanceKm | number | Total route distance in kilometers |
-| durationMin | number | Estimated duration in minutes |
-| geometry | LineString | GeoJSON LineString of route path |
+| Field       | Type       | Description                        |
+| ----------- | ---------- | ---------------------------------- |
+| origin      | Location   | Start point (geocoded)             |
+| destination | Location   | End point (geocoded)               |
+| distanceKm  | number     | Total route distance in kilometers |
+| durationMin | number     | Estimated duration in minutes      |
+| geometry    | LineString | GeoJSON LineString of route path   |
 
 **Geometry Format** (GeoJSON):
+
 ```json
 {
   "type": "LineString",
@@ -91,27 +94,28 @@ Provider response with normalized geometry.
 
 Calculated safe driving distance.
 
-| Field | Type | Description |
-|-------|------|-------------|
-| safeRangeKm | number | Maximum safe distance: `((socNow - reserve)/100) * (range100 / factor)` |
-| effectiveRangeKm | number | Range adjusted for driving factor: `range100 / factor` |
-| bufferKm | number | Safety buffer applied (default 10) |
-| thresholdKm | number | Stop placement threshold: `safeRangeKm - bufferKm` |
+| Field            | Type   | Description                                                             |
+| ---------------- | ------ | ----------------------------------------------------------------------- |
+| safeRangeKm      | number | Maximum safe distance: `((socNow - reserve)/100) * (range100 / factor)` |
+| effectiveRangeKm | number | Range adjusted for driving factor: `range100 / factor`                  |
+| bufferKm         | number | Safety buffer applied (default 10)                                      |
+| thresholdKm      | number | Stop placement threshold: `safeRangeKm - bufferKm`                      |
 
 ### ChargingStop
 
 Suggested virtual charging location.
 
-| Field | Type | Description |
-|-------|------|-------------|
-| sequence | number | Stop order (1-based) |
-| position | Location | Coordinate along route |
-| distanceFromStartKm | number | Cumulative distance to this stop |
-| arrivalChargePercent | number | Estimated charge on arrival |
-| chargeToPercent | number | Assumed charge level after stop (default 80) |
-| distanceToNextKm | number | Distance to next stop or destination |
+| Field                | Type     | Description                                  |
+| -------------------- | -------- | -------------------------------------------- |
+| sequence             | number   | Stop order (1-based)                         |
+| position             | Location | Coordinate along route                       |
+| distanceFromStartKm  | number   | Cumulative distance to this stop             |
+| arrivalChargePercent | number   | Estimated charge on arrival                  |
+| chargeToPercent      | number   | Assumed charge level after stop (default 80) |
+| distanceToNextKm     | number   | Distance to next stop or destination         |
 
 **Stop Placement Algorithm**:
+
 1. Accumulate route distance from origin
 2. When accumulated >= thresholdKm, place stop
 3. After stop, reset accumulated distance to 0
@@ -123,16 +127,17 @@ Suggested virtual charging location.
 
 Portion of route with safety status for visualization.
 
-| Field | Type | Description |
-|-------|------|-------------|
-| startIdx | number | Index into route geometry coordinates |
-| endIdx | number | Index into route geometry coordinates |
-| startKm | number | Cumulative distance at segment start |
-| endKm | number | Cumulative distance at segment end |
-| status | 'safe' \| 'risky' | Visual safety classification |
-| color | string | Hex color code (#22c55e safe, #ef4444 risky) |
+| Field    | Type              | Description                                  |
+| -------- | ----------------- | -------------------------------------------- |
+| startIdx | number            | Index into route geometry coordinates        |
+| endIdx   | number            | Index into route geometry coordinates        |
+| startKm  | number            | Cumulative distance at segment start         |
+| endKm    | number            | Cumulative distance at segment end           |
+| status   | 'safe' \| 'risky' | Visual safety classification                 |
+| color    | string            | Hex color code (#22c55e safe, #ef4444 risky) |
 
 **Segment Classification**:
+
 - Safe: `endKm <= currentSafeRangeKm` for current leg
 - Risky: `endKm > currentSafeRangeKm`
 
@@ -140,17 +145,17 @@ Portion of route with safety status for visualization.
 
 Complete planning result.
 
-| Field | Type | Description |
-|-------|------|-------------|
-| input | EVParameters | Original validated input |
-| route | Route | Full route with geometry |
-| safeRange | SafeRange | Calculated safe range |
-| stops | ChargingStop[] | Suggested charging stops (0-5) |
-| segments | RouteSegment[] | Visual segments with safety status |
-| googleMapsUrl | string | Generated navigation URL |
-| totalDistanceKm | number | Total trip distance |
-| totalDurationMin | number | Total estimated duration |
-| reachable | boolean | True if stops allow reaching destination above reserve |
+| Field            | Type           | Description                                            |
+| ---------------- | -------------- | ------------------------------------------------------ |
+| input            | EVParameters   | Original validated input                               |
+| route            | Route          | Full route with geometry                               |
+| safeRange        | SafeRange      | Calculated safe range                                  |
+| stops            | ChargingStop[] | Suggested charging stops (0-5)                         |
+| segments         | RouteSegment[] | Visual segments with safety status                     |
+| googleMapsUrl    | string         | Generated navigation URL                               |
+| totalDistanceKm  | number         | Total trip distance                                    |
+| totalDurationMin | number         | Total estimated duration                               |
+| reachable        | boolean        | True if stops allow reaching destination above reserve |
 
 ## Enums
 
@@ -158,9 +163,9 @@ Complete planning result.
 
 ```typescript
 enum DrivingFactor {
-  ECO = 1.05,      // City driving, efficient speed
-  NORMAL = 1.15,   // Mixed driving
-  HIGHWAY = 1.25   // High speed, HVAC usage
+  ECO = 1.05, // City driving, efficient speed
+  NORMAL = 1.15, // Mixed driving
+  HIGHWAY = 1.25, // High speed, HVAC usage
 }
 ```
 
@@ -230,12 +235,12 @@ type OSRMResponse = {
 
 ### Input Validation
 
-| Field | Min | Max | Required |
-|-------|-----|-----|----------|
-| socNow | 0 | 100 | Yes |
-| range100Km | 0.1 | 2000 | Yes |
-| reserveArrival | 0 | 50 | Yes |
-| factor | 1.0 | 3.0 | Yes |
+| Field          | Min | Max  | Required |
+| -------------- | --- | ---- | -------- |
+| socNow         | 0   | 100  | Yes      |
+| range100Km     | 0.1 | 2000 | Yes      |
+| reserveArrival | 0   | 50   | Yes      |
+| factor         | 1.0 | 3.0  | Yes      |
 
 ### Business Rules
 

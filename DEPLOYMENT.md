@@ -7,6 +7,7 @@
 ```
 
 This script will:
+
 1. ✅ Check prerequisites
 2. ✅ Install dependencies
 3. ✅ Build all packages
@@ -74,11 +75,11 @@ The deployment process automatically handles versioning across all packages.
 
 ### How It Works
 
-| Step | Command | Description |
-|------|---------|-------------|
-| 1 | `pnpm version:sync` | Syncs root `package.json` version to all workspace packages |
-| 2 | `pnpm build` | Builds all packages with synchronized versions |
-| 3 | `pnpm version:inject` | Injects version into built files (Web + Worker) |
+| Step | Command               | Description                                                 |
+| ---- | --------------------- | ----------------------------------------------------------- |
+| 1    | `pnpm version:sync`   | Syncs root `package.json` version to all workspace packages |
+| 2    | `pnpm build`          | Builds all packages with synchronized versions              |
+| 3    | `pnpm version:inject` | Injects version into built files (Web + Worker)             |
 
 ### Version Display
 
@@ -91,6 +92,7 @@ The deployment process automatically handles versioning across all packages.
 ## 🔧 GitHub Actions (Auto Deploy on Tags)
 
 The workflow is configured to:
+
 - **Run tests** on every push to `main` and pull requests
 - **Deploy** only when a version tag is created (e.g., `v1.0.0`, `v2.1.3`)
 
@@ -135,32 +137,34 @@ git push --tags
 ```
 
 GitHub Actions will automatically:
-   - Run tests and linting
-   - Sync version to all packages (`pnpm version:sync`)
-   - Inject version into Worker source (`scripts/inject-version-worker.js`)
-   - Deploy Worker to Cloudflare
-   - Build web app
-   - Inject version into web artifacts (`pnpm version:inject`)
-   - Deploy Web App to Pages
+
+- Run tests and linting
+- Sync version to all packages (`pnpm version:sync`)
+- Inject version into Worker source (`scripts/inject-version-worker.js`)
+- Deploy Worker to Cloudflare
+- Build web app
+- Inject version into web artifacts (`pnpm version:inject`)
+- Deploy Web App to Pages
 
 ### GitHub Secrets Setup
 
 Go to Settings → Secrets and variables:
 
-| Secret | Value |
-|--------|-------|
-| `CLOUDFLARE_API_TOKEN` | Get from [dash.cloudflare.com/profile/api-tokens](https://dash.cloudflare.com/profile/api-tokens) |
-| `CLOUDFLARE_ACCOUNT_ID` | Get from Workers dashboard |
+| Secret                  | Value                                                                                             |
+| ----------------------- | ------------------------------------------------------------------------------------------------- |
+| `CLOUDFLARE_API_TOKEN`  | Get from [dash.cloudflare.com/profile/api-tokens](https://dash.cloudflare.com/profile/api-tokens) |
+| `CLOUDFLARE_ACCOUNT_ID` | Get from Workers dashboard                                                                        |
 
 ### GitHub Variables
 
-| Variable | Value |
-|----------|-------|
+| Variable  | Value                                 |
+| --------- | ------------------------------------- |
 | `API_URL` | `https://your-worker.workers.dev/api` |
 
 ### Tag Format
 
 Use semantic versioning:
+
 - `v1.0.0` - Major release
 - `v1.1.0` - Minor release
 - `v1.1.1` - Patch release
@@ -261,6 +265,7 @@ Check that `VITE_API_URL` matches your deployed Worker URL exactly.
 ### "Blank page"
 
 Check browser console for errors. Usually:
+
 - Wrong API_URL
 - Build failed
 
@@ -282,5 +287,6 @@ wrangler kv:key list --namespace-id=YOUR_ID
 ## 🎉 Done!
 
 Your app is live! Share your URL:
+
 - Web: `https://ev-overlay.pages.dev`
 - API: `https://ev-api.YOUR_NAME.workers.dev`

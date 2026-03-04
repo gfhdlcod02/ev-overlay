@@ -3,7 +3,7 @@ import { test, expect } from '@playwright/test'
 test.describe('API Error Handling', () => {
   test('should show error when API returns HTML error page instead of JSON', async ({ page }) => {
     // Route API calls to return HTML (simulating 404 or 500 error page)
-    await page.route('**/api/route**', async (route) => {
+    await page.route('**/api/route**', async route => {
       await route.fulfill({
         status: 404,
         contentType: 'text/html',
@@ -37,7 +37,7 @@ test.describe('API Error Handling', () => {
 
   test('should show error when API is unreachable (connection refused)', async ({ page }) => {
     // Block API calls to simulate unreachable service
-    await page.route('**/api/route**', async (route) => {
+    await page.route('**/api/route**', async route => {
       await route.abort('failed')
     })
 
@@ -60,14 +60,14 @@ test.describe('API Error Handling', () => {
 
   test('should diagnose API health before planning', async ({ page }) => {
     // First test with API available
-    await page.route('**/api/route**', async (route) => {
+    await page.route('**/api/route**', async route => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
         body: JSON.stringify({
           route: {
             origin: { lat: 13.7563, lng: 100.5018, address: 'Bangkok' },
-            destination: { lat: 13.8500, lng: 100.55, address: 'Chiang Mai' },
+            destination: { lat: 13.85, lng: 100.55, address: 'Chiang Mai' },
             distanceKm: 700,
             durationMin: 480,
             geometry: {
@@ -100,7 +100,7 @@ test.describe('API Error Handling', () => {
   })
 
   test('should handle API returning 500 Internal Server Error', async ({ page }) => {
-    await page.route('**/api/route**', async (route) => {
+    await page.route('**/api/route**', async route => {
       await route.fulfill({
         status: 500,
         contentType: 'application/json',
@@ -128,7 +128,7 @@ test.describe('API Error Handling', () => {
   })
 
   test('should handle rate limiting (429)', async ({ page }) => {
-    await page.route('**/api/route**', async (route) => {
+    await page.route('**/api/route**', async route => {
       await route.fulfill({
         status: 429,
         contentType: 'application/json',

@@ -23,21 +23,21 @@ Implement automatic geolocation-based defaults for the route/map experience. On 
 
 ## Constitution Check
 
-*GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
+_GATE: Must pass before Phase 0 research. Re-check after Phase 1 design._
 
-| Principle | Status | Notes |
-|-----------|--------|-------|
-| I. Cloudflare-First | ✓ PASS | No infrastructure changes needed; pure client-side feature |
-| II. Conservative Safety-First | ✓ PASS | Location data handled client-side only; privacy-respecting defaults |
-| III. Deterministic Core | ✓ PASS | Geolocation logic is deterministic; pure client-side state management |
-| IV. Security & Privacy | ✓ PASS | Location data never sent to server; session-only storage; no PII logging |
-| V. Separation of Concerns | ✓ PASS | Feature stays in apps/web; no core or worker changes needed |
-| VI. Reliability & Performance | ✓ PASS | 5s timeout + fallback defined; loading states specified |
-| VII. Definition of Done | ⚠ CHECK | Requires E2E tests for geolocation flows |
-| VIII. Phase-Gated | ✓ PASS | MVP-compatible feature |
-| IX. Playwright Testing | ⚠ CHECK | E2E tests required for permission grant/deny flows |
-| X. Code Quality | ✓ PASS | TypeScript strict mode; follows existing patterns |
-| XI. Code Security | ✓ PASS | No injection vectors; no secrets involved |
+| Principle                     | Status  | Notes                                                                    |
+| ----------------------------- | ------- | ------------------------------------------------------------------------ |
+| I. Cloudflare-First           | ✓ PASS  | No infrastructure changes needed; pure client-side feature               |
+| II. Conservative Safety-First | ✓ PASS  | Location data handled client-side only; privacy-respecting defaults      |
+| III. Deterministic Core       | ✓ PASS  | Geolocation logic is deterministic; pure client-side state management    |
+| IV. Security & Privacy        | ✓ PASS  | Location data never sent to server; session-only storage; no PII logging |
+| V. Separation of Concerns     | ✓ PASS  | Feature stays in apps/web; no core or worker changes needed              |
+| VI. Reliability & Performance | ✓ PASS  | 5s timeout + fallback defined; loading states specified                  |
+| VII. Definition of Done       | ⚠ CHECK | Requires E2E tests for geolocation flows                                 |
+| VIII. Phase-Gated             | ✓ PASS  | MVP-compatible feature                                                   |
+| IX. Playwright Testing        | ⚠ CHECK | E2E tests required for permission grant/deny flows                       |
+| X. Code Quality               | ✓ PASS  | TypeScript strict mode; follows existing patterns                        |
+| XI. Code Security             | ✓ PASS  | No injection vectors; no secrets involved                                |
 
 **Gate Result**: PASS - Proceed to Phase 0 research
 
@@ -85,34 +85,34 @@ No constitution violations. All principles satisfied with straightforward client
 
 ## Post-Design Constitution Check
 
-*Re-check after Phase 1 design completion*
+_Re-check after Phase 1 design completion_
 
-| Principle | Status | Notes |
-|-----------|--------|-------|
-| I. Cloudflare-First | ✓ PASS | Client-side only; no infrastructure changes |
-| II. Conservative Safety-First | ✓ PASS | Privacy-first design; location data never leaves client |
-| III. Deterministic Core | ✓ PASS | All state transitions deterministic and testable |
-| IV. Security & Privacy | ✓ PASS | sessionStorage only; no PII logging; no server transmission |
-| V. Separation of Concerns | ✓ PASS | Changes isolated to apps/web; clear composable/store separation |
+| Principle                     | Status | Notes                                                           |
+| ----------------------------- | ------ | --------------------------------------------------------------- |
+| I. Cloudflare-First           | ✓ PASS | Client-side only; no infrastructure changes                     |
+| II. Conservative Safety-First | ✓ PASS | Privacy-first design; location data never leaves client         |
+| III. Deterministic Core       | ✓ PASS | All state transitions deterministic and testable                |
+| IV. Security & Privacy        | ✓ PASS | sessionStorage only; no PII logging; no server transmission     |
+| V. Separation of Concerns     | ✓ PASS | Changes isolated to apps/web; clear composable/store separation |
 | VI. Reliability & Performance | ✓ PASS | 5s timeout + fallback defined; contracts specify error handling |
-| VII. Definition of Done | ✓ PASS | E2E test plan defined in quickstart.md |
-| VIII. Phase-Gated | ✓ PASS | MVP scope maintained; no scope creep |
-| IX. Playwright Testing | ✓ PASS | Test contracts defined; permission mocking documented |
-| X. Code Quality | ✓ PASS | TypeScript strict; explicit interfaces; clear naming |
-| XI. Code Security | ✓ PASS | No injection vectors; native APIs only; no external deps |
+| VII. Definition of Done       | ✓ PASS | E2E test plan defined in quickstart.md                          |
+| VIII. Phase-Gated             | ✓ PASS | MVP scope maintained; no scope creep                            |
+| IX. Playwright Testing        | ✓ PASS | Test contracts defined; permission mocking documented           |
+| X. Code Quality               | ✓ PASS | TypeScript strict; explicit interfaces; clear naming            |
+| XI. Code Security             | ✓ PASS | No injection vectors; native APIs only; no external deps        |
 
 **Final Gate Result**: PASS - Ready for Phase 2 task generation
 
 ## Generated Artifacts
 
-| Artifact | Path | Description |
-|----------|------|-------------|
-| Research | [research.md](./research.md) | Technical decisions for geolocation implementation |
-| Data Model | [data-model.md](./data-model.md) | Entities, state transitions, validation rules |
-| Composable Contract | [contracts/geolocation-composable.md](./contracts/geolocation-composable.md) | useGeolocation interface specification |
-| Store Contract | [contracts/location-store.md](./contracts/location-store.md) | Pinia store interface specification |
-| Quickstart | [quickstart.md](./quickstart.md) | Implementation guide with code examples |
-| Agent Context | Updated | CLAUDE.md updated with TypeScript 5.3 + Vue 3.4, Leaflet 1.9, Vite 5 |
+| Artifact            | Path                                                                         | Description                                                          |
+| ------------------- | ---------------------------------------------------------------------------- | -------------------------------------------------------------------- |
+| Research            | [research.md](./research.md)                                                 | Technical decisions for geolocation implementation                   |
+| Data Model          | [data-model.md](./data-model.md)                                             | Entities, state transitions, validation rules                        |
+| Composable Contract | [contracts/geolocation-composable.md](./contracts/geolocation-composable.md) | useGeolocation interface specification                               |
+| Store Contract      | [contracts/location-store.md](./contracts/location-store.md)                 | Pinia store interface specification                                  |
+| Quickstart          | [quickstart.md](./quickstart.md)                                             | Implementation guide with code examples                              |
+| Agent Context       | Updated                                                                      | CLAUDE.md updated with TypeScript 5.3 + Vue 3.4, Leaflet 1.9, Vite 5 |
 
 ## Next Step
 

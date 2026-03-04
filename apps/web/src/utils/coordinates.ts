@@ -26,11 +26,7 @@ export function isValidAccuracy(accuracy: number): boolean {
 /**
  * Validates a complete coordinate pair
  */
-export function isValidCoordinate(
-  lat: number,
-  lng: number,
-  accuracy?: number
-): boolean {
+export function isValidCoordinate(lat: number, lng: number, accuracy?: number): boolean {
   const validLat = isValidLatitude(lat)
   const validLng = isValidLongitude(lng)
   const validAccuracy = accuracy === undefined || isValidAccuracy(accuracy)
@@ -43,10 +39,7 @@ export function isValidCoordinate(
  * @param threshold - Maximum acceptable accuracy in meters (default: 1000)
  * @returns true if accuracy is acceptable
  */
-export function isAccuracyAcceptable(
-  accuracy: number,
-  threshold: number = 1000
-): boolean {
+export function isAccuracyAcceptable(accuracy: number, threshold: number = 1000): boolean {
   return isValidAccuracy(accuracy) && accuracy <= threshold
 }
 

@@ -126,11 +126,11 @@ ev-overlay/
 
 ### Separation of Concerns
 
-| Package | Responsibility | Constraints |
-|---------|---------------|-------------|
-| `packages/core` | Pure business logic | Zero browser/Node dependencies |
-| `apps/web` | UI and map rendering | No direct provider calls |
-| `workers/api` | Edge API and caching | Secrets server-side only |
+| Package         | Responsibility       | Constraints                    |
+| --------------- | -------------------- | ------------------------------ |
+| `packages/core` | Pure business logic  | Zero browser/Node dependencies |
+| `apps/web`      | UI and map rendering | No direct provider calls       |
+| `workers/api`   | Edge API and caching | Secrets server-side only       |
 
 ### Data Flow
 
@@ -149,6 +149,7 @@ safeRangeKm = ((socNow - reserveArrival) / 100) * (range100Km / factor)
 ```
 
 Where:
+
 - `socNow`: Current state of charge (0-100%)
 - `reserveArrival`: Minimum charge on arrival (default 20%)
 - `range100Km`: Vehicle range at 100% charge
@@ -170,10 +171,12 @@ Where:
 Fetch route data with caching.
 
 **Query Parameters:**
+
 - `origin`: Origin coordinates as `lat,lng`
 - `destination`: Destination coordinates as `lat,lng`
 
 **Response:**
+
 ```json
 {
   "route": {
@@ -194,11 +197,13 @@ Fetch route data with caching.
 ### Environment Variables
 
 **apps/web (.env.local):**
+
 ```
 VITE_API_URL=http://localhost:8787/api
 ```
 
 **workers/api (.env):**
+
 ```
 OSRM_BASE_URL=https://router.project-osrm.org
 ```
@@ -310,6 +315,7 @@ This project follows the [Smart EV Overlay Constitution](.specify/memory/constit
 Please read [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
 
 Quick summary:
+
 1. **Direct commits to `main` are blocked** - use Pull Requests
 2. Husky pre-commit hook runs tests automatically
 3. Follow the Constitution principles

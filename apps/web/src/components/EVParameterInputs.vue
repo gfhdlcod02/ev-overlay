@@ -4,9 +4,7 @@
 
     <!-- State of Charge -->
     <div>
-      <label for="soc" class="block text-xs text-gray-600">
-        Current Charge: {{ socNow }}%
-      </label>
+      <label for="soc" class="block text-xs text-gray-600"> Current Charge: {{ socNow }}% </label>
       <input
         id="soc"
         :value="socNow"

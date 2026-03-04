@@ -48,22 +48,24 @@ Smart EV Overlay is a Cloudflare-first web application for EV trip planning. Thi
 
 **Key Modules**:
 
-| Module | Purpose | Key Functions |
-|--------|---------|---------------|
-| `calculator/safe-range.ts` | Safe range calculation | `calculateSafeRange()` |
-| `calculator/stop-placement.ts` | Charging stop placement | `calculateChargingStops()` |
-| `calculator/segment-builder.ts` | Safe/risky segment classification | `buildRouteSegments()` |
-| `url-builder/google-maps.ts` | URL generation | `buildGoogleMapsUrl()` |
-| `validators/ev-validation.ts` | Input validation | `validateEVParameters()` |
-| `utils/haversine.ts` | Distance calculation | `haversineDistance()` |
+| Module                          | Purpose                           | Key Functions              |
+| ------------------------------- | --------------------------------- | -------------------------- |
+| `calculator/safe-range.ts`      | Safe range calculation            | `calculateSafeRange()`     |
+| `calculator/stop-placement.ts`  | Charging stop placement           | `calculateChargingStops()` |
+| `calculator/segment-builder.ts` | Safe/risky segment classification | `buildRouteSegments()`     |
+| `url-builder/google-maps.ts`    | URL generation                    | `buildGoogleMapsUrl()`     |
+| `validators/ev-validation.ts`   | Input validation                  | `validateEVParameters()`   |
+| `utils/haversine.ts`            | Distance calculation              | `haversineDistance()`      |
 
 **Design Principles**:
+
 - Pure functions only (no side effects)
 - No browser or Node.js API dependencies
 - 100% unit test coverage
 - Deterministic outputs for same inputs
 
 **Example - Safe Range Calculation**:
+
 ```typescript
 // Formula: safeRangeKm = ((socNow - reserveArrival)/100) * (range100Km / factor)
 export function calculateSafeRange(params: EVParameters): SafeRange {
@@ -80,24 +82,25 @@ export function calculateSafeRange(params: EVParameters): SafeRange {
 
 **Key Components**:
 
-| Component | Responsibility |
-|-----------|--------------|
-| `TripInputForm.vue` | Origin/destination and EV parameter inputs |
-| `EVParameterInputs.vue` | Sliders for SoC, range, reserve, driving factor |
-| `RouteMap.vue` | Leaflet map with route polyline and stop markers |
-| `ChargingStopList.vue` | Sidebar list of suggested stops |
-| `TripSummary.vue` | Distance, duration, safe range display |
-| `ErrorDisplay.vue` | User-friendly error messages |
-| `LoadingState.vue` | Loading indicators |
+| Component               | Responsibility                                   |
+| ----------------------- | ------------------------------------------------ |
+| `TripInputForm.vue`     | Origin/destination and EV parameter inputs       |
+| `EVParameterInputs.vue` | Sliders for SoC, range, reserve, driving factor  |
+| `RouteMap.vue`          | Leaflet map with route polyline and stop markers |
+| `ChargingStopList.vue`  | Sidebar list of suggested stops                  |
+| `TripSummary.vue`       | Distance, duration, safe range display           |
+| `ErrorDisplay.vue`      | User-friendly error messages                     |
+| `LoadingState.vue`      | Loading indicators                               |
 
 **Composables**:
 
-| Composable | Purpose |
-|------------|---------|
-| `useTripInput.ts` | Reactive trip input state |
+| Composable            | Purpose                         |
+| --------------------- | ------------------------------- |
+| `useTripInput.ts`     | Reactive trip input state       |
 | `useRoutePlanning.ts` | Route fetching and result state |
 
 **Design Principles**:
+
 - No direct calls to routing providers (always through Worker)
 - Client-side recalculation when EV params change (no re-fetch)
 - Responsive design (mobile-first)
@@ -109,31 +112,34 @@ export function calculateSafeRange(params: EVParameters): SafeRange {
 
 **Key Modules**:
 
-| Module | Responsibility |
-|--------|---------------|
-| `handlers/route.ts` | `/api/route` endpoint implementation |
-| `handlers/cors.ts` | CORS preflight handling |
-| `providers/osrm-client.ts` | OSRM API client with timeouts |
-| `providers/normalize.ts` | OSRM response normalization |
-| `cache/kv-cache.ts` | KV read/write with TTL |
+| Module                     | Responsibility                       |
+| -------------------------- | ------------------------------------ |
+| `handlers/route.ts`        | `/api/route` endpoint implementation |
+| `handlers/cors.ts`         | CORS preflight handling              |
+| `providers/osrm-client.ts` | OSRM API client with timeouts        |
+| `providers/normalize.ts`   | OSRM response normalization          |
+| `cache/kv-cache.ts`        | KV read/write with TTL               |
 
 **API Endpoints**:
 
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/api/route` | GET | Fetch route with caching |
-| `/api/version` | GET | Get API version and commit info |
+| Endpoint       | Method | Description                     |
+| -------------- | ------ | ------------------------------- |
+| `/api/route`   | GET    | Fetch route with caching        |
+| `/api/version` | GET    | Get API version and commit info |
 
 **Query Parameters**:
+
 - `origin`: `lat,lng` format
 - `destination`: `lat,lng` format
 
 **Caching Strategy**:
+
 - Cache key: SHA-256 hash of coordinates (rounded to 4 decimals)
 - TTL: 7 days
 - Cache headers: `X-Cache: HIT/MISS`
 
 **Design Principles**:
+
 - Secrets remain server-side only
 - Normalize provider responses to stable schema
 - Handle timeouts and retries
@@ -206,18 +212,18 @@ Open in new tab / app
 ```typescript
 // Validated EV parameters
 interface EVParameters {
-  socNow: number           // Current charge (0-100)
-  range100Km: number       // Range at 100% (km)
-  reserveArrival: number   // Reserve on arrival (0-50, default 20)
-  factor: number           // Driving factor (>= 1.0)
+  socNow: number // Current charge (0-100)
+  range100Km: number // Range at 100% (km)
+  reserveArrival: number // Reserve on arrival (0-50, default 20)
+  factor: number // Driving factor (>= 1.0)
 }
 
 // Calculated safe range
 interface SafeRange {
-  safeRangeKm: number      // Maximum safe distance
+  safeRangeKm: number // Maximum safe distance
   effectiveRangeKm: number // Range adjusted for factor
-  bufferKm: number         // Safety buffer (default 10)
-  thresholdKm: number      // Stop placement threshold
+  bufferKm: number // Safety buffer (default 10)
+  thresholdKm: number // Stop placement threshold
 }
 
 // Route from provider
@@ -226,7 +232,7 @@ interface Route {
   destination: Location
   distanceKm: number
   durationMin: number
-  geometry: LineString    // GeoJSON
+  geometry: LineString // GeoJSON
 }
 
 // Charging stop suggestion
@@ -254,12 +260,12 @@ interface RouteSegment {
 
 ### Error Categories
 
-| Category | Examples | Handling |
-|----------|----------|----------|
-| Validation | Invalid coordinates, out of range | Client-side with clear messages |
-| Network | Timeout, connection failed | Retry with exponential backoff |
-| Provider | OSRM unavailable, no route | User-friendly error with retry button |
-| Business | Insufficient charge, max stops exceeded | Clear guidance to user |
+| Category   | Examples                                | Handling                              |
+| ---------- | --------------------------------------- | ------------------------------------- |
+| Validation | Invalid coordinates, out of range       | Client-side with clear messages       |
+| Network    | Timeout, connection failed              | Retry with exponential backoff        |
+| Provider   | OSRM unavailable, no route              | User-friendly error with retry button |
+| Business   | Insufficient charge, max stops exceeded | Clear guidance to user                |
 
 ### Error Response Format
 
@@ -304,10 +310,10 @@ Access-Control-Allow-Headers: Content-Type
 
 ### Caching
 
-| Cache | TTL | Purpose |
-|-------|-----|---------|
+| Cache          | TTL    | Purpose                       |
+| -------------- | ------ | ----------------------------- |
 | KV Route Cache | 7 days | Avoid re-fetching same routes |
-| Browser Cache | - | Static assets |
+| Browser Cache  | -      | Static assets                 |
 
 ### Bundle Optimization
 

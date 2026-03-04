@@ -5,7 +5,7 @@
 **Status**: Complete
 **Input**: User description: "Please update the route/map experience with these defaults: Set the Origin field to the user's Current Location by default. On initial page load, default the map view to Thailand. Once geolocation is available, automatically recenter the map to the user's current location. If location permission is denied or unavailable, fallback to central Thailand (lat: 13.7563, lng: 100.5018) with an appropriate zoom level. Show a loading state while fetching geolocation, and show a clear error/notice if current location cannot be retrieved."
 
-## User Scenarios & Testing *(mandatory)*
+## User Scenarios & Testing _(mandatory)_
 
 ### User Story 1 - Default Map View on Load (Priority: P1)
 
@@ -96,7 +96,7 @@ As a user waiting for my location to be determined, I want clear visual feedback
 - How is the experience handled when the user switches tabs while geolocation is pending? The request should continue or gracefully handle the context switch without errors.
 - What happens if the user revokes location permission after initially granting it? The application should detect this and gracefully fallback to manual entry mode.
 
-## Requirements *(mandatory)*
+## Requirements _(mandatory)_
 
 ### Functional Requirements
 
@@ -119,7 +119,7 @@ As a user waiting for my location to be determined, I want clear visual feedback
 - **Map View State**: Represents the current viewport of the map, including center coordinates, zoom level, and default/fallback configuration
 - **Origin Input**: Represents the starting point field in the route planning interface, which can be auto-populated or manually entered
 
-## Success Criteria *(mandatory)*
+## Success Criteria _(mandatory)_
 
 ### Measurable Outcomes
 

@@ -21,7 +21,7 @@ const mockRouteResponse = {
 test.describe('Trip Planning Flow', () => {
   test.beforeEach(async ({ page }) => {
     // Mock API calls
-    await page.route('**/api/route**', async (route) => {
+    await page.route('**/api/route**', async route => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
@@ -30,25 +30,31 @@ test.describe('Trip Planning Flow', () => {
     })
 
     // Mock geocoding API
-    await page.route('**://nominatim.openstreetmap.org/**', async (route) => {
+    await page.route('**://nominatim.openstreetmap.org/**', async route => {
       const url = route.request().url()
       if (url.includes('San+Francisco')) {
         await route.fulfill({
           status: 200,
           contentType: 'application/json',
-          body: JSON.stringify([{ lat: '37.7749', lon: '-122.4194', display_name: 'San Francisco, CA' }]),
+          body: JSON.stringify([
+            { lat: '37.7749', lon: '-122.4194', display_name: 'San Francisco, CA' },
+          ]),
         })
       } else if (url.includes('Los+Angeles')) {
         await route.fulfill({
           status: 200,
           contentType: 'application/json',
-          body: JSON.stringify([{ lat: '34.0522', lon: '-118.2437', display_name: 'Los Angeles, CA' }]),
+          body: JSON.stringify([
+            { lat: '34.0522', lon: '-118.2437', display_name: 'Los Angeles, CA' },
+          ]),
         })
       } else {
         await route.fulfill({
           status: 200,
           contentType: 'application/json',
-          body: JSON.stringify([{ lat: '37.7749', lon: '-122.4194', display_name: 'Mock Location' }]),
+          body: JSON.stringify([
+            { lat: '37.7749', lon: '-122.4194', display_name: 'Mock Location' },
+          ]),
         })
       }
     })
@@ -91,8 +97,8 @@ test.describe('Trip Planning Flow', () => {
 
   test('should show loading state while planning', async ({ page }) => {
     // Add a delay to the mock to ensure loading state is visible
-    await page.route('**/api/route**', async (route) => {
-      await new Promise((resolve) => setTimeout(resolve, 500))
+    await page.route('**/api/route**', async route => {
+      await new Promise(resolve => setTimeout(resolve, 500))
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
@@ -131,7 +137,7 @@ test.describe('Trip Planning Flow', () => {
 
   test('should show no charging stops needed for trips within range', async ({ page }) => {
     // Use a mock that returns a short route (within safe range)
-    await page.route('**/api/route**', async (route) => {
+    await page.route('**/api/route**', async route => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
@@ -187,5 +193,61 @@ test.describe('Trip Planning Flow', () => {
     await expect(page.getByLabel('Origin')).toHaveValue('')
     await expect(page.getByLabel('Destination')).toHaveValue('')
     await expect(page.getByText('Trip Summary')).not.toBeVisible()
+  })
+
+  test('should have autocomplete disabled on origin and destination inputs', async ({ page }) => {
+    const originInput = page.getByLabel('Origin')
+    const destinationInput = page.getByLabel('Destination')
+
+    // Verify autocomplete is disabled
+    await expect(originInput).toHaveAttribute('autocomplete', 'off')
+    await expect(destinationInput).toHaveAttribute('autocomplete', 'off')
+  })
+
+  test('should not trigger API calls while typing in origin/destination', async ({ page }) => {
+    let apiCallCount = 0
+
+    // Track API calls
+    await page.route('**/api/route**', async route => {
+      apiCallCount++
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify(mockRouteResponse),
+      })
+    })
+
+    // Type in origin and destination
+    await page.getByLabel('Origin').fill('San Francisco')
+    await page.getByLabel('Destination').fill('Los Angeles')
+
+    // Wait a bit to ensure no API calls are made
+    await page.waitForTimeout(500)
+
+    // No API calls should have been made yet
+    expect(apiCallCount).toBe(0)
+
+    // Now click Plan Trip - should trigger API call
+    await page.getByRole('button', { name: 'Plan Trip' }).click()
+    await expect(page.getByText('Trip Summary')).toBeVisible({ timeout: 10000 })
+
+    // Now API call should have been made
+    expect(apiCallCount).toBeGreaterThan(0)
+  })
+
+  test('should prevent form submission with empty origin', async ({ page }) => {
+    // Leave origin empty, fill destination
+    await page.getByLabel('Destination').fill('34.0522,-118.2437')
+
+    // Plan Trip button should be disabled
+    await expect(page.getByRole('button', { name: 'Plan Trip' })).toBeDisabled()
+  })
+
+  test('should prevent form submission with empty destination', async ({ page }) => {
+    // Fill origin, leave destination empty
+    await page.getByLabel('Origin').fill('37.7749,-122.4194')
+
+    // Plan Trip button should be disabled
+    await expect(page.getByRole('button', { name: 'Plan Trip' })).toBeDisabled()
   })
 })

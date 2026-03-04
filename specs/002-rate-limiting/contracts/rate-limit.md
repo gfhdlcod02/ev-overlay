@@ -19,6 +19,7 @@ GET /api/route?origin=...&destination=...
 ```
 
 **Response Headers (200 OK):**
+
 ```
 X-RateLimit-Limit: 60
 X-RateLimit-Remaining: 59
@@ -32,6 +33,7 @@ GET /api/route?origin=...&destination=...
 ```
 
 **Response (429 Too Many Requests):**
+
 ```http
 HTTP/1.1 429 Too Many Requests
 Content-Type: application/json
@@ -51,18 +53,18 @@ Retry-After: 45
 
 ### Header Specifications
 
-| Header | Present On | Description |
-|--------|------------|-------------|
-| `X-RateLimit-Limit` | All responses | Maximum requests allowed per window (60) |
-| `X-RateLimit-Remaining` | All responses | Remaining requests in current window |
-| `X-RateLimit-Reset` | All responses | Unix timestamp (seconds) when window resets |
-| `Retry-After` | 429 responses only | Seconds until client can retry |
+| Header                  | Present On         | Description                                 |
+| ----------------------- | ------------------ | ------------------------------------------- |
+| `X-RateLimit-Limit`     | All responses      | Maximum requests allowed per window (60)    |
+| `X-RateLimit-Remaining` | All responses      | Remaining requests in current window        |
+| `X-RateLimit-Reset`     | All responses      | Unix timestamp (seconds) when window resets |
+| `Retry-After`           | 429 responses only | Seconds until client can retry              |
 
 ### Error Codes
 
-| Code | Status | Description |
-|------|--------|-------------|
-| `RATE_LIMIT_EXCEEDED` | 429 | Client has exceeded 60 requests/minute |
+| Code                  | Status | Description                            |
+| --------------------- | ------ | -------------------------------------- |
+| `RATE_LIMIT_EXCEEDED` | 429    | Client has exceeded 60 requests/minute |
 
 ### Client Responsibilities
 

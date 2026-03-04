@@ -1,14 +1,7 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
-import type {
-  UserLocation,
-  GeolocationError,
-  SessionStoredLocation,
-} from '@/types/location'
-import {
-  GeolocationStatus,
-  PermissionState,
-} from '@/types/location'
+import type { UserLocation, GeolocationError, SessionStoredLocation } from '@/types/location'
+import { GeolocationStatus, PermissionState } from '@/types/location'
 import {
   STORAGE_KEY,
   isValidLatitude,

@@ -9,25 +9,25 @@
 
 ```typescript
 interface UseGeolocationOptions {
-  timeout?: number;           // Default: 5000 (ms)
-  accuracyThreshold?: number; // Default: 1000 (meters)
+  timeout?: number // Default: 5000 (ms)
+  accuracyThreshold?: number // Default: 1000 (meters)
 }
 
 interface UseGeolocationReturn {
   // State (readonly)
-  readonly position: UserLocation | null;
-  readonly status: GeolocationStatus;
-  readonly error: GeolocationError | null;
-  readonly isLoading: boolean;
-  readonly isGranted: boolean;
-  readonly isDenied: boolean;
+  readonly position: UserLocation | null
+  readonly status: GeolocationStatus
+  readonly error: GeolocationError | null
+  readonly isLoading: boolean
+  readonly isGranted: boolean
+  readonly isDenied: boolean
 
   // Actions
-  requestLocation: () => Promise<void>;
-  clearLocation: () => void;
+  requestLocation: () => Promise<void>
+  clearLocation: () => void
 }
 
-function useGeolocation(options?: UseGeolocationOptions): UseGeolocationReturn;
+function useGeolocation(options?: UseGeolocationOptions): UseGeolocationReturn
 ```
 
 ---
@@ -67,12 +67,12 @@ function useGeolocation(options?: UseGeolocationOptions): UseGeolocationReturn;
 
 ```vue
 <script setup>
-import { useGeolocation } from '@/composables/useGeolocation';
+import { useGeolocation } from '@/composables/useGeolocation'
 
 const { position, status, isLoading, requestLocation } = useGeolocation({
   timeout: 5000,
-  accuracyThreshold: 1000
-});
+  accuracyThreshold: 1000,
+})
 </script>
 
 <template>

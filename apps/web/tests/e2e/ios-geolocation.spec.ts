@@ -4,7 +4,7 @@ import { test, expect } from '@playwright/test'
 const mockRouteResponse = {
   route: {
     origin: { lat: 13.7563, lng: 100.5018, address: 'Bangkok, Thailand' },
-    destination: { lat: 13.8500, lng: 100.5500, address: 'Destination' },
+    destination: { lat: 13.85, lng: 100.55, address: 'Destination' },
     distanceKm: 15.5,
     durationMin: 25,
     geometry: {
@@ -20,7 +20,7 @@ const mockRouteResponse = {
 test.describe('iOS Geolocation Coordinate Formatting', () => {
   test.beforeEach(async ({ page }) => {
     // Mock API calls
-    await page.route('**/api/route**', async (route) => {
+    await page.route('**/api/route**', async route => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
@@ -96,7 +96,8 @@ test.describe('iOS Geolocation Coordinate Formatting', () => {
   test('should plan trip with coordinates on iPhone Safari', async ({ page }) => {
     // Simulate iPhone Safari user agent
     await page.setExtraHTTPHeaders({
-      'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1',
+      'User-Agent':
+        'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1',
     })
 
     // Fill in coordinates directly (bypassing geolocation)

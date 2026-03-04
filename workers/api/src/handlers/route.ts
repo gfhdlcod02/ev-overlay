@@ -13,10 +13,7 @@ export interface RouteRequest {
   destination: string
 }
 
-export async function handleRoute(
-  request: Request,
-  env: Env
-): Promise<Response> {
+export async function handleRoute(request: Request, env: Env): Promise<Response> {
   // Only accept GET requests
   if (request.method !== 'GET') {
     return jsonError('METHOD_NOT_ALLOWED', 'Only GET requests are allowed', 405)
@@ -29,11 +26,7 @@ export async function handleRoute(
 
   // Validate parameters
   if (!originParam || !destinationParam) {
-    return jsonError(
-      'INVALID_PARAMS',
-      'Missing required parameters: origin, destination',
-      400
-    )
+    return jsonError('INVALID_PARAMS', 'Missing required parameters: origin, destination', 400)
   }
 
   // Parse coordinates
@@ -41,19 +34,11 @@ export async function handleRoute(
   const destination = parseCoordinates(destinationParam)
 
   if (!origin) {
-    return jsonError(
-      'INVALID_PARAMS',
-      'Invalid origin format. Use: lat,lng',
-      400
-    )
+    return jsonError('INVALID_PARAMS', 'Invalid origin format. Use: lat,lng', 400)
   }
 
   if (!destination) {
-    return jsonError(
-      'INVALID_PARAMS',
-      'Invalid destination format. Use: lat,lng',
-      400
-    )
+    return jsonError('INVALID_PARAMS', 'Invalid destination format. Use: lat,lng', 400)
   }
 
   // Check cache
@@ -80,19 +65,11 @@ export async function handleRoute(
     }
 
     console.error('Route error:', e instanceof Error ? e.message : 'Unknown error')
-    return jsonError(
-      'PROVIDER_ERROR',
-      'Failed to fetch route from provider',
-      502
-    )
+    return jsonError('PROVIDER_ERROR', 'Failed to fetch route from provider', 502)
   }
 }
 
-function jsonResponse(
-  data: unknown,
-  status: number,
-  headers?: Record<string, string>
-): Response {
+function jsonResponse(data: unknown, status: number, headers?: Record<string, string>): Response {
   return new Response(JSON.stringify(data), {
     status,
     headers: {

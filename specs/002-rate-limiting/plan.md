@@ -29,21 +29,21 @@ Add basic rate limiting to the existing Cloudflare Worker API to comply with Con
 
 ## Constitution Check
 
-*GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
+_GATE: Must pass before Phase 0 research. Re-check after Phase 1 design._
 
-| Principle | Status | Notes |
-|-----------|--------|-------|
-| I. Cloudflare-First | ✅ PASS | Uses existing Cloudflare Workers + KV infrastructure |
-| II. Conservative Safety-First UX | N/A | Backend feature, no user-facing safety implications |
-| III. Deterministic Core Logic | ✅ PASS | Rate limit calculations are deterministic |
-| IV. Security & Privacy | ✅ PASS | **Directly addresses Constitution IV requirement for "Basic rate limiting at Worker"** |
-| V. Separation of Concerns | ✅ PASS | Rate limiting isolated in Worker layer, no core changes |
-| VI. Reliability & Performance | ✅ PASS | Fail-open design ensures availability; <10ms overhead target |
-| VII. Definition of Done | ✅ PASS | Includes tests for rate limiting behavior |
-| VIII. Phase-Gated Delivery | ✅ PASS | Small, focused enhancement to existing MVP |
-| IX. Playwright Web Testing | N/A | Backend API feature, E2E tests cover via API calls |
-| X. Code Quality Standards | ✅ PASS | Follows existing ESLint/Prettier, TypeScript strict mode |
-| XI. Code Security Standards | ✅ PASS | Implements security requirement from Constitution |
+| Principle                        | Status  | Notes                                                                                  |
+| -------------------------------- | ------- | -------------------------------------------------------------------------------------- |
+| I. Cloudflare-First              | ✅ PASS | Uses existing Cloudflare Workers + KV infrastructure                                   |
+| II. Conservative Safety-First UX | N/A     | Backend feature, no user-facing safety implications                                    |
+| III. Deterministic Core Logic    | ✅ PASS | Rate limit calculations are deterministic                                              |
+| IV. Security & Privacy           | ✅ PASS | **Directly addresses Constitution IV requirement for "Basic rate limiting at Worker"** |
+| V. Separation of Concerns        | ✅ PASS | Rate limiting isolated in Worker layer, no core changes                                |
+| VI. Reliability & Performance    | ✅ PASS | Fail-open design ensures availability; <10ms overhead target                           |
+| VII. Definition of Done          | ✅ PASS | Includes tests for rate limiting behavior                                              |
+| VIII. Phase-Gated Delivery       | ✅ PASS | Small, focused enhancement to existing MVP                                             |
+| IX. Playwright Web Testing       | N/A     | Backend API feature, E2E tests cover via API calls                                     |
+| X. Code Quality Standards        | ✅ PASS | Follows existing ESLint/Prettier, TypeScript strict mode                               |
+| XI. Code Security Standards      | ✅ PASS | Implements security requirement from Constitution                                      |
 
 **No constitution violations requiring justification.**
 
@@ -62,6 +62,7 @@ specs/[###-feature]/
 ```
 
 ### Source Code (repository root)
+
 <!--
   ACTION REQUIRED: Replace the placeholder tree below with the concrete layout
   for this feature. Delete unused options and expand the chosen structure with
@@ -91,8 +92,8 @@ workers/api/           # Existing Cloudflare Worker
 > **No constitution violations requiring justification**
 
 | Violation | Why Needed | Simpler Alternative Rejected Because |
-|-----------|------------|-------------------------------------|
-| N/A | N/A | N/A |
+| --------- | ---------- | ------------------------------------ |
+| N/A       | N/A        | N/A                                  |
 
 ---
 
@@ -103,6 +104,7 @@ workers/api/           # Existing Cloudflare Worker
 Rate limiting is a well-understood domain. For Cloudflare Workers with KV storage, the standard approach is:
 
 **Key Decisions:**
+
 1. **Algorithm**: True sliding window using per-client KV entries with TTL
 2. **Storage**: Reuse existing ROUTE_CACHE KV namespace (separate key prefix)
 3. **Client Identification**: `CF-Connecting-IP` header (Cloudflare-provided)
@@ -111,13 +113,13 @@ Rate limiting is a well-understood domain. For Cloudflare Workers with KV storag
 
 ### Design Decisions
 
-| Decision | Choice | Rationale |
-|----------|--------|-----------|
-| Sliding window implementation | Per-client KV entry with timestamp + count | Simple, accurate, uses existing KV |
-| Key format | `rate_limit:{ip}` | Clear prefix, easy to query/debug |
-| TTL strategy | 60 seconds (window duration) | Automatic cleanup, prevents key buildup |
-| Fail-open behavior | Log error, allow request | Constitution VI - reliability prioritized |
-| Headers | X-RateLimit-* family | Industry standard, widely understood |
+| Decision                      | Choice                                     | Rationale                                 |
+| ----------------------------- | ------------------------------------------ | ----------------------------------------- |
+| Sliding window implementation | Per-client KV entry with timestamp + count | Simple, accurate, uses existing KV        |
+| Key format                    | `rate_limit:{ip}`                          | Clear prefix, easy to query/debug         |
+| TTL strategy                  | 60 seconds (window duration)               | Automatic cleanup, prevents key buildup   |
+| Fail-open behavior            | Log error, allow request                   | Constitution VI - reliability prioritized |
+| Headers                       | X-RateLimit-\* family                      | Industry standard, widely understood      |
 
 ## Phase 1: Design & Contracts
 
@@ -126,6 +128,7 @@ Rate limiting is a well-understood domain. For Cloudflare Workers with KV storag
 See [data-model.md](./data-model.md) for entity definitions.
 
 **Core Entities:**
+
 - `RateLimitEntry`: Client request tracking (count, windowStart)
 - `RateLimitResult`: Check result (allowed, remaining, resetTime)
 - `RateLimitError`: 429 error response format
@@ -133,6 +136,7 @@ See [data-model.md](./data-model.md) for entity definitions.
 ### Interface Contracts
 
 See [contracts/](./contracts/) directory:
+
 - `rate-limit.md`: Rate limiting behavior specification
 
 ### Quickstart

@@ -86,12 +86,12 @@ ev-overlay/
 
 ## Key Commands
 
-| Command | Description |
-|---------|-------------|
-| `pnpm dev` | Start all dev servers |
-| `pnpm build` | Build all packages |
-| `pnpm test` | Run all tests |
-| `pnpm lint` | Run linting |
+| Command          | Description           |
+| ---------------- | --------------------- |
+| `pnpm dev`       | Start all dev servers |
+| `pnpm build`     | Build all packages    |
+| `pnpm test`      | Run all tests         |
+| `pnpm lint`      | Run linting           |
 | `pnpm typecheck` | Run TypeScript checks |
 
 ## Environment Variables
@@ -138,6 +138,7 @@ pnpm install
 ### OSRM Rate Limiting
 
 The public OSRM demo server has rate limits. If you see 429 errors:
+
 1. Add delays between requests in development
 2. Consider setting up a local OSRM instance for heavy testing
 

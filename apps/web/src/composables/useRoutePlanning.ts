@@ -32,14 +32,7 @@ function parseCoordinates(str: string): Location | null {
 }
 
 export function useRoutePlanning() {
-  const {
-    input,
-    evParams,
-    canSubmit,
-    setResult,
-    setError,
-    resetInput,
-  } = useTripInput()
+  const { input, evParams, canSubmit, setResult, setError, resetInput } = useTripInput()
 
   const canPlan = computed(() => canSubmit.value)
 
@@ -59,12 +52,18 @@ export function useRoutePlanning() {
       ])
 
       if (!originLocation) {
-        setError({ code: 'GEOCODE_FAILED', message: `Could not find location: ${input.value.origin}` })
+        setError({
+          code: 'GEOCODE_FAILED',
+          message: `Could not find location: ${input.value.origin}`,
+        })
         return
       }
 
       if (!destinationLocation) {
-        setError({ code: 'GEOCODE_FAILED', message: `Could not find location: ${input.value.destination}` })
+        setError({
+          code: 'GEOCODE_FAILED',
+          message: `Could not find location: ${input.value.destination}`,
+        })
         return
       }
 
@@ -93,17 +92,12 @@ export function useRoutePlanning() {
       const segments = buildRouteSegments(route, safeRange, evParams.value, stops)
 
       // Build Google Maps URL
-      const googleMapsUrl = buildGoogleMapsUrl(
-        route.origin,
-        route.destination,
-        stops
-      )
+      const googleMapsUrl = buildGoogleMapsUrl(route.origin, route.destination, stops)
 
       // Calculate total stats
       const totalDistanceKm = route.distanceKm
       const totalDurationMin = route.durationMin
-      const reachable =
-        stops.length > 0 || safeRange.safeRangeKm >= totalDistanceKm
+      const reachable = stops.length > 0 || safeRange.safeRangeKm >= totalDistanceKm
 
       setResult({
         input: evParams.value,
@@ -117,6 +111,10 @@ export function useRoutePlanning() {
         reachable,
       })
     } catch (e) {
+      // Don't show error for user-initiated cancellations (e.g., new search started)
+      if (e instanceof Error && e.name === 'AbortError') {
+        return
+      }
       const message = e instanceof Error ? e.message : 'Failed to plan trip'
       setError({ code: 'PLAN_FAILED', message })
     }

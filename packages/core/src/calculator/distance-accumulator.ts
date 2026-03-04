@@ -73,7 +73,11 @@ export function getCoordinateAtDistance(
 ): [number, number] | null {
   const distances = accumulateDistance(geometry)
 
-  if (distances.length === 0 || targetDistance < 0 || targetDistance > distances[distances.length - 1]) {
+  if (
+    distances.length === 0 ||
+    targetDistance < 0 ||
+    targetDistance > distances[distances.length - 1]
+  ) {
     return null
   }
 

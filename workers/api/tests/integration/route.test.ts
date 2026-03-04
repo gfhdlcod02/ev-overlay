@@ -28,9 +28,11 @@ class MockKVNamespace implements KVNamespace {
 
   // Unused methods required by interface
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  list = async () => ({ keys: [], list_complete: true, cursor: '' }) as unknown as KVNamespaceListResult<any, string>
+  list = async () =>
+    ({ keys: [], list_complete: true, cursor: '' }) as unknown as KVNamespaceListResult<unknown, string>
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  getWithMetadata = async () => ({ value: null, metadata: null }) as unknown as KVNamespaceGetWithMetadataResult<any, any>
+  getWithMetadata = async () =>
+    ({ value: null, metadata: null }) as unknown as KVNamespaceGetWithMetadataResult<unknown, unknown>
 }
 
 describe('handleRoute', () => {
@@ -64,7 +66,9 @@ describe('handleRoute', () => {
   })
 
   it('should return 400 for invalid origin format', async () => {
-    const request = new Request('https://example.com/api/route?origin=invalid&destination=34.0522,-118.2437')
+    const request = new Request(
+      'https://example.com/api/route?origin=invalid&destination=34.0522,-118.2437'
+    )
     const response = await handleRoute(request, env)
 
     expect(response.status).toBe(400)
@@ -82,9 +86,12 @@ describe('handleRoute', () => {
   })
 
   it('should return 405 for non-GET methods', async () => {
-    const request = new Request('https://example.com/api/route?origin=37.7749,-122.4194&destination=34.0522,-118.2437', {
-      method: 'POST',
-    })
+    const request = new Request(
+      'https://example.com/api/route?origin=37.7749,-122.4194&destination=34.0522,-118.2437',
+      {
+        method: 'POST',
+      }
+    )
     const response = await handleRoute(request, env)
 
     expect(response.status).toBe(405)
@@ -109,7 +116,10 @@ describe('handleRoute', () => {
       durationMin: 330,
       geometry: {
         type: 'LineString' as const,
-        coordinates: [[-122.4194, 37.7749], [-118.2437, 34.0522]],
+        coordinates: [
+          [-122.4194, 37.7749],
+          [-118.2437, 34.0522],
+        ],
       },
     }
 
@@ -136,7 +146,10 @@ describe('handleRoute', () => {
       durationMin: 330,
       geometry: {
         type: 'LineString' as const,
-        coordinates: [[-122.4194, 37.7749], [-118.2437, 34.0522]],
+        coordinates: [
+          [-122.4194, 37.7749],
+          [-118.2437, 34.0522],
+        ],
       },
     }
 

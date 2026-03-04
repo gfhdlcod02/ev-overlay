@@ -33,7 +33,7 @@ test.describe('Mobile Viewport', () => {
 
   test('should plan trip on mobile device with coordinates', async ({ page }) => {
     // Mock API calls
-    await page.route('**/api/route**', async (route) => {
+    await page.route('**/api/route**', async route => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
