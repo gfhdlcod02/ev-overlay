@@ -25,8 +25,8 @@ export interface LineString {
  * Driving factor multipliers for consumption calculation
  */
 export enum DrivingFactor {
-  ECO = 1.05,     // City driving, efficient speed
-  NORMAL = 1.15,  // Mixed driving
+  ECO = 1.05, // City driving, efficient speed
+  NORMAL = 1.15, // Mixed driving
   HIGHWAY = 1.25, // High speed, HVAC usage
 }
 

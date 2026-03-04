@@ -7,12 +7,7 @@
  * @param lng2 - Longitude of second point in degrees
  * @returns Distance in kilometers
  */
-export function haversineDistance(
-  lat1: number,
-  lng1: number,
-  lat2: number,
-  lng2: number
-): number {
+export function haversineDistance(lat1: number, lng1: number, lat2: number, lng2: number): number {
   const R = 6371 // Earth's radius in kilometers
 
   const dLat = toRadians(lat2 - lat1)
@@ -20,10 +15,7 @@ export function haversineDistance(
 
   const a =
     Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(toRadians(lat1)) *
-      Math.cos(toRadians(lat2)) *
-      Math.sin(dLng / 2) *
-      Math.sin(dLng / 2)
+    Math.cos(toRadians(lat1)) * Math.cos(toRadians(lat2)) * Math.sin(dLng / 2) * Math.sin(dLng / 2)
 
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
 
@@ -41,10 +33,7 @@ function toRadians(degrees: number): number {
  * Calculate distance between two coordinate pairs
  * Coordinates are in [lat, lng] format
  */
-export function distanceBetween(
-  coord1: [number, number],
-  coord2: [number, number]
-): number {
+export function distanceBetween(coord1: [number, number], coord2: [number, number]): number {
   return haversineDistance(coord1[0], coord1[1], coord2[0], coord2[1])
 }
 

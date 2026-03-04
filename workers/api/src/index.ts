@@ -1,10 +1,6 @@
 import { handleRoute, type Env } from './handlers/route'
 import { handleCors, addCorsHeaders } from './handlers/cors'
-import {
-  checkRateLimit,
-  getRateLimitHeaders,
-  createRateLimitError,
-} from './handlers/rate-limit'
+import { checkRateLimit, getRateLimitHeaders, createRateLimitError } from './handlers/rate-limit'
 
 export { Env }
 

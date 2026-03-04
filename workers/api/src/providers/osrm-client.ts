@@ -64,11 +64,7 @@ export async function fetchRouteFromOSRM(
       clearTimeout(timeoutId)
 
       if (!response.ok) {
-        throw new OSRMError(
-          'PROVIDER_ERROR',
-          `OSRM returned ${response.status}`,
-          502
-        )
+        throw new OSRMError('PROVIDER_ERROR', `OSRM returned ${response.status}`, 502)
       }
 
       const data: OSRMResponse = await response.json()
@@ -98,7 +94,11 @@ export async function fetchRouteFromOSRM(
       }
 
       // Retry on timeout, but not on the last attempt
-      if (attempt < options.retries && lastError instanceof OSRMError && lastError.code === 'TIMEOUT') {
+      if (
+        attempt < options.retries &&
+        lastError instanceof OSRMError &&
+        lastError.code === 'TIMEOUT'
+      ) {
         // Wait before retrying (exponential backoff)
         await delay(1000 * Math.pow(2, attempt))
         continue
