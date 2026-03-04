@@ -88,20 +88,33 @@ jobs:
       - name: Build core
         run: pnpm --filter @ev/core build
 
+      - name: Debug variables
+        run: |
+          echo "API_URL from vars: '${{ vars.API_URL }}'"
+          echo "Ref name: '${{ github.ref_name }}'"
+          echo "Working directory: $(pwd)"
+          ls -la
+
       - name: Create .env.production
         run: |
           echo "VITE_API_URL=${{ vars.API_URL }}" > apps/web/.env.production
           echo "VITE_APP_VERSION=${{ github.ref_name }}" >> apps/web/.env.production
+          echo "--- Content of .env.production ---"
           cat apps/web/.env.production
+          echo "--- Verifying file exists ---"
+          ls -la apps/web/.env.production
 
       - name: Build Web App
-        run: pnpm --filter @ev/web build
+        run: |
+          cd apps/web
+          cat .env.production
+          pnpm exec vite build
 
       - name: Check built output
         run: |
           echo "Checking built JS for API URL:"
           grep -oE 'const [a-z]+="[^"]*api[^"]*"' apps/web/dist/assets/index-*.js | head -3 || echo "Pattern not found"
-          grep -oE '/api/route|https://.*workers.dev/api' apps/web/dist/assets/index-*.js | head -3 || echo "API pattern not found"
+          grep -oE 'const [a-z]+="v[0-9]' apps/web/dist/assets/index-*.js | head -3 || echo "Version pattern not found"
 
       - name: Inject version into builds
         run: pnpm version:inject
