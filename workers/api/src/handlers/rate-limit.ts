@@ -66,10 +66,7 @@ function calculateResetTime(requests: number[], windowMs: number): number {
  * Uses TRUE rolling window algorithm with KV storage
  * Only counts requests within the last 60 seconds
  */
-export async function checkRateLimit(
-  request: Request,
-  env: Env
-): Promise<RateLimitResult> {
+export async function checkRateLimit(request: Request, env: Env): Promise<RateLimitResult> {
   const clientIP = getClientIP(request)
   const key = getRateLimitKey(clientIP)
   const now = Date.now()
@@ -77,21 +74,21 @@ export async function checkRateLimit(
 
   try {
     // Get existing rate limit entry
-    const entry = await env.ROUTE_CACHE.get(key, 'json') as RateLimitEntry | null
+    const entry = (await env.ROUTE_CACHE.get(key, 'json')) as RateLimitEntry | null
 
     if (!entry || !entry.requests) {
       // No entry - create new with first request
       const newEntry: RateLimitEntry = {
-        requests: [now]
+        requests: [now],
       }
       await env.ROUTE_CACHE.put(key, JSON.stringify(newEntry), {
-        expirationTtl: RATE_LIMIT_WINDOW
+        expirationTtl: RATE_LIMIT_WINDOW,
       })
 
       return {
         allowed: true,
         remaining: RATE_LIMIT_MAX - 1,
-        resetTime: Math.floor((now + windowMs) / 1000)
+        resetTime: Math.floor((now + windowMs) / 1000),
       }
     }
 
@@ -105,24 +102,24 @@ export async function checkRateLimit(
       return {
         allowed: false,
         remaining: 0,
-        resetTime
+        resetTime,
       }
     }
 
     // Add current request and update KV
     const updatedRequests = [...recentRequests, now]
     const updatedEntry: RateLimitEntry = {
-      requests: updatedRequests
+      requests: updatedRequests,
     }
     await env.ROUTE_CACHE.put(key, JSON.stringify(updatedEntry), {
-      expirationTtl: RATE_LIMIT_WINDOW
+      expirationTtl: RATE_LIMIT_WINDOW,
     })
 
     const resetTime = calculateResetTime(updatedRequests, windowMs)
     return {
       allowed: true,
       remaining: RATE_LIMIT_MAX - updatedRequests.length,
-      resetTime
+      resetTime,
     }
   } catch (e) {
     // Fail open - allow request if KV fails
@@ -130,7 +127,7 @@ export async function checkRateLimit(
     return {
       allowed: true,
       remaining: RATE_LIMIT_MAX,
-      resetTime: Math.floor((now + windowMs) / 1000)
+      resetTime: Math.floor((now + windowMs) / 1000),
     }
   }
 }
@@ -142,7 +139,7 @@ export function getRateLimitHeaders(result: RateLimitResult): RateLimitHeaders {
   const headers: RateLimitHeaders = {
     'X-RateLimit-Limit': RATE_LIMIT_MAX.toString(),
     'X-RateLimit-Remaining': Math.max(0, result.remaining).toString(),
-    'X-RateLimit-Reset': result.resetTime.toString()
+    'X-RateLimit-Reset': result.resetTime.toString(),
   }
 
   // Add Retry-After only when rate limited
@@ -162,7 +159,7 @@ export function createRateLimitError(retryAfter: number): object {
     error: {
       code: 'RATE_LIMIT_EXCEEDED',
       message: `Rate limit exceeded. Try again in ${retryAfter} seconds.`,
-      retryAfter
-    }
+      retryAfter,
+    },
   }
 }

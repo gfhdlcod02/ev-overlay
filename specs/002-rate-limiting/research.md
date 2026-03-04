@@ -12,12 +12,12 @@
 
 ### Rate Limiting Algorithms
 
-| Algorithm | Pros | Cons | Suitable for KV? |
-|-----------|------|------|------------------|
-| Fixed Window | Simple, low storage | Boundary burst problem | ✅ Yes |
-| Sliding Window | Smooth, no bursts | More complex, higher storage | ✅ Yes |
-| Token Bucket | Allows bursts | Harder to implement distributed | ⚠️ Complex |
-| Leaky Bucket | Smooths traffic | Requires queuing | ❌ No |
+| Algorithm      | Pros                | Cons                            | Suitable for KV? |
+| -------------- | ------------------- | ------------------------------- | ---------------- |
+| Fixed Window   | Simple, low storage | Boundary burst problem          | ✅ Yes           |
+| Sliding Window | Smooth, no bursts   | More complex, higher storage    | ✅ Yes           |
+| Token Bucket   | Allows bursts       | Harder to implement distributed | ⚠️ Complex       |
+| Leaky Bucket   | Smooths traffic     | Requires queuing                | ❌ No            |
 
 **Decision**: Use sliding window with per-client KV entries. Each entry stores count + window start timestamp.
 
@@ -38,7 +38,7 @@ const key = `rate_limit:${clientIP}`
 
 // Value structure
 interface RateLimitEntry {
-  count: number      // Request count in window
+  count: number // Request count in window
   windowStart: number // Timestamp (ms) when window started
 }
 ```
@@ -55,11 +55,11 @@ Cloudflare Workers provide `CF-Connecting-IP` header which contains the original
 
 ### Failure Modes
 
-| Scenario | Behavior | Rationale |
-|----------|----------|-----------|
-| KV read fails | Allow request, log error | Fail open for availability |
-| KV write fails | Allow request, log error | Fail open for availability |
-| Clock skew | Use server time only | Prevent client manipulation |
+| Scenario       | Behavior                 | Rationale                   |
+| -------------- | ------------------------ | --------------------------- |
+| KV read fails  | Allow request, log error | Fail open for availability  |
+| KV write fails | Allow request, log error | Fail open for availability  |
+| Clock skew     | Use server time only     | Prevent client manipulation |
 
 ## References
 

@@ -164,7 +164,7 @@ describe('Rate Limiting', () => {
       await mockKV.put(key, JSON.stringify(expiredEntry), { expirationTtl: 1 })
 
       // Wait a bit and try again
-      await new Promise((resolve) => setTimeout(resolve, 100))
+      await new Promise(resolve => setTimeout(resolve, 100))
 
       result = await checkRateLimit(request, env)
       expect(result.allowed).toBe(true)

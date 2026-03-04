@@ -5,7 +5,7 @@
 **Status**: Complete
 **Input**: User description: "with refinement for rate limiting"
 
-## User Scenarios & Testing *(mandatory)*
+## User Scenarios & Testing _(mandatory)_
 
 ### User Story 1 - Prevent API Abuse (Priority: P1)
 
@@ -51,7 +51,7 @@ As an API consumer, I want clear feedback when I hit rate limits so that I can a
 
 - **Strict enforcement**: All requests exceeding the 60/min limit are rejected with HTTP 429; no burst allowance.
 
-## Requirements *(mandatory)*
+## Requirements _(mandatory)_
 
 ### Functional Requirements
 
@@ -69,7 +69,7 @@ As an API consumer, I want clear feedback when I hit rate limits so that I can a
 
 - **FR-007**: System MUST identify clients by their IP address using the `CF-Connecting-IP` header.
 
-### Key Entities *(include if feature involves data)*
+### Key Entities _(include if feature involves data)_
 
 - **RateLimitEntry**: Tracks request count and window start time for a client. Attributes: count (number of requests), windowStart (timestamp).
 
@@ -85,7 +85,7 @@ As an API consumer, I want clear feedback when I hit rate limits so that I can a
 
 - **Q**: Should the system strictly reject all requests over the limit, or allow short bursts? → **A**: Strict enforcement - reject all requests over 60/min with 429
 
-## Success Criteria *(mandatory)*
+## Success Criteria _(mandatory)_
 
 ### Measurable Outcomes
 

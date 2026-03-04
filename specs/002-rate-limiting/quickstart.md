@@ -32,6 +32,7 @@ curl -s -I "http://localhost:8787/api/route?origin=37.7749,-122.4194&destination
 ```
 
 Expected headers:
+
 ```
 X-RateLimit-Limit: 60
 X-RateLimit-Remaining: 59
@@ -48,6 +49,7 @@ curl -s "http://localhost:8787/api/route?origin=37.7749,-122.4194&destination=34
 ```
 
 Expected:
+
 ```
 HTTP: 429
 Retry-After: 45

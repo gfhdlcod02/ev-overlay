@@ -38,10 +38,7 @@ async function hashString(str: string): Promise<string> {
 /**
  * Get cached route from KV
  */
-export async function getCachedRoute(
-  kv: KVNamespace,
-  key: string
-): Promise<Route | null> {
+export async function getCachedRoute(kv: KVNamespace, key: string): Promise<Route | null> {
   try {
     const entry = await kv.get<CacheEntry>(key, 'json')
 
@@ -65,11 +62,7 @@ export async function getCachedRoute(
 /**
  * Cache route in KV with TTL
  */
-export async function cacheRoute(
-  kv: KVNamespace,
-  key: string,
-  route: Route
-): Promise<void> {
+export async function cacheRoute(kv: KVNamespace, key: string, route: Route): Promise<void> {
   try {
     const entry: CacheEntry = {
       route,

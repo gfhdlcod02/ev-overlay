@@ -42,7 +42,7 @@ Phase 3: US1 - Prevent API Abuse (P1)
 
 - [x] T002 [P] [US1] Create `workers/api/src/handlers/rate-limit.ts` with `checkRateLimit()` function implementing sliding window logic using KV storage
 
-- [x] T003 [US1] Create `workers/api/src/handlers/rate-limit.ts` with helper function `getRateLimitHeaders()` to generate X-RateLimit-* headers
+- [x] T003 [US1] Create `workers/api/src/handlers/rate-limit.ts` with helper function `getRateLimitHeaders()` to generate X-RateLimit-\* headers
 
 - [x] T004 [US1] Integrate rate limiting into `workers/api/src/index.ts` - call `checkRateLimit()` before route handler, pass KV namespace
 
@@ -123,25 +123,27 @@ T009: Ensure headers on all responses
 
 ## Success Criteria Mapping
 
-| Success Criterion | Validating Tasks |
-|-------------------|------------------|
-| SC-001: Reject >60 req/min with 429 | T002, T004, T010 |
-| SC-002: All responses include rate limit headers | T003, T005, T009, T011 |
-| SC-003: 429 responses include Retry-After | T007, T008, T010 |
-| SC-004: Fail open on KV failure | T002 (fail-open logic), T011 |
-| SC-005: Window resets after 60s | T002 (TTL logic), T010 |
+| Success Criterion                                | Validating Tasks             |
+| ------------------------------------------------ | ---------------------------- |
+| SC-001: Reject >60 req/min with 429              | T002, T004, T010             |
+| SC-002: All responses include rate limit headers | T003, T005, T009, T011       |
+| SC-003: 429 responses include Retry-After        | T007, T008, T010             |
+| SC-004: Fail open on KV failure                  | T002 (fail-open logic), T011 |
+| SC-005: Window resets after 60s                  | T002 (TTL logic), T010       |
 
 ---
 
 ## File Path Summary
 
 **workers/api/src/**:
+
 - `handlers/rate-limit.ts` (T001-T003, T006-T007)
 - `handlers/route.ts` (T005)
 - `handlers/cors.ts` (T009 - if needed)
 - `index.ts` (T004, T008)
 
 **workers/api/tests/integration/**:
+
 - `rate-limit.test.ts` (T010-T011)
 
 ---
