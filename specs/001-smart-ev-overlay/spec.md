@@ -10,7 +10,7 @@
 
 **Input**: User description: "Smart EV Overlay for Google Maps - MVP Phase"
 
-## User Scenarios & Testing *(mandatory)*
+## User Scenarios & Testing _(mandatory)_
 
 ### User Story 1 - Plan EV Trip with Route Visualization (Priority: P1)
 
@@ -40,7 +40,7 @@ As an EV driver, I want the system to calculate my conservative safe driving ran
 
 **Acceptance Scenarios**:
 
-1. **Given** I have 70% current charge, 20% reserve arrival setting, 450km range at 100%, and select "Normal" driving factor (1.15), **When** I calculate my safe range, **Then** the system shows approximately 196km safe range ((70-20)/100 * 450/1.15).
+1. **Given** I have 70% current charge, 20% reserve arrival setting, 450km range at 100%, and select "Normal" driving factor (1.15), **When** I calculate my safe range, **Then** the system shows approximately 196km safe range ((70-20)/100 \* 450/1.15).
 
 2. **Given** my current charge is at or below my reserve arrival percentage (e.g., 15% charge with 20% reserve), **When** I attempt to calculate range, **Then** the system displays an error stating I need to charge before planning this trip.
 
@@ -96,7 +96,7 @@ As a user, I want route calculations to be fast when I plan the same or similar 
 
 - **Mobile viewport**: On small screens, the map and controls should remain usable with appropriate touch targets.
 
-## Requirements *(mandatory)*
+## Requirements _(mandatory)_
 
 ### Functional Requirements
 
@@ -126,7 +126,7 @@ As a user, I want route calculations to be fast when I plan the same or similar 
 
 - **FR-011**: System MUST meet WCAG 2.1 Level AA accessibility standards for all user-facing features, including keyboard navigation, screen reader compatibility, and sufficient color contrast.
 
-### Key Entities *(include if feature involves data)*
+### Key Entities _(include if feature involves data)_
 
 - **Trip**: Represents a planned journey from origin to destination. Attributes: origin (location), destination (location), parameters (EV settings), created timestamp.
 
@@ -140,7 +140,7 @@ As a user, I want route calculations to be fast when I plan the same or similar 
 
 - **RouteSegment**: A portion of the route with safety status. Attributes: start coordinate, end coordinate, segment distance, safety status (safe/risky), cumulative distance from origin.
 
-## Success Criteria *(mandatory)*
+## Success Criteria _(mandatory)_
 
 ### Measurable Outcomes
 

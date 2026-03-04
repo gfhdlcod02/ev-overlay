@@ -45,7 +45,8 @@ export function buildRouteSegments(
     if (stopIndex < stops.length && endKm > stops[stopIndex].distanceFromStartKm) {
       // Reset safe range after charging stop
       currentSafeRangeKm =
-        ((EVParameterDefaults.chargeToPercent - evParams.reserveArrival) / 100) * effectiveRangeKm - bufferKm
+        ((EVParameterDefaults.chargeToPercent - evParams.reserveArrival) / 100) * effectiveRangeKm -
+        bufferKm
       lastStopDistanceKm = stops[stopIndex].distanceFromStartKm
       stopIndex++
     }

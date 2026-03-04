@@ -43,9 +43,9 @@ describe('accumulateDistance', () => {
       type: 'LineString',
       coordinates: [
         [0, 0],
-        [0, 1],  // ~111 km
-        [0, 2],  // ~111 km more
-        [0, 3],  // ~111 km more
+        [0, 1], // ~111 km
+        [0, 2], // ~111 km more
+        [0, 3], // ~111 km more
       ],
     }
     const distances = accumulateDistance(geometry)

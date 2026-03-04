@@ -61,7 +61,8 @@ export function calculateChargingStops(
     // Check if we need a charging stop
     if (accumulatedKm >= thresholdKm && stops.length < maxStops) {
       // Calculate charge on arrival at this stop
-      const chargeUsed = (accumulatedKm / effectiveRangeKm) * (lastStopChargePercent - evParams.reserveArrival)
+      const chargeUsed =
+        (accumulatedKm / effectiveRangeKm) * (lastStopChargePercent - evParams.reserveArrival)
       const arrivalCharge = Math.max(evParams.reserveArrival, lastStopChargePercent - chargeUsed)
 
       const stop: ChargingStop = {
@@ -79,7 +80,8 @@ export function calculateChargingStops(
       // Update previous stop's distanceToNext
       if (stops.length > 0) {
         const prevStop = stops[stops.length - 1]
-        prevStop.distanceToNextKm = Math.round((currentDistanceKm - prevStop.distanceFromStartKm) * 100) / 100
+        prevStop.distanceToNextKm =
+          Math.round((currentDistanceKm - prevStop.distanceFromStartKm) * 100) / 100
       }
 
       stops.push(stop)
@@ -93,7 +95,8 @@ export function calculateChargingStops(
 
   // Check if we still can't reach destination
   const remainingToDestination = distanceKm - lastStopDistanceKm
-  const lastLegSafeRange = ((lastStopChargePercent - evParams.reserveArrival) / 100) * effectiveRangeKm
+  const lastLegSafeRange =
+    ((lastStopChargePercent - evParams.reserveArrival) / 100) * effectiveRangeKm
 
   if (remainingToDestination > lastLegSafeRange - safeRange.bufferKm) {
     // Would need another stop but we've hit the max

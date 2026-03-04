@@ -12,34 +12,35 @@ Build a Cloudflare-first web application that helps EV drivers plan trips by vis
 
 **Language/Version**: TypeScript 5.3, Node 20+
 **Primary Dependencies**:
+
 - Frontend: Vue 3.4, Vite 5, Leaflet 1.9
 - Worker: Cloudflare Workers runtime
 - Testing: Vitest (unit), Playwright (E2E)
-**Storage**: Cloudflare KV (route caching, 7-day TTL)
-**Testing**: Vitest for unit tests, Playwright for E2E tests
-**Target Platform**: Cloudflare Pages (frontend), Cloudflare Workers (API)
-**Project Type**: web-service (Cloudflare-first edge application)
-**Performance Goals**: <30 seconds trip input to visualization, <200ms cached route responses
-**Constraints**: Zero-cost infrastructure (Cloudflare free tier), no secrets in client bundle, WCAG 2.1 Level AA accessibility
-**Scale/Scope**: Single-user MVP, no authentication required, virtual stops only (no real charger DB)
+  **Storage**: Cloudflare KV (route caching, 7-day TTL)
+  **Testing**: Vitest for unit tests, Playwright for E2E tests
+  **Target Platform**: Cloudflare Pages (frontend), Cloudflare Workers (API)
+  **Project Type**: web-service (Cloudflare-first edge application)
+  **Performance Goals**: <30 seconds trip input to visualization, <200ms cached route responses
+  **Constraints**: Zero-cost infrastructure (Cloudflare free tier), no secrets in client bundle, WCAG 2.1 Level AA accessibility
+  **Scale/Scope**: Single-user MVP, no authentication required, virtual stops only (no real charger DB)
 
 ## Constitution Check
 
-*GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
+_GATE: Must pass before Phase 0 research. Re-check after Phase 1 design._
 
-| Principle | Status | Notes |
-|-----------|--------|-------|
-| I. Cloudflare-First | ✅ PASS | All infrastructure on Cloudflare platform |
+| Principle                        | Status  | Notes                                                        |
+| -------------------------------- | ------- | ------------------------------------------------------------ |
+| I. Cloudflare-First              | ✅ PASS | All infrastructure on Cloudflare platform                    |
 | II. Conservative Safety-First UX | ✅ PASS | Conservative defaults (20% reserve, 10km buffer) implemented |
-| III. Deterministic Core Logic | ✅ PASS | Pure functions implemented, 100% unit test coverage |
-| IV. Security & Privacy | ✅ PASS | No PII collection, secrets server-side only |
-| V. Separation of Concerns | ✅ PASS | packages/core, apps/web, workers/api structure implemented |
-| VI. Reliability & Performance | ✅ PASS | KV caching (7-day TTL), timeouts, error states implemented |
-| VII. Definition of Done | ✅ PASS | All tests pass (95 total), error states handled |
-| VIII. Phase-Gated Delivery | ✅ PASS | MVP Phase 1 complete and deployed |
-| IX. Playwright Web Testing | ✅ PASS | E2E tests implemented for critical paths |
-| X. Code Quality Standards | ✅ PASS | ESLint/Prettier configured, TypeScript strict mode |
-| XI. Code Security Standards | ✅ PASS | No secrets in code, credential audit passed |
+| III. Deterministic Core Logic    | ✅ PASS | Pure functions implemented, 100% unit test coverage          |
+| IV. Security & Privacy           | ✅ PASS | No PII collection, secrets server-side only                  |
+| V. Separation of Concerns        | ✅ PASS | packages/core, apps/web, workers/api structure implemented   |
+| VI. Reliability & Performance    | ✅ PASS | KV caching (7-day TTL), timeouts, error states implemented   |
+| VII. Definition of Done          | ✅ PASS | All tests pass (95 total), error states handled              |
+| VIII. Phase-Gated Delivery       | ✅ PASS | MVP Phase 1 complete and deployed                            |
+| IX. Playwright Web Testing       | ✅ PASS | E2E tests implemented for critical paths                     |
+| X. Code Quality Standards        | ✅ PASS | ESLint/Prettier configured, TypeScript strict mode           |
+| XI. Code Security Standards      | ✅ PASS | No secrets in code, credential audit passed                  |
 
 ## Project Structure
 
@@ -103,6 +104,7 @@ workers/api/             # Cloudflare Worker
 See [research.md](./research.md) for detailed findings.
 
 **Key Decisions:**
+
 1. **Routing Provider**: OSRM (Open Source Routing Machine) via public demo server - free, no API key required for MVP
 2. **Map Library**: Leaflet 1.9 - lightweight, well-documented, works with Cloudflare Pages
 3. **State Management**: Vue 3 Composition API with `reactive()` - sufficient for single-page app complexity
@@ -116,6 +118,7 @@ See [research.md](./research.md) for detailed findings.
 See [data-model.md](./data-model.md) for complete entity definitions.
 
 **Core Entities:**
+
 - `TripInput`: User-provided parameters (origin, destination, SoC, range, reserve, factor)
 - `EVParameters`: Validated and normalized trip settings
 - `Route`: Provider response with geometry, distance, duration
@@ -126,6 +129,7 @@ See [data-model.md](./data-model.md) for complete entity definitions.
 ### Interface Contracts
 
 See [contracts/](./contracts/) directory:
+
 - `route-api.md`: Worker route endpoint specification
 - `provider-osrm.md`: OSRM response normalization contract
 

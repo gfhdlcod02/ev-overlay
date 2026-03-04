@@ -81,10 +81,7 @@ describe('validateRange', () => {
 
 describe('combineValidations', () => {
   it('should combine valid results', () => {
-    const result = combineValidations(
-      { valid: true, errors: [] },
-      { valid: true, errors: [] }
-    )
+    const result = combineValidations({ valid: true, errors: [] }, { valid: true, errors: [] })
     expect(result.valid).toBe(true)
     expect(result.errors).toHaveLength(0)
   })

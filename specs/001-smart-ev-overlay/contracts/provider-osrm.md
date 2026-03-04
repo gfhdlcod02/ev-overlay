@@ -11,11 +11,11 @@ GET https://router.project-osrm.org/route/v1/driving/{lng},{lat};{lng},{lat}?ove
 
 ### Parameters
 
-| Parameter | Value | Description |
-|-----------|-------|-------------|
+| Parameter   | Value                     | Description                                                    |
+| ----------- | ------------------------- | -------------------------------------------------------------- |
 | coordinates | `{lng},{lat};{lng},{lat}` | Semicolon-separated coordinate pairs (OSRM uses lng,lat order) |
-| overview | `full` | Return full geometry |
-| geometries | `geojson` | Return geometry as GeoJSON |
+| overview    | `full`                    | Return full geometry                                           |
+| geometries  | `geojson`                 | Return geometry as GeoJSON                                     |
 
 ## OSRM Response Format
 
@@ -43,10 +43,10 @@ GET https://router.project-osrm.org/route/v1/driving/{lng},{lat};{lng},{lat}?ove
 
 ### Units Conversion
 
-| OSRM Field | Internal Field | Conversion |
-|------------|----------------|------------|
-| `distance` (meters) | `distanceKm` | ÷ 1000 |
-| `duration` (seconds) | `durationMin` | ÷ 60 |
+| OSRM Field           | Internal Field | Conversion |
+| -------------------- | -------------- | ---------- |
+| `distance` (meters)  | `distanceKm`   | ÷ 1000     |
+| `duration` (seconds) | `durationMin`  | ÷ 60       |
 
 ### Geometry Preservation
 
@@ -56,12 +56,12 @@ GET https://router.project-osrm.org/route/v1/driving/{lng},{lat};{lng},{lat}?ove
 
 ### Error Normalization
 
-| OSRM Code | HTTP Status | Internal Error Code |
-|-----------|-------------|---------------------|
-| `Ok` | 200 | - |
-| `NoRoute` | 404 | `NO_ROUTE` |
-| `NotImplemented` | 501 | `PROVIDER_ERROR` |
-| (timeout) | 504 | `TIMEOUT` |
+| OSRM Code        | HTTP Status | Internal Error Code |
+| ---------------- | ----------- | ------------------- |
+| `Ok`             | 200         | -                   |
+| `NoRoute`        | 404         | `NO_ROUTE`          |
+| `NotImplemented` | 501         | `PROVIDER_ERROR`    |
+| (timeout)        | 504         | `TIMEOUT`           |
 
 ### Normalization Algorithm
 
@@ -74,9 +74,9 @@ function normalizeOSRMResponse(osrm: OSRMResponse): Route {
   const route = osrm.routes[0]
 
   return {
-    distanceKm: Math.round(route.distance / 100 * 10) / 10, // 1 decimal
+    distanceKm: Math.round((route.distance / 100) * 10) / 10, // 1 decimal
     durationMin: Math.ceil(route.duration / 60), // Round up
-    geometry: route.geometry
+    geometry: route.geometry,
   }
 }
 ```

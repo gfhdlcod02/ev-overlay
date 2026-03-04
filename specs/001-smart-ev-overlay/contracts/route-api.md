@@ -8,10 +8,10 @@
 
 ### Query Parameters
 
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| origin | string | Yes | Origin coordinates as `lat,lng` |
-| destination | string | Yes | Destination coordinates as `lat,lng` |
+| Parameter   | Type   | Required | Description                          |
+| ----------- | ------ | -------- | ------------------------------------ |
+| origin      | string | Yes      | Origin coordinates as `lat,lng`      |
+| destination | string | Yes      | Destination coordinates as `lat,lng` |
 
 ### Example Request
 
@@ -45,12 +45,12 @@ GET /api/route?origin=37.7749,-122.4194&destination=34.0522,-118.2437
 
 ### Error Responses
 
-| Status | Code | Description |
-|--------|------|-------------|
-| 400 | INVALID_PARAMS | Missing or invalid origin/destination |
-| 404 | NO_ROUTE | No route found between points |
-| 502 | PROVIDER_ERROR | OSRM service unavailable |
-| 504 | TIMEOUT | Request to OSRM timed out |
+| Status | Code           | Description                           |
+| ------ | -------------- | ------------------------------------- |
+| 400    | INVALID_PARAMS | Missing or invalid origin/destination |
+| 404    | NO_ROUTE       | No route found between points         |
+| 502    | PROVIDER_ERROR | OSRM service unavailable              |
+| 504    | TIMEOUT        | Request to OSRM timed out             |
 
 ### Error Body Format
 
