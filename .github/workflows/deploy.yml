@@ -124,10 +124,10 @@ jobs:
       - name: Install Wrangler
         run: pnpm add -g wrangler@4.69.0
 
-      - name: Deploy to Pages
+      - name: Deploy to Pages (Production)
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           wranglerVersion: "4.69.0"
-          command: pages deploy apps/web/dist --project-name=ev-overlay
+          command: pages deploy apps/web/dist --project-name=ev-overlay --branch=main
