@@ -108,9 +108,14 @@ export async function fetchRoute(
 
   // Link external signal if provided
   if (options.signal) {
-    options.signal.addEventListener('abort', () => {
+    // Handle already-aborted signals immediately
+    if (options.signal.aborted) {
       controller.abort()
-    })
+    } else {
+      options.signal.addEventListener('abort', () => {
+        controller.abort()
+      })
+    }
   }
 
   const promise = fetchRouteInternal(request, controller.signal, cacheKey)
@@ -122,8 +127,12 @@ export async function fetchRoute(
     const result = await promise
     return result
   } finally {
-    // Clean up pending request
-    pendingRequests.delete(cacheKey)
+    // Clean up pending request only if it's still our request
+    // (guards against deleting a newer request that started after we were cancelled)
+    const currentPending = pendingRequests.get(cacheKey)
+    if (currentPending?.promise === promise) {
+      pendingRequests.delete(cacheKey)
+    }
   }
 }
 
