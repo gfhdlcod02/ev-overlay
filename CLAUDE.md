@@ -1,8 +1,10 @@
-# ev-overlay Development Guidelines
+﻿# ev-overlay Development Guidelines
 
-Auto-generated from all feature plans. Last updated: 2026-03-03
+Auto-generated from all feature plans. Last updated: 2026-03-06
 
 ## Active Technologies
+- TypeScript 5.3, Node 20+ + Vue 3.4, Vite 5, Cloudflare Workers (005-refactor-structure)
+- N/A (structural refactor only) (005-refactor-structure)
 
 - TypeScript 5.3 + Vue 3.4, Leaflet 1.9, Vite 5 (003-geolocation-map-defaults)
 - sessionStorage (browser session only) (003-geolocation-map-defaults)
@@ -22,13 +24,40 @@ Auto-generated from all feature plans. Last updated: 2026-03-03
 ```text
 packages/core/     # Pure deterministic TS logic
 apps/web/          # Vue 3 + Vite frontend
+├── src/config/    # Centralized configuration
+├── src/features/  # Feature-based organization
+│   ├── ev-params/     # EV parameter inputs
+│   ├── map/           # Route map, geolocation
+│   ├── trip-planning/ # Trip input, results
+│   └── ui/            # Shared UI components
+├── src/services/  # API client, caching
+├── src/types/     # TypeScript definitions
+└── src/utils/     # Utility functions
+
 workers/api/       # Cloudflare Worker API
+├── src/config/    # Centralized configuration
+├── src/features/  # Feature-based organization
+│   ├── rate-limiting/ # Rate limiting handler
+│   ├── routing/       # Route handlers, OSRM, cache
+│   └── shared/        # Cross-cutting (CORS)
+└── tests/integration/
+
 specs/             # Feature documentation
 ├── 001-smart-ev-overlay/
 ├── 002-rate-limiting/
 ├── 003-geolocation-map-defaults/
-└── 004-simplify-search-form/      # Current feature
+├── 004-simplify-search-form/
+└── 005-refactor-structure/  # Feature-based architecture
 ```
+
+## Terminology
+
+| Term | Definition | Example |
+|------|------------|---------|
+| **Package** | A deployable unit with its own `package.json`, dependencies, and build output | `packages/core`, `apps/web`, `workers/api` |
+| **Feature** | A domain-specific grouping of related code at the top level of a package | `features/trip-planning/`, `features/map/` |
+| **Module** | A logical subdivision within a feature by code type | `components/`, `composables/`, `handlers/` |
+| **Co-located Tests** | Test files placed in the same directory as the source file they test | `api-client.ts` + `api-client.test.ts` |
 
 ## Commands
 
@@ -62,11 +91,83 @@ pnpm prepare          # Setup Husky hooks
 - Explicit return types for exported functions
 - ESLint + Prettier for code quality
 
+## Import Conventions
+
+### Path Aliases
+
+```typescript
+// Internal imports use @/ alias
+import { useTripInput } from '@/features/trip-planning/composables/useTripInput'
+import { API_CONFIG } from '@/config'
+import type { RouteError } from '@/types'
+
+// Cross-package imports use package names
+import type { Route, Location } from '@ev/core'
+import { calculateSafeRange } from '@ev/core'
+```
+
+### Forbidden Patterns
+
+```typescript
+// ❌ Never use deep relative imports
+import { something } from '../../../utils/helpers'
+
+// ❌ Never import from outside package scope
+import { internal } from '../../node_modules/some-package'
+```
+
+## Feature-Based Architecture
+
+The codebase follows a feature-based organization pattern:
+
+### apps/web/src/features/
+
+| Feature | Purpose | Key Files |
+|---------|---------|-----------|
+| `ev-params/` | EV parameter inputs | `EVParameterInputs.vue`, `LoadingState.vue` |
+| `map/` | Route visualization, geolocation | `RouteMap.vue`, `useGeolocation.ts`, `location.ts` |
+| `trip-planning/` | Trip input and results | `TripInputForm.vue`, `TripSummary.vue`, `ChargingStopList.vue` |
+| `ui/` | Shared UI components | `ErrorDisplay.vue` |
+
+### workers/api/src/features/
+
+| Feature | Purpose | Key Files |
+|---------|---------|-----------|
+| `rate-limiting/` | API rate limiting | `rate-limit.ts` |
+| `routing/` | Route calculation, caching | `route.ts`, `osrm-client.ts`, `kv-cache.ts`, `normalize.ts` |
+| `shared/` | Cross-cutting concerns | `cors.ts` |
+
+### Benefits
+
+- **Cohesion**: Related code lives together
+- **Discoverability**: Easy to find feature-related files
+- **Scalability**: New features don't clutter existing folders
+- **Ownership**: Clear boundaries for refactoring
+
+### Measuring Success (005-refactor-structure)
+
+| Metric | Measurement Method | Target |
+|--------|-------------------|--------|
+| Code Location Time | Developer time-to-find exercise | < 2 minutes |
+| Build Time | `time pnpm build` | Baseline + 20% improvement |
+| Review Time | GitHub PR median time-to-approval | Baseline + 30% improvement |
+| Circular Dependencies | `npm ls` or madge analysis | Zero cycles |
+| Config Externalization | Audit source for hardcoded env values | 100% externalized |
+| Import Quality | Grep for `../../../` patterns | Zero deep relative imports |
+
+**Review Time Calculation**:
+```bash
+# Extract PR review times from GitHub
+gh pr list --state merged --limit 20 --json number,createdAt,reviews
+
+# Calculate: (median_baseline - median_post) / median_baseline * 100
+```
+
 ## Recent Changes
+- 005-refactor-structure: Added TypeScript 5.3, Node 20+ + Vue 3.4, Vite 5, Cloudflare Workers
 
 - 004-simplify-search-form: Added TypeScript 5.3, Node 20+ + Vue 3.4, Vite 5, Leaflet 1.9 (existing stack)
 - **2026-03-03**: Added automated version management - sync to all packages, inject to builds, API endpoint
-- **2026-03-03**: Implemented 003-geolocation-map-defaults - Geolocation-based map defaults with Thailand fallback
 
 <!-- MANUAL ADDITIONS START -->
 
@@ -84,8 +185,8 @@ pnpm prepare          # Setup Husky hooks
 ### Key Files
 
 - `apps/web/src/types/location.ts` - Geolocation type definitions
-- `apps/web/src/stores/location.ts` - Pinia store for location state
-- `apps/web/src/composables/useGeolocation.ts` - Geolocation API composable
+- `apps/web/src/features/map/stores/location.ts` - Pinia store for location state
+- `apps/web/src/features/map/composables/useGeolocation.ts` - Geolocation API composable
 - `apps/web/src/utils/coordinates.ts` - Coordinate validation utilities
 - `apps/web/tests/e2e/geolocation.spec.ts` - E2E tests for geolocation flows
 

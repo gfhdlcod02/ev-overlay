@@ -16,7 +16,9 @@
     "types": ["vite/client"],
     "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["src/*"],
+      "@core": ["../../packages/core/src/index"],
+      "@core/*": ["../../packages/core/src/*"]
     }
   },
   "include": ["src/**/*.ts", "src/**/*.vue"],

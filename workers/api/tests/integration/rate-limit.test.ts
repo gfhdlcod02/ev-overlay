@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import type { Env } from '../../src/handlers/route'
+import type { Env } from '@/features/routing/handlers/route'
 import {
   checkRateLimit,
   getRateLimitHeaders,
@@ -8,7 +8,7 @@ import {
   getRateLimitKey,
   RATE_LIMIT_MAX,
   RATE_LIMIT_WINDOW,
-} from '../../src/handlers/rate-limit'
+} from '@/features/rate-limiting/handlers/rate-limit'
 
 // Mock KV namespace for testing
 class MockKVNamespace implements KVNamespace {

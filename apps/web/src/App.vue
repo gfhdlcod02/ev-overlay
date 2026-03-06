@@ -29,14 +29,14 @@
 
 <script setup lang="ts">
 import { onMounted } from 'vue'
-import { useTripInput } from './composables/useTripInput'
-import { useGeolocation } from './composables/useGeolocation'
-import TripInputForm from './components/TripInputForm.vue'
-import RouteMap from './components/RouteMap.vue'
-import TripSummary from './components/TripSummary.vue'
-import ChargingStopList from './components/ChargingStopList.vue'
-import ErrorDisplay from './components/ErrorDisplay.vue'
-import LoadingState from './components/LoadingState.vue'
+import { useTripInput } from '@/features/trip-planning/composables/useTripInput'
+import { useGeolocation } from '@/features/map/composables/useGeolocation'
+import TripInputForm from '@/features/trip-planning/components/TripInputForm.vue'
+import RouteMap from '@/features/map/components/RouteMap.vue'
+import TripSummary from '@/features/trip-planning/components/TripSummary.vue'
+import ChargingStopList from '@/features/trip-planning/components/ChargingStopList.vue'
+import ErrorDisplay from '@/features/ui/components/ErrorDisplay.vue'
+import LoadingState from '@/features/ev-params/components/LoadingState.vue'
 
 const appVersion = import.meta.env.VITE_APP_VERSION || 'dev'
 

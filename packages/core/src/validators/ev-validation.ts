@@ -1,6 +1,6 @@
 import type { EVParameters } from '../types'
+import { EVParameterBounds } from '../types'
 import type { ValidationResult } from './index'
-import { EVParameterBounds } from '../types/ev-parameters'
 import { validateRange, combineValidations } from './index'
 
 /**

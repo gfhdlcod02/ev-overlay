@@ -1,6 +1,6 @@
 import type { RouteSegment, SafeRange, EVParameters, Route, ChargingStop } from '../types'
+import { EVParameterDefaults } from '../types'
 import { accumulateDistance } from './distance-accumulator'
-import { EVParameterDefaults } from '../types/ev-parameters'
 
 // Color constants for segments
 const SAFE_COLOR = '#22c55e' // green-500

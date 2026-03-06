@@ -1,5 +1,5 @@
 import type { EVParameters, SafeRange } from '../types'
-import { EVParameterDefaults } from '../types/ev-parameters'
+import { EVParameterDefaults } from '../types'
 
 /**
  * Calculate safe driving range based on EV parameters

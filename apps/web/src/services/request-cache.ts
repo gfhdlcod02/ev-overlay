@@ -1,4 +1,4 @@
-import type { CacheEntry, CacheConfig } from '../types'
+import type { CacheEntry, CacheConfig } from '@/types'
 
 /**
  * LRU Cache with TTL expiration

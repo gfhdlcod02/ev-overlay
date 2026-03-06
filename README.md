@@ -87,39 +87,51 @@ pnpm run lint:fix
 
 ## Project Structure
 
+The codebase follows a **feature-based architecture** with clear separation of concerns:
+
 ```
 ev-overlay/
-├── packages/core/          # Pure deterministic TypeScript logic
+├── packages/core/              # Pure deterministic TypeScript logic
 │   ├── src/
-│   │   ├── calculator/     # Safe range, stop placement algorithms
-│   │   ├── types/          # Shared domain types
-│   │   ├── url-builder/    # Google Maps URL generation
-│   │   ├── utils/          # Haversine distance calculation
-│   │   └── validators/     # Input validation
-│   └── tests/unit/         # Unit tests (100% coverage)
+│   │   ├── calculator/         # Safe range, stop placement algorithms
+│   │   ├── types/              # Shared domain types
+│   │   ├── url-builder/        # Google Maps URL generation
+│   │   ├── utils/              # Haversine distance calculation
+│   │   └── validators/         # Input validation
+│   └── vitest.config.ts        # Unit tests (85 tests, 100% coverage)
 │
-├── apps/web/               # Vue 3 + Vite frontend
+├── apps/web/                   # Vue 3 + Vite frontend
 │   ├── src/
-│   │   ├── components/     # Vue components
-│   │   ├── composables/    # Vue composables
-│   │   ├── stores/         # Pinia stores (location, etc.)
-│   │   ├── types/          # TypeScript type definitions
-│   │   ├── utils/          # Utility functions
-│   │   ├── services/       # API client
-│   │   └── App.vue         # Main application
-│   └── tests/e2e/          # Playwright E2E tests
+│   │   ├── config/             # Centralized configuration
+│   │   ├── features/           # Feature-based organization
+│   │   │   ├── ev-params/      # EV parameter inputs
+│   │   │   ├── map/            # Route map, geolocation
+│   │   │   ├── trip-planning/  # Trip input, results
+│   │   │   └── ui/             # Shared UI components
+│   │   ├── services/           # API client, caching
+│   │   ├── types/              # TypeScript type definitions
+│   │   ├── utils/              # Utility functions
+│   │   └── App.vue             # Main application
+│   ├── tests/e2e/              # Playwright E2E tests
+│   └── .env.example            # Environment configuration
 │
-├── workers/api/            # Cloudflare Worker API
+├── workers/api/                # Cloudflare Worker API
 │   ├── src/
-│   │   ├── cache/          # KV caching logic
-│   │   ├── handlers/       # Route handlers
-│   │   └── providers/      # OSRM integration
-│   └── tests/integration/  # Integration tests
+│   │   ├── config/             # Centralized configuration
+│   │   ├── features/           # Feature-based organization
+│   │   │   ├── rate-limiting/  # Rate limiting handler
+│   │   │   ├── routing/        # Route handlers, OSRM, cache
+│   │   │   └── shared/         # Cross-cutting concerns (CORS)
+│   │   └── index.ts            # Worker entry point
+│   ├── tests/integration/      # Integration tests
+│   └── .env.example            # Environment configuration
 │
-└── specs/                       # Feature documentation
-    ├── 001-smart-ev-overlay/    # Initial EV overlay feature
-    ├── 002-rate-limiting/       # API rate limiting
-    └── 003-geolocation-map-defaults/  # Geolocation & map defaults
+└── specs/                      # Feature specifications
+    ├── 001-smart-ev-overlay/
+    ├── 002-rate-limiting/
+    ├── 003-geolocation-map-defaults/
+    ├── 004-simplify-search-form/
+    └── 005-refactor-structure/  # Current architecture
 ```
 
 ## Architecture
@@ -131,6 +143,27 @@ ev-overlay/
 | `packages/core` | Pure business logic  | Zero browser/Node dependencies |
 | `apps/web`      | UI and map rendering | No direct provider calls       |
 | `workers/api`   | Edge API and caching | Secrets server-side only       |
+
+### Feature-Based Organization
+
+Each package organizes code by **feature** rather than layer:
+
+- **`features/`** - Co-locate related components, composables, and stores
+- **`services/`** - API clients and external integrations
+- **`config/`** - Centralized configuration loaders
+- **`types/`** - TypeScript type definitions
+
+### Import Conventions
+
+```typescript
+// Internal imports use @/ alias
+import { useTripInput } from '@/features/trip-planning/composables/useTripInput'
+import { API_CONFIG } from '@/config'
+
+// Cross-package imports use package names
+import type { Route } from '@ev/core'
+import { calculateSafeRange } from '@ev/core'
+```
 
 ### Data Flow
 

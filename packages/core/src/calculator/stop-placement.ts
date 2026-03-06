@@ -1,5 +1,5 @@
 import type { ChargingStop, SafeRange, EVParameters, Route } from '../types'
-import { EVParameterDefaults } from '../types/ev-parameters'
+import { EVParameterDefaults } from '../types'
 import { accumulateDistance } from './distance-accumulator'
 
 /**

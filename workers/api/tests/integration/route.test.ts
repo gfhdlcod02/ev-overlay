@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeAll } from 'vitest'
-import type { Env } from '../../src/handlers/route'
-import { handleRoute } from '../../src/handlers/route'
-import { generateCacheKey, getCachedRoute } from '../../src/cache/kv-cache'
+import type { Env } from '@/features/routing/handlers/route'
+import { handleRoute } from '@/features/routing/handlers/route'
+import { generateCacheKey, getCachedRoute } from '@/features/routing/cache/kv-cache'
 
 // Mock KV namespace for testing
 class MockKVNamespace implements KVNamespace {
