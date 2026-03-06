@@ -22,7 +22,10 @@ module.exports = {
     '@typescript-eslint/explicit-function-return-type': 'off',
     '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
     'vue/multi-word-component-names': 'off',
-    'vue/require-default-prop': 'off'
+    'vue/require-default-prop': 'off',
+    'no-restricted-imports': ['warn', {
+      'patterns': ['../../*', '../../../*', '../../../../*']
+    }]
   },
   ignorePatterns: ['dist/', 'node_modules/', '*.config.js', '*.config.ts']
 }

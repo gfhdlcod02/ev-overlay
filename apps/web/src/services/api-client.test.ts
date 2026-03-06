@@ -7,7 +7,7 @@ import {
   getRouteCacheStats,
   geocodeAddress,
 } from './api-client'
-import type { Route } from '@ev/core'
+import type { Route } from '@core'
 
 // Mock global fetch
 const mockFetch = vi.fn()

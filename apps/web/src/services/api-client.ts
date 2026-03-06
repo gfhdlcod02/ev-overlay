@@ -1,12 +1,13 @@
-import type { Location, Route } from '@ev/core'
+import type { Location, Route } from '@core'
 import { SearchCache, normalizeSearchKey } from './request-cache'
-import type { PendingRequest } from '../types'
+import type { PendingRequest } from '@/types'
+import { API_CONFIG, GEOCODING_CONFIG, CACHE_CONFIG } from '@/config'
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || '/api'
+const API_BASE_URL = API_CONFIG.BASE_URL
 
-// Cache configuration: 60 seconds TTL, max 50 entries
-const CACHE_TTL_MS = 60000
-const CACHE_MAX_SIZE = 50
+// Cache configuration from centralized config
+const CACHE_TTL_MS = CACHE_CONFIG.ROUTE_CACHE_TTL_MS
+const CACHE_MAX_SIZE = CACHE_CONFIG.ROUTE_CACHE_MAX_SIZE
 
 // Global cache instance
 const routeCache = new SearchCache<Route>({
@@ -233,10 +234,10 @@ export function getRouteCacheStats(): { size: number; maxSize: number; ttlMs: nu
 export async function geocodeAddress(address: string): Promise<Location | null> {
   try {
     const response = await fetch(
-      `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&limit=1`,
+      `${GEOCODING_CONFIG.NOMINATIM_URL}/search?format=json&q=${encodeURIComponent(address)}&limit=1`,
       {
         headers: {
-          'User-Agent': 'EV-Overlay/1.0',
+          'User-Agent': GEOCODING_CONFIG.USER_AGENT,
         },
       }
     )

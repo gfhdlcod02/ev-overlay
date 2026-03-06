@@ -3,6 +3,7 @@ import type { Route, SafeRange, ChargingStop, RouteSegment } from './route'
 
 export type { EVParameters } from './ev-parameters'
 export type { Route, SafeRange, ChargingStop, RouteSegment } from './route'
+export { EVParameterBounds, EVParameterDefaults } from './ev-parameters'
 
 /**
  * Geographic coordinate

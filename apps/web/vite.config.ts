@@ -7,7 +7,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': resolve(__dirname, 'src'),
-      '@ev/core': resolve(__dirname, '../../packages/core/src'),
+      '@core': resolve(__dirname, '../../packages/core/src'),
     },
   },
   server: {

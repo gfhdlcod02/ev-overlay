@@ -1,12 +1,13 @@
-import { handleRoute, type Env } from './handlers/route'
-import { handleCors, addCorsHeaders } from './handlers/cors'
-import { checkRateLimit, getRateLimitHeaders, createRateLimitError } from './handlers/rate-limit'
+import { handleRoute, type Env } from '@/features/routing/handlers/route'
+import { handleCors, addCorsHeaders } from '@/features/shared/handlers/cors'
+import { checkRateLimit, getRateLimitHeaders, createRateLimitError } from '@/features/rate-limiting/handlers/rate-limit'
+import { APP_CONFIG } from '@/config'
 
 export { Env }
 
-// Version is replaced during build (defaults to 'dev' if not injected)
-const VERSION = '__APP_VERSION__'.startsWith('__') ? 'dev' : '__APP_VERSION__'
-const COMMIT = '__GIT_COMMIT__'.startsWith('__') ? 'local' : '__GIT_COMMIT__'
+// Version from centralized config (replaced during build)
+const VERSION = APP_CONFIG.VERSION
+const COMMIT = APP_CONFIG.COMMIT
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
