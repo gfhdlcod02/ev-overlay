@@ -1,12 +1,11 @@
 <template>
-  <div v-if="stops.length > 0" data-testid="charging-stops" class="bg-white rounded-lg shadow p-4">
+  <div v-if="stops.length > 0" class="bg-white rounded-lg shadow p-4">
     <h3 class="text-lg font-semibold text-gray-900 mb-3">Charging Stops</h3>
 
     <div class="space-y-3">
       <div
         v-for="stop in stops"
         :key="stop.sequence"
-        data-testid="charging-stop-item"
         class="flex items-start space-x-3 p-3 bg-blue-50 rounded-lg"
       >
         <div

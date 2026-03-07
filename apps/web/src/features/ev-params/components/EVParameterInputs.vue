@@ -7,7 +7,6 @@
       <label for="soc" class="block text-xs text-gray-600"> Current Charge: {{ socNow }}% </label>
       <input
         id="soc"
-        data-testid="current-soc"
         :value="socNow"
         type="range"
         min="0"
@@ -28,7 +27,6 @@
       </label>
       <input
         id="range"
-        data-testid="range-km"
         :value="range100Km"
         type="range"
         min="100"
