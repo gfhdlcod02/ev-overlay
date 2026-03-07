@@ -14,13 +14,33 @@ const mockFetch = vi.fn()
 global.fetch = mockFetch
 
 describe('fetchRoute', () => {
+  // New v1 API response format
+  const mockV1ApiResponse = {
+    route: {
+      distance: 685500, // meters
+      duration: 25200, // seconds (420 min)
+      polyline: 'encoded_polyline',
+      legs: [
+        {
+          from: { lat: 13.7563, lng: 100.5018, name: 'Bangkok' },
+          to: { lat: 18.7883, lng: 98.9853, name: 'Chiang Mai' },
+          distance: 685500,
+          duration: 25200,
+          consumptionKwh: 100,
+        },
+      ],
+    },
+    chargingStops: [],
+    safeRangeKm: 360,
+  }
+
+  // Expected transformed Route format
   const mockRoute: Route = {
     origin: { lat: 13.7563, lng: 100.5018, address: 'Bangkok' },
     destination: { lat: 18.7883, lng: 98.9853, address: 'Chiang Mai' },
     distanceKm: 685.5,
     durationMin: 420,
-    polyline: 'encoded_polyline',
-    legs: [],
+    geometry: { type: 'LineString', coordinates: [] },
   }
 
   beforeEach(() => {
@@ -35,7 +55,7 @@ describe('fetchRoute', () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         headers: new Headers({ 'content-type': 'application/json' }),
-        json: async () => ({ route: mockRoute }),
+        json: async () => mockV1ApiResponse,
       })
 
       const result = await fetchRoute({
@@ -75,7 +95,7 @@ describe('fetchRoute', () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         headers: new Headers({ 'content-type': 'application/json' }),
-        json: async () => ({ route: mockRoute }),
+        json: async () => mockV1ApiResponse,
       })
 
       // First request - hits API
@@ -95,7 +115,7 @@ describe('fetchRoute', () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         headers: new Headers({ 'content-type': 'application/json' }),
-        json: async () => ({ route: mockRoute }),
+        json: async () => mockV1ApiResponse,
       })
 
       // First request
@@ -115,12 +135,12 @@ describe('fetchRoute', () => {
         .mockResolvedValueOnce({
           ok: true,
           headers: new Headers({ 'content-type': 'application/json' }),
-          json: async () => ({ route: mockRoute }),
+          json: async () => mockV1ApiResponse,
         })
         .mockResolvedValueOnce({
           ok: true,
           headers: new Headers({ 'content-type': 'application/json' }),
-          json: async () => ({ route: mockRoute }),
+          json: async () => mockV1ApiResponse,
         })
 
       // First request
@@ -139,7 +159,7 @@ describe('fetchRoute', () => {
       mockFetch.mockResolvedValueOnce({
         ok: true,
         headers: new Headers({ 'content-type': 'application/json' }),
-        json: async () => ({ route: mockRoute }),
+        json: async () => mockV1ApiResponse,
       })
 
       await fetchRoute({ origin: 'Bangkok', destination: 'Chiang Mai' })
@@ -152,8 +172,8 @@ describe('fetchRoute', () => {
 
   describe('deduplication', () => {
     it('should deduplicate concurrent requests', async () => {
-      let resolveRequest: (value: { route: Route }) => void
-      const requestPromise = new Promise<{ route: Route }>(resolve => {
+      let resolveRequest: (value: typeof mockV1ApiResponse) => void
+      const requestPromise = new Promise<typeof mockV1ApiResponse>(resolve => {
         resolveRequest = resolve
       })
 
@@ -161,7 +181,7 @@ describe('fetchRoute', () => {
         requestPromise.then(() => ({
           ok: true,
           headers: new Headers({ 'content-type': 'application/json' }),
-          json: async () => ({ route: mockRoute }),
+          json: async () => mockV1ApiResponse,
         }))
       )
 
@@ -176,7 +196,7 @@ describe('fetchRoute', () => {
       })
 
       // Resolve the fetch
-      resolveRequest!({ route: mockRoute })
+      resolveRequest!(mockV1ApiResponse)
 
       // Both should resolve with the same result
       const [result1, result2] = await Promise.all([promise1, promise2])

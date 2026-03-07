@@ -55,12 +55,27 @@ test.describe('Basic UI Tests', () => {
 
   test('should show loading state on submit', async ({ page }) => {
     // Add a delayed mock so loading state is visible
-    await page.route('**/api/route**', async route => {
+    await page.route('**/api/v1/routes', async route => {
       await new Promise(resolve => setTimeout(resolve, 500))
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
-        body: JSON.stringify(mockRouteResponse),
+        body: JSON.stringify({
+          route: {
+            distance: 600000,
+            duration: 21600,
+            polyline: 'mock_polyline',
+            legs: [{
+              from: { lat: 37.7749, lng: -122.4194 },
+              to: { lat: 34.0522, lng: -118.2437 },
+              distance: 600000,
+              duration: 21600,
+              consumptionKwh: 77
+            }]
+          },
+          chargingStops: [],
+          safeRangeKm: 360
+        }),
       })
     })
 

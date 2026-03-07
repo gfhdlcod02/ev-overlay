@@ -1,5 +1,5 @@
 <template>
-  <div v-if="loading" class="flex items-center justify-center p-8" role="status" aria-live="polite">
+  <div v-if="loading" data-testid="loading-indicator" class="flex items-center justify-center p-8" role="status" aria-live="polite">
     <svg
       class="animate-spin h-8 w-8 text-blue-600"
       xmlns="http://www.w3.org/2000/svg"

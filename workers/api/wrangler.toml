@@ -1,11 +1,116 @@
 name = "ev-overlay-api"
 main = "src/index.ts"
-compatibility_date = "2023-12-01"
+compatibility_date = "2024-01-01"
 
-# KV namespace binding for route caching
+# ============================================
+# Environment Variable Substitution
+# ============================================
+# The following variables must be set in your environment:
+# - D1_DATABASE_ID: Cloudflare D1 database ID
+# - ROUTE_CACHE_KV_ID: KV namespace ID for route cache
+# - ROUTE_CACHE_PREVIEW_ID: Preview KV namespace ID
+# - STATION_CACHE_KV_ID: KV namespace ID for station cache
+# - STATION_CACHE_PREVIEW_ID: Preview KV namespace ID
+#
+# Set via: wrangler secret put <NAME> or .env file
+
+# ============================================
+# D1 Database (Source of Truth)
+# ============================================
+[[d1_databases]]
+binding = "DB"
+database_name = "ev-overlay-prod"
+database_id = "${D1_DATABASE_ID}"
+
+# ============================================
+# KV Namespaces (Caching)
+# ============================================
 [[kv_namespaces]]
 binding = "ROUTE_CACHE"
-id = "54f913dd4d1b4b7ebe08add84ca13419"
+id = "${ROUTE_CACHE_KV_ID}"
+preview_id = "${ROUTE_CACHE_PREVIEW_ID}"
 
+[[kv_namespaces]]
+binding = "STATION_CACHE"
+id = "${STATION_CACHE_KV_ID}"
+preview_id = "${STATION_CACHE_PREVIEW_ID}"
+
+# ============================================
+# R2 Bucket (Historical Snapshots)
+# ============================================
+[[r2_buckets]]
+binding = "SNAPSHOTS_BUCKET"
+bucket_name = "ev-overlay-snapshots"
+
+# ============================================
+# Queues (Async Ingestion)
+# ============================================
+[[queues.producers]]
+queue = "ingestion-jobs"
+binding = "INGESTION_QUEUE"
+
+[[queues.consumers]]
+queue = "ingestion-jobs"
+max_batch_size = 10
+max_batch_timeout = 30
+max_retries = 3
+dead_letter_queue = "ingestion-retries"
+
+# ============================================
+# Durable Objects
+# ============================================
+[[durable_objects.bindings]]
+name = "RATE_LIMITER"
+class_name = "RateLimiter"
+
+[[durable_objects.bindings]]
+name = "INGESTION_LOCK"
+class_name = "IngestionLock"
+
+[[migrations]]
+tag = "v1"
+new_classes = ["RateLimiter", "IngestionLock"]
+
+# ============================================
+# Cron Triggers (Data Ingestion)
+# ============================================
+[triggers]
+crons = ["0 * * * *"]
+
+# ============================================
+# Environment Variables (non-secret)
+# ============================================
 [vars]
+# OSRM for routing (fallback)
 OSRM_BASE_URL = "https://router.project-osrm.org"
+
+# Rate limiting
+RATE_LIMIT_REQUESTS_PER_HOUR = "100"
+RATE_LIMIT_WINDOW_MS = "3600000"
+
+# Cache TTLs (in seconds)
+ROUTE_CACHE_TTL_SECONDS = "604800"
+STATION_CACHE_TTL_SECONDS = "3600"
+
+# Ingestion
+OCM_API_BASE_URL = "https://api.openchargemap.io/v3"
+OCM_COUNTRY_CODE = "TH"
+OCM_MAX_RESULTS = "10000"
+
+# ============================================
+# Environment-specific Configuration
+# ============================================
+[env.staging]
+name = "ev-overlay-api-staging"
+
+[env.staging.vars]
+RATE_LIMIT_REQUESTS_PER_HOUR = "1000"
+
+[env.production]
+name = "ev-overlay-api"
+
+# ============================================
+# Build Configuration
+# ============================================
+[build]
+command = "npm run build"
