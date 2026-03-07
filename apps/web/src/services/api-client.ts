@@ -138,7 +138,7 @@ export async function fetchRoute(
 }
 
 /**
- * Internal fetch implementation - uses v1 API
+ * Internal fetch implementation
  */
 async function fetchRouteInternal(
   request: RouteRequest,
@@ -148,27 +148,16 @@ async function fetchRouteInternal(
   let response: Response
 
   try {
-    // Parse coordinates from origin/destination strings
-    const [originLat, originLng] = request.origin.split(',').map(s => parseFloat(s.trim()))
-    const [destLat, destLng] = request.destination.split(',').map(s => parseFloat(s.trim()))
+    const params = new URLSearchParams({
+      origin: request.origin,
+      destination: request.destination,
+    })
 
-    // Call new v1 API with POST and JSON body
-    response = await fetch(`${API_BASE_URL}/api/v1/routes`, {
-      method: 'POST',
+    response = await fetch(`${API_BASE_URL}/route?${params}`, {
+      method: 'GET',
       headers: {
-        'Content-Type': 'application/json',
         Accept: 'application/json',
       },
-      body: JSON.stringify({
-        origin: { lat: originLat, lng: originLng },
-        destination: { lat: destLat, lng: destLng },
-        vehicle: {
-          batteryCapacityKwh: 77,
-          rangeKmAt100Percent: 450,
-          currentSocPercent: 80,
-          reserveSocPercent: 20,
-        },
-      }),
       signal,
     })
   } catch (e) {
@@ -194,26 +183,12 @@ async function fetchRouteInternal(
     )
   }
 
-  // Transform v1 API response to internal Route format
-  const data = await response.json()
-
-  const from = data.route.legs[0]?.from || { lat: 0, lng: 0 }
-  const to = data.route.legs[data.route.legs.length - 1]?.to || { lat: 0, lng: 0 }
-
-  // Decode polyline to geometry (simplified - just use the polyline as-is for LineString)
-  // In a real implementation, you'd decode the Google polyline format
-  const route: Route = {
-    origin: { lat: from.lat, lng: from.lng, address: from.name },
-    destination: { lat: to.lat, lng: to.lng, address: to.name },
-    distanceKm: data.route.distance / 1000,
-    durationMin: data.route.duration / 60,
-    geometry: { type: 'LineString', coordinates: [] }, // Placeholder - would decode polyline
-  }
+  const data: RouteResponse = await response.json()
 
   // Cache the result
-  routeCache.set(cacheKey, route)
+  routeCache.set(cacheKey, data.route)
 
-  return route
+  return data.route
 }
 
 /**
