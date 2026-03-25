@@ -25,8 +25,8 @@ Convert Origin and Destination inputs to plain text fields by removing all autoc
 
 _GATE: Must pass before Phase 0 research. Re-check after Phase 1 design._
 
-| Principle                              | Status  | Notes                                                                         |
-| -------------------------------------- | ------- | ----------------------------------------------------------------------------- |
+| Principle                              | Status | Notes                                                                         |
+| -------------------------------------- | ------ | ----------------------------------------------------------------------------- |
 | I. Cloudflare-First Infrastructure     | [PASS] | No infrastructure changes; client-side only                                   |
 | II. Conservative Safety-First UX       | [PASS] | No changes to safety calculations or defaults                                 |
 | III. Deterministic Core Logic          | [PASS] | No changes to EV estimation logic (packages/core untouched)                   |

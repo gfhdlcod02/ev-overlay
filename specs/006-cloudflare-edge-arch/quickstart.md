@@ -270,6 +270,7 @@ In local development, KV is strongly consistent. In production, expect 60s propa
 ### Durable Object state lost
 
 DOs persist state automatically. If state seems lost:
+
 1. Check DO ID is consistent
 2. Verify `storage` API is used (not just in-memory)
 3. Check for hibernation-related issues
@@ -285,6 +286,7 @@ https://your-worker.your-subdomain.workers.dev/admin/dashboard/rate-limits
 ```
 
 Displays:
+
 - Total requests and blocked requests (24h)
 - Block rate percentage
 - Top clients by request volume
@@ -299,6 +301,7 @@ https://your-worker.your-subdomain.workers.dev/admin/dashboard/performance
 ```
 
 Displays:
+
 - Core Web Vitals (LCP, FID, CLS, INP) with scoring
 - Cache hit rates for routes and stations
 - API response times (P95)

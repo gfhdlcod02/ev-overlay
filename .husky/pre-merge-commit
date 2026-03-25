@@ -1,0 +1,16 @@
+#!/bin/sh
+# Pre-merge-commit Hook - EV Overlay
+# Policy: ห้าม merge ตรงในทุกกรณี ต้องผ่าน PR เท่านั้น
+
+echo ""
+echo "❌ ไม่อนุญาตให้ merge โดยตรง (git merge)"
+echo ""
+echo "📋 Policy: ทุกการ merge ต้องผ่าน Pull Request บน GitHub เท่านั้น"
+echo ""
+echo "วิธีการที่ถูกต้อง:"
+echo "  1. สร้าง branch:     git checkout -b feature/name"
+echo "  2. Push ขึ้น GitHub: git push -u origin feature/name"
+echo "  3. เปิด PR:           gh pr create --base main"
+echo "  4. รอ review และ merge บน GitHub"
+echo ""
+exit 1

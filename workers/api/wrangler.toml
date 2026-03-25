@@ -35,6 +35,12 @@ binding = "STATION_CACHE"
 id = "${STATION_CACHE_KV_ID}"
 preview_id = "${STATION_CACHE_PREVIEW_ID}"
 
+# Shadow Traffic KV (for storing comparison differences)
+[[kv_namespaces]]
+binding = "SHADOW_TRAFFIC_KV"
+id = "${SHADOW_TRAFFIC_KV_ID}"
+preview_id = "${SHADOW_TRAFFIC_KV_PREVIEW_ID}"
+
 # ============================================
 # R2 Bucket (Historical Snapshots)
 # ============================================
@@ -69,7 +75,7 @@ class_name = "IngestionLock"
 
 [[migrations]]
 tag = "v1"
-new_classes = ["RateLimiter", "IngestionLock"]
+new_sqlite_classes = ["RateLimiter", "IngestionLock"]
 
 # ============================================
 # Cron Triggers (Data Ingestion)
@@ -97,6 +103,11 @@ OCM_API_BASE_URL = "https://api.openchargemap.io/v3"
 OCM_COUNTRY_CODE = "TH"
 OCM_MAX_RESULTS = "10000"
 
+# Shadow Traffic (Migration)
+SHADOW_TRAFFIC_ENABLED = "true"
+SHADOW_TRAFFIC_PERCENT = "1"
+LOG_SHADOW_DIFFERENCES = "true"
+
 # ============================================
 # Environment-specific Configuration
 # ============================================
@@ -108,6 +119,11 @@ RATE_LIMIT_REQUESTS_PER_HOUR = "1000"
 
 [env.production]
 name = "ev-overlay-api"
+
+[env.production.vars]
+# Shadow traffic - old API endpoint for comparison
+OLD_API_URL = "https://old-api.ev-overlay.com"
+SHADOW_TRAFFIC_PERCENT = "1"
 
 # ============================================
 # Build Configuration

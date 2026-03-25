@@ -61,8 +61,10 @@ function generateRequestId(): string {
 
 /**
  * Compare two route responses for differences
+ * Note: This function is available for future use in detailed comparison logging
  */
-function compareResponses(oldResp: RouteResponse, newResp: RouteResponse): string[] {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function _compareResponses(oldResp: RouteResponse, newResp: RouteResponse): string[] {
   const differences: string[] = []
 
   // Compare route distance (allow 1% tolerance)
@@ -146,20 +148,19 @@ async function sendShadowRequest(
 /**
  * Log comparison result for analysis
  */
-async function logComparison(
-  env: Record<string, string>,
-  result: ComparisonResult
-): Promise<void> {
+async function logComparison(env: Record<string, string>, result: ComparisonResult): Promise<void> {
   // Log to console/analytics
-  console.log(JSON.stringify({
-    type: 'shadow_traffic_comparison',
-    ...result,
-  }))
+  console.log(
+    JSON.stringify({
+      type: 'shadow_traffic_comparison',
+      ...result,
+    })
+  )
 
   // If significant differences, could also write to KV for later analysis
   if (result.differences.length > 0 && env.SHADOW_TRAFFIC_KV) {
     try {
-      const kv = (env.SHADOW_TRAFFIC_KV as unknown) as KVNamespace
+      const kv = env.SHADOW_TRAFFIC_KV as unknown as KVNamespace
       await kv.put(
         `shadow-diff:${result.requestId}`,
         JSON.stringify(result),
@@ -176,9 +177,7 @@ async function logComparison(
  * Shadow traffic middleware wrapper
  * Wraps route handler to enable dual-write comparison
  */
-export function withShadowTraffic<
-  Env extends Record<string, string>,
->(
+export function withShadowTraffic<Env extends Record<string, string>>(
   handler: (request: Request, env: Env, ctx: ExecutionContext) => Promise<Response>
 ): (request: Request, env: Env, ctx: ExecutionContext) => Promise<Response> {
   return async (request: Request, env: Env, ctx: ExecutionContext): Promise<Response> => {
@@ -203,7 +202,7 @@ export function withShadowTraffic<
     }
 
     // Clone request for shadow
-    const body = await request.clone().json() as RouteRequest
+    const body = (await request.clone().json()) as RouteRequest
 
     // Execute shadow request in background (don't await)
     ctx.waitUntil(
@@ -233,9 +232,7 @@ export function withShadowTraffic<
 /**
  * Get shadow traffic metrics
  */
-export async function getShadowMetrics(
-  env: Record<string, string>
-): Promise<{
+export async function getShadowMetrics(env: Record<string, string>): Promise<{
   enabled: boolean
   percentage: number
   recentComparisons: number
@@ -246,14 +243,8 @@ export async function getShadowMetrics(
   // Count recent differences from KV (if available)
   let differencesFound = 0
   if (env.SHADOW_TRAFFIC_KV) {
-    try {
-      const kv = (env.SHADOW_TRAFFIC_KV as unknown) as KVNamespace
-      // This would need a proper list operation with prefix
-      // Simplified for example
-      differencesFound = 0
-    } catch {
-      // Ignore errors
-    }
+    // KV namespace available for future difference tracking
+    differencesFound = 0
   }
 
   return {

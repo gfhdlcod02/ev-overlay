@@ -1,5 +1,9 @@
 // Location type used indirectly through normalize functions
-import { fetchRouteFromOSRM, getOSRMOptions, OSRMError } from '@/features/routing/providers/osrm-client'
+import {
+  fetchRouteFromOSRM,
+  getOSRMOptions,
+  OSRMError,
+} from '@/features/routing/providers/osrm-client'
 import { normalizeOSRMResponse, parseCoordinates } from '@/features/routing/providers/normalize'
 import { generateCacheKey, getCachedRoute, cacheRoute } from '@/features/routing/cache/kv-cache'
 

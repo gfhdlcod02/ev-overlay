@@ -65,16 +65,18 @@ test.describe('Basic UI Tests', () => {
             distance: 600000,
             duration: 21600,
             polyline: 'mock_polyline',
-            legs: [{
-              from: { lat: 37.7749, lng: -122.4194 },
-              to: { lat: 34.0522, lng: -118.2437 },
-              distance: 600000,
-              duration: 21600,
-              consumptionKwh: 77
-            }]
+            legs: [
+              {
+                from: { lat: 37.7749, lng: -122.4194 },
+                to: { lat: 34.0522, lng: -118.2437 },
+                distance: 600000,
+                duration: 21600,
+                consumptionKwh: 77,
+              },
+            ],
           },
           chargingStops: [],
-          safeRangeKm: 360
+          safeRangeKm: 360,
         }),
       })
     })

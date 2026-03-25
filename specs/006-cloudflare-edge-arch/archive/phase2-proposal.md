@@ -33,24 +33,27 @@ Replace virtual charging stops with actual charger locations from D1 database. T
 ## Technical Approach
 
 ### Route Planning Enhancement
+
 ```typescript
 // New: Query actual stations from D1
 const stations = await stationRepo.findWithinCorridor({
   routeGeometry: route.geometry,
-  bufferKm: 10,  // Search within 10km of route
+  bufferKm: 10, // Search within 10km of route
   minPowerKw: 50,
   connectorTypes: ['CCS'],
-});
+})
 
 // Use real stations for stop placement
-const stops = calculateStopsWithRealStations(route, stations, safeRange);
+const stops = calculateStopsWithRealStations(route, stations, safeRange)
 ```
 
 ### API Changes
+
 - `GET /api/v1/stations/corridor` - Query stations near route
 - Extend `RouteResponse` with `stationDetails` array
 
 ### Database Query
+
 ```sql
 -- Spatial query using D1's R-Tree index
 SELECT * FROM charging_stations
@@ -68,14 +71,14 @@ WHERE latitude BETWEEN ? AND ?
 
 ## Tasks (Draft)
 
-| ID | Task | Estimate |
-|----|------|----------|
-| P2-T1 | Spatial corridor query in D1 | 3d |
-| P2-T2 | Route stop placement with real stations | 5d |
-| P2-T3 | Filter UI (connector type, power) | 2d |
-| P2-T4 | Station detail modal component | 3d |
-| P2-T5 | Fallback logic (virtual → real → virtual) | 2d |
-| P2-T6 | E2E tests for POI flow | 3d |
+| ID    | Task                                      | Estimate |
+| ----- | ----------------------------------------- | -------- |
+| P2-T1 | Spatial corridor query in D1              | 3d       |
+| P2-T2 | Route stop placement with real stations   | 5d       |
+| P2-T3 | Filter UI (connector type, power)         | 2d       |
+| P2-T4 | Station detail modal component            | 3d       |
+| P2-T5 | Fallback logic (virtual → real → virtual) | 2d       |
+| P2-T6 | E2E tests for POI flow                    | 3d       |
 
 ---
 

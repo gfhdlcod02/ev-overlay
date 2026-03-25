@@ -7,8 +7,6 @@ export default defineConfig({
     exclude: ['node_modules', 'dist'],
   },
   resolve: {
-    alias: [
-      { find: /^@\/(.*)$/, replacement: resolve(__dirname, './src/$1') },
-    ],
+    alias: [{ find: /^@\/(.*)$/, replacement: resolve(__dirname, './src/$1') }],
   },
 })

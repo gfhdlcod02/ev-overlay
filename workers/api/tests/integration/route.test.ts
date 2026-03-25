@@ -29,10 +29,16 @@ class MockKVNamespace implements KVNamespace {
   // Unused methods required by interface
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   list = async () =>
-    ({ keys: [], list_complete: true, cursor: '' }) as unknown as KVNamespaceListResult<unknown, string>
+    ({ keys: [], list_complete: true, cursor: '' }) as unknown as KVNamespaceListResult<
+      unknown,
+      string
+    >
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   getWithMetadata = async () =>
-    ({ value: null, metadata: null }) as unknown as KVNamespaceGetWithMetadataResult<unknown, unknown>
+    ({ value: null, metadata: null }) as unknown as KVNamespaceGetWithMetadataResult<
+      unknown,
+      unknown
+    >
 }
 
 describe('handleRoute', () => {

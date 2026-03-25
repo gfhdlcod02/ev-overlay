@@ -21,6 +21,7 @@ This document defines rollback procedures for the Cloudflare edge-native archite
 **Steps**:
 
 1. **Immediate (0-2 minutes)**:
+
    ```bash
    # Switch DNS to old infrastructure
    # Update Cloudflare Pages routing rules
@@ -44,6 +45,7 @@ This document defines rollback procedures for the Cloudflare edge-native archite
 **Steps**:
 
 1. **Disable shadow traffic**:
+
    ```bash
    # Set shadow traffic percentage to 0
    wrangler secret put SHADOW_TRAFFIC_PERCENT --env production
@@ -51,6 +53,7 @@ This document defines rollback procedures for the Cloudflare edge-native archite
    ```
 
 2. **Preserve logs for analysis**:
+
    ```bash
    # Export comparison logs
    wrangler tail --environment production > shadow-traffic-logs.json
@@ -65,12 +68,14 @@ This document defines rollback procedures for the Cloudflare edge-native archite
 **Steps**:
 
 1. **Stop ingestion**:
+
    ```bash
    # Disable cron trigger
    wrangler trigger delete --name hourly-ingestion
    ```
 
 2. **Restore from snapshot**:
+
    ```bash
    # List available snapshots in R2
    rclone ls r2:ev-overlay-snapshots
@@ -209,9 +214,9 @@ wrangler kv bulk delete --namespace-id=ROUTE_CACHE_ID all-keys.txt
 
 ## Contact Escalation
 
-| Time | Action | Contact |
-|------|--------|---------|
-| 0-5 min | Execute rollback | On-call engineer |
-| 5-15 min | Verify and monitor | Engineering team |
-| 15-30 min | Incident communication | Engineering lead |
-| 30+ min | Post-mortem scheduling | Engineering manager |
+| Time      | Action                 | Contact             |
+| --------- | ---------------------- | ------------------- |
+| 0-5 min   | Execute rollback       | On-call engineer    |
+| 5-15 min  | Verify and monitor     | Engineering team    |
+| 15-30 min | Incident communication | Engineering lead    |
+| 30+ min   | Post-mortem scheduling | Engineering manager |

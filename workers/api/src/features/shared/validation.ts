@@ -125,7 +125,10 @@ export function validateRouteRequest(body: unknown): { valid: boolean; errors?: 
 /**
  * Validate stations query parameters
  */
-export function validateStationsQuery(params: Record<string, string>): { valid: boolean; errors?: string[] } {
+export function validateStationsQuery(params: Record<string, string>): {
+  valid: boolean
+  errors?: string[]
+} {
   const errors: string[] = []
 
   // Validate bounding box coordinates
@@ -173,10 +176,13 @@ export function validateStationsQuery(params: Record<string, string>): { valid: 
  * Sanitize string input to prevent injection
  */
 export function sanitizeString(input: string): string {
-  return input
-    .replace(/[\x00-\x08\x0b\x0c\x0e-\x1f]/g, '') // Remove control characters
-    .trim()
-    .slice(0, 1000) // Reasonable max length
+  return (
+    input
+      // eslint-disable-next-line no-control-regex
+      .replace(/[\x00-\x1f]/g, '') // Remove control characters
+      .trim()
+      .slice(0, 1000)
+  ) // Reasonable max length
 }
 
 /**

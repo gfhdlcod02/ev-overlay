@@ -41,7 +41,9 @@ interface LegacyRouteResponse {
  * Convert legacy route request to new format
  */
 export function convertLegacyRequest(legacy: LegacyRouteRequest): RouteRequest {
-  const parseLocation = (loc: string | { lat: number; lng: number; name?: string }): { lat: number; lng: number; name?: string } => {
+  const parseLocation = (
+    loc: string | { lat: number; lng: number; name?: string }
+  ): { lat: number; lng: number; name?: string } => {
     if (typeof loc === 'string') {
       // Simple geocoding assumption - in real implementation, would call geocoding service
       throw new Error('String locations require geocoding - not supported in compatibility mode')
@@ -108,9 +110,7 @@ export function isLegacyRequest(body: unknown): boolean {
  * Compatibility middleware wrapper
  * Wraps a handler to support both old and new API formats
  */
-export function withCompatibility<
-  Env = unknown,
->(
+export function withCompatibility<Env = unknown>(
   handler: (request: Request, env: Env, ctx: ExecutionContext) => Promise<Response>
 ): (request: Request, env: Env, ctx: ExecutionContext) => Promise<Response> {
   return async (request: Request, env: Env, ctx: ExecutionContext): Promise<Response> => {

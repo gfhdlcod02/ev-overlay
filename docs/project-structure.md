@@ -14,16 +14,17 @@ workers/api/       # Cloudflare Worker (API edge layer)
 
 ## Terminology
 
-| Term | Definition | Example |
-|------|------------|---------|
-| **Package** | A deployable unit with its own `package.json`, dependencies, and build output | `packages/core`, `apps/web`, `workers/api` |
-| **Feature** | A domain-specific grouping of related code at the top level of a package | `features/trip-planning/`, `features/map/` |
-| **Module** | A logical subdivision within a feature by code type | `components/`, `composables/`, `handlers/` |
-| **Co-located Tests** | Test files placed in the same directory as the source file they test | `api-client.ts` + `api-client.test.ts` |
+| Term                 | Definition                                                                    | Example                                    |
+| -------------------- | ----------------------------------------------------------------------------- | ------------------------------------------ |
+| **Package**          | A deployable unit with its own `package.json`, dependencies, and build output | `packages/core`, `apps/web`, `workers/api` |
+| **Feature**          | A domain-specific grouping of related code at the top level of a package      | `features/trip-planning/`, `features/map/` |
+| **Module**           | A logical subdivision within a feature by code type                           | `components/`, `composables/`, `handlers/` |
+| **Co-located Tests** | Test files placed in the same directory as the source file they test          | `api-client.ts` + `api-client.test.ts`     |
 
 ## Package Organization
 
 Each package follows a **hybrid structure**:
+
 - **Top level**: Organized by **feature/domain**
 - **Sub-folders**: Organized by **technical type**
 
@@ -137,10 +138,10 @@ import { calculateSafeRange } from '../../../core/src/calculator'
 
 ### Available Aliases
 
-| Alias | Package | Target |
-|-------|---------|--------|
-| `@/*` | All | Internal package imports |
-| `@core/*` | web | packages/core/src/* |
+| Alias     | Package | Target                   |
+| --------- | ------- | ------------------------ |
+| `@/*`     | All     | Internal package imports |
+| `@core/*` | web     | packages/core/src/\*     |
 
 ## Test File Organization
 
@@ -154,6 +155,7 @@ src/
 ```
 
 Benefits:
+
 - Obvious when tests are missing
 - Simpler imports
 - Easier navigation

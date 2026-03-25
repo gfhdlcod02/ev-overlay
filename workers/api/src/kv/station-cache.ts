@@ -1,5 +1,5 @@
-import type { KVNamespace } from '@cloudflare/workers-types';
-import type { CachedStationQuery, CompactStation, StationDetail } from '../types';
+import type { KVNamespace } from '@cloudflare/workers-types'
+import type { CachedStationQuery, CompactStation, StationDetail } from '../types'
 
 /**
  * Station Cache Manager
@@ -8,14 +8,14 @@ import type { CachedStationQuery, CompactStation, StationDetail } from '../types
  * TTL: 1 hour (3600 seconds)
  */
 
-const CACHE_VERSION = 1;
-const DEFAULT_TTL_SECONDS = 3600; // 1 hour
+const CACHE_VERSION = 1
+const DEFAULT_TTL_SECONDS = 3600 // 1 hour
 
 export interface StationQueryKey {
-  lat1: number;
-  lng1: number;
-  lat2: number;
-  lng2: number;
+  lat1: number
+  lng1: number
+  lat2: number
+  lng2: number
 }
 
 export class StationCache {
@@ -28,42 +28,42 @@ export class StationCache {
    * Generate cache key for bbox query
    */
   static generateBboxKey(bbox: StationQueryKey): string {
-    const normalize = (n: number) => n.toFixed(6);
-    return `stations:bbox:${normalize(bbox.lat1)},${normalize(bbox.lng1)},${normalize(bbox.lat2)},${normalize(bbox.lng2)}`;
+    const normalize = (n: number) => n.toFixed(6)
+    return `stations:bbox:${normalize(bbox.lat1)},${normalize(bbox.lng1)},${normalize(bbox.lat2)},${normalize(bbox.lng2)}`
   }
 
   /**
    * Generate cache key for single station
    */
   static generateStationKey(stationId: number): string {
-    return `station:${stationId}`;
+    return `station:${stationId}`
   }
 
   /**
    * Get cached station query
    */
   async getQuery(bbox: StationQueryKey): Promise<CachedStationQuery | null> {
-    const key = StationCache.generateBboxKey(bbox);
+    const key = StationCache.generateBboxKey(bbox)
 
     try {
-      const cached = await this.kv.get(key, 'json');
+      const cached = await this.kv.get(key, 'json')
 
       if (!cached) {
-        return null;
+        return null
       }
 
-      const query = cached as CachedStationQuery;
+      const query = cached as CachedStationQuery
 
       // Version check
       if (query.version !== CACHE_VERSION) {
-        await this.kv.delete(key);
-        return null;
+        await this.kv.delete(key)
+        return null
       }
 
-      return query;
+      return query
     } catch (error) {
-      console.error('Station cache get error:', error);
-      return null;
+      console.error('Station cache get error:', error)
+      return null
     }
   }
 
@@ -75,7 +75,7 @@ export class StationCache {
     stations: CompactStation[],
     totalCount: number
   ): Promise<void> {
-    const key = StationCache.generateBboxKey(bbox);
+    const key = StationCache.generateBboxKey(bbox)
 
     try {
       const cachedQuery: CachedStationQuery = {
@@ -83,14 +83,14 @@ export class StationCache {
         bbox: [bbox.lat1, bbox.lng1, bbox.lat2, bbox.lng2],
         stations,
         totalCount,
-        cachedAt: new Date().toISOString()
-      };
+        cachedAt: new Date().toISOString(),
+      }
 
       await this.kv.put(key, JSON.stringify(cachedQuery), {
-        expirationTtl: this.ttlSeconds
-      });
+        expirationTtl: this.ttlSeconds,
+      })
     } catch (error) {
-      console.error('Station cache set error:', error);
+      console.error('Station cache set error:', error)
     }
   }
 
@@ -98,14 +98,14 @@ export class StationCache {
    * Get cached single station
    */
   async getStation(stationId: number): Promise<StationDetail | null> {
-    const key = StationCache.generateStationKey(stationId);
+    const key = StationCache.generateStationKey(stationId)
 
     try {
-      const cached = await this.kv.get(key, 'json');
-      return cached as StationDetail | null;
+      const cached = await this.kv.get(key, 'json')
+      return cached as StationDetail | null
     } catch (error) {
-      console.error('Station cache get error:', error);
-      return null;
+      console.error('Station cache get error:', error)
+      return null
     }
   }
 
@@ -113,14 +113,14 @@ export class StationCache {
    * Store single station in cache
    */
   async setStation(station: StationDetail): Promise<void> {
-    const key = StationCache.generateStationKey(station.id);
+    const key = StationCache.generateStationKey(station.id)
 
     try {
       await this.kv.put(key, JSON.stringify(station), {
-        expirationTtl: this.ttlSeconds
-      });
+        expirationTtl: this.ttlSeconds,
+      })
     } catch (error) {
-      console.error('Station cache set error:', error);
+      console.error('Station cache set error:', error)
     }
   }
 
@@ -130,19 +130,19 @@ export class StationCache {
   async invalidateQueries(): Promise<void> {
     // KV doesn't support pattern delete, so we rely on TTL expiration
     // For explicit invalidation, we'd need to track keys or use a different approach
-    console.log('Station query caches will expire via TTL');
+    console.log('Station query caches will expire via TTL')
   }
 
   /**
    * Invalidate single station cache
    */
   async invalidateStation(stationId: number): Promise<void> {
-    const key = StationCache.generateStationKey(stationId);
+    const key = StationCache.generateStationKey(stationId)
 
     try {
-      await this.kv.delete(key);
+      await this.kv.delete(key)
     } catch (error) {
-      console.error('Station cache invalidate error:', error);
+      console.error('Station cache invalidate error:', error)
     }
   }
 
@@ -150,16 +150,13 @@ export class StationCache {
    * Invalidate multiple stations
    */
   async invalidateStations(stationIds: number[]): Promise<void> {
-    await Promise.all(stationIds.map(id => this.invalidateStation(id)));
+    await Promise.all(stationIds.map(id => this.invalidateStation(id)))
   }
 }
 
 /**
  * Create station cache instance from environment
  */
-export function createStationCache(
-  kv: KVNamespace,
-  ttlSeconds?: number
-): StationCache {
-  return new StationCache(kv, ttlSeconds);
+export function createStationCache(kv: KVNamespace, ttlSeconds?: number): StationCache {
+  return new StationCache(kv, ttlSeconds)
 }

@@ -7,6 +7,7 @@ This guide helps developers understand the changes introduced in Feature 005 (Pr
 ### 1. Folder Structure
 
 **Before**: Type-based organization
+
 ```
 src/
 ├── components/
@@ -16,6 +17,7 @@ src/
 ```
 
 **After**: Feature-based organization with type sub-folders
+
 ```
 src/
 ├── features/
@@ -32,12 +34,14 @@ src/
 ### 2. Import Paths
 
 **Before**: Relative imports
+
 ```typescript
 import { useTripInput } from '../../composables/useTripInput'
 import { apiClient } from '../../../services/api-client'
 ```
 
 **After**: Path aliases
+
 ```typescript
 import { useTripInput } from '@/features/trip-planning/composables/useTripInput'
 import { apiClient } from '@/services/api-client'
@@ -46,6 +50,7 @@ import { apiClient } from '@/services/api-client'
 ### 3. Test File Location
 
 **Before**: Tests in separate `tests/` folder
+
 ```
 tests/
 ├── unit/
@@ -53,6 +58,7 @@ tests/
 ```
 
 **After**: Co-located tests
+
 ```
 src/
 ├── services/
@@ -66,15 +72,15 @@ src/
 
 Use this mapping to locate files in the new structure:
 
-| Old Location | New Location |
-|--------------|--------------|
-| `src/components/TripInputForm.vue` | `src/features/trip-planning/components/TripInputForm.vue` |
-| `src/components/TripSummary.vue` | `src/features/trip-planning/components/TripSummary.vue` |
-| `src/components/RouteMap.vue` | `src/features/map/components/RouteMap.vue` |
-| `src/composables/useTripInput.ts` | `src/features/trip-planning/composables/useTripInput.ts` |
-| `src/composables/useGeolocation.ts` | `src/features/map/composables/useGeolocation.ts` |
-| `src/stores/location.ts` | `src/features/map/stores/location.ts` |
-| `tests/unit/*.test.ts` | Next to source file (e.g., `src/services/*.test.ts`) |
+| Old Location                        | New Location                                              |
+| ----------------------------------- | --------------------------------------------------------- |
+| `src/components/TripInputForm.vue`  | `src/features/trip-planning/components/TripInputForm.vue` |
+| `src/components/TripSummary.vue`    | `src/features/trip-planning/components/TripSummary.vue`   |
+| `src/components/RouteMap.vue`       | `src/features/map/components/RouteMap.vue`                |
+| `src/composables/useTripInput.ts`   | `src/features/trip-planning/composables/useTripInput.ts`  |
+| `src/composables/useGeolocation.ts` | `src/features/map/composables/useGeolocation.ts`          |
+| `src/stores/location.ts`            | `src/features/map/stores/location.ts`                     |
+| `tests/unit/*.test.ts`              | Next to source file (e.g., `src/services/*.test.ts`)      |
 
 ### Updating Imports
 
@@ -113,12 +119,14 @@ import { handleRoute } from '@/features/routing/handlers/route'
 ### Issue: "Cannot find module '@/...'"
 
 **Solution**: Ensure your IDE has loaded the TypeScript configuration:
+
 1. Restart TypeScript server (VS Code: Cmd+Shift+P → "TypeScript: Restart TS Server")
 2. Check that `tsconfig.json` has the correct `paths` configuration
 
 ### Issue: ESLint warning about relative imports
 
 **Solution**: Convert to path alias:
+
 ```typescript
 // ❌ Before
 import { foo } from '../../../utils/foo'
@@ -130,6 +138,7 @@ import { foo } from '@/utils/foo'
 ### Issue: Tests not found
 
 **Solution**: Tests are now co-located. Update your test pattern if needed:
+
 ```json
 // vitest.config.ts
 include: ['src/**/*.test.ts']

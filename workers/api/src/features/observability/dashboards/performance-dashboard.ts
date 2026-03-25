@@ -34,13 +34,13 @@ export async function servePerformanceDashboard(env: Env): Promise<Response> {
   let cacheStats: CacheStatsData | null = null
 
   try {
-    webVitals = await env.ROUTE_CACHE.get(webVitalsKey, 'json') as WebVitalsData | null
+    webVitals = (await env.ROUTE_CACHE.get(webVitalsKey, 'json')) as WebVitalsData | null
   } catch {
     webVitals = null
   }
 
   try {
-    cacheStats = await env.ROUTE_CACHE.get(cacheKey, 'json') as CacheStatsData | null
+    cacheStats = (await env.ROUTE_CACHE.get(cacheKey, 'json')) as CacheStatsData | null
   } catch {
     cacheStats = null
   }
@@ -73,13 +73,6 @@ export async function servePerformanceDashboard(env: Env): Promise<Response> {
     return 'danger'
   }
 
-  const getScoreLabel = (value: number | null, good: number, poor: number) => {
-    if (value === null) return '—'
-    if (value <= good) return 'Good'
-    if (value <= poor) return 'Needs Improvement'
-    return 'Poor'
-  }
-
   const lcpP75 = webVitals?.lcp ? calculateP75(webVitals.lcp) : null
   const fidP75 = webVitals?.fid ? calculateP75(webVitals.fid) : null
   const clsP75 = webVitals?.cls ? calculateP75(webVitals.cls) : null
@@ -88,16 +81,21 @@ export async function servePerformanceDashboard(env: Env): Promise<Response> {
   const inpP75 = webVitals?.inp ? calculateP75(webVitals.inp) : null
 
   const routeCacheHitRate = cacheStats
-    ? (cacheStats.routeHits / (cacheStats.routeHits + cacheStats.routeMisses) * 100).toFixed(1)
+    ? ((cacheStats.routeHits / (cacheStats.routeHits + cacheStats.routeMisses)) * 100).toFixed(1)
     : '0.0'
 
   const stationCacheHitRate = cacheStats
-    ? (cacheStats.stationHits / (cacheStats.stationHits + cacheStats.stationMisses) * 100).toFixed(1)
+    ? (
+        (cacheStats.stationHits / (cacheStats.stationHits + cacheStats.stationMisses)) *
+        100
+      ).toFixed(1)
     : '0.0'
 
-  const avgResponseTime = cacheStats?.hourlyResponseTimes && cacheStats.hourlyResponseTimes.length > 0
-    ? cacheStats.hourlyResponseTimes.reduce((a, b) => a + b, 0) / cacheStats.hourlyResponseTimes.length
-    : null
+  const avgResponseTime =
+    cacheStats?.hourlyResponseTimes && cacheStats.hourlyResponseTimes.length > 0
+      ? cacheStats.hourlyResponseTimes.reduce((a, b) => a + b, 0) /
+        cacheStats.hourlyResponseTimes.length
+      : null
 
   const html = `<!DOCTYPE html>
 <html lang="en">
@@ -290,7 +288,7 @@ export async function servePerformanceDashboard(env: Env): Promise<Response> {
             <span class="cvw-value ${getScoreClass(lcpP75, 2500, 4000)}">${formatMs(lcpP75)}</span>
           </div>
           <div class="cvw-bar">
-            <div class="cvw-bar-fill ${getScoreClass(lcpP75, 2500, 4000)}" style="width: ${Math.min((lcpP75 || 0) / 4000 * 100, 100)}%"></div>
+            <div class="cvw-bar-fill ${getScoreClass(lcpP75, 2500, 4000)}" style="width: ${Math.min(((lcpP75 || 0) / 4000) * 100, 100)}%"></div>
           </div>
           <div class="cvw-thresholds">
             <span>0</span>
@@ -305,7 +303,7 @@ export async function servePerformanceDashboard(env: Env): Promise<Response> {
             <span class="cvw-value ${getScoreClass(fidP75, 100, 300)}">${formatMs(fidP75)}</span>
           </div>
           <div class="cvw-bar">
-            <div class="cvw-bar-fill ${getScoreClass(fidP75, 100, 300)}" style="width: ${Math.min((fidP75 || 0) / 300 * 100, 100)}%"></div>
+            <div class="cvw-bar-fill ${getScoreClass(fidP75, 100, 300)}" style="width: ${Math.min(((fidP75 || 0) / 300) * 100, 100)}%"></div>
           </div>
           <div class="cvw-thresholds">
             <span>0</span>
@@ -320,7 +318,7 @@ export async function servePerformanceDashboard(env: Env): Promise<Response> {
             <span class="cvw-value ${getScoreClass(clsP75, 0.1, 0.25)}">${clsP75 !== null ? clsP75.toFixed(3) : 'N/A'}</span>
           </div>
           <div class="cvv-bar">
-            <div class="cvw-bar-fill ${getScoreClass(clsP75, 0.1, 0.25)}" style="width: ${Math.min((clsP75 || 0) / 0.25 * 100, 100)}%"></div>
+            <div class="cvw-bar-fill ${getScoreClass(clsP75, 0.1, 0.25)}" style="width: ${Math.min(((clsP75 || 0) / 0.25) * 100, 100)}%"></div>
           </div>
           <div class="cvw-thresholds">
             <span>0</span>
@@ -335,7 +333,7 @@ export async function servePerformanceDashboard(env: Env): Promise<Response> {
             <span class="cvw-value ${getScoreClass(inpP75, 200, 500)}">${formatMs(inpP75)}</span>
           </div>
           <div class="cvw-bar">
-            <div class="cvw-bar-fill ${getScoreClass(inpP75, 200, 500)}" style="width: ${Math.min((inpP75 || 0) / 500 * 100, 100)}%"></div>
+            <div class="cvw-bar-fill ${getScoreClass(inpP75, 200, 500)}" style="width: ${Math.min(((inpP75 || 0) / 500) * 100, 100)}%"></div>
           </div>
           <div class="cvw-thresholds">
             <span>0</span>
@@ -377,7 +375,9 @@ export async function servePerformanceDashboard(env: Env): Promise<Response> {
       <!-- Response Times -->
       <div class="card">
         <h2>API Response Times</h2>
-        ${cacheStats?.hourlyResponseTimes && cacheStats.hourlyResponseTimes.length > 0 ? `
+        ${
+          cacheStats?.hourlyResponseTimes && cacheStats.hourlyResponseTimes.length > 0
+            ? `
         <div class="metric-row">
           <span class="metric-label">Average Response Time</span>
           <span class="metric-value">${formatMs(avgResponseTime)}</span>
@@ -390,7 +390,9 @@ export async function servePerformanceDashboard(env: Env): Promise<Response> {
           <span class="metric-label">Total API Requests</span>
           <span class="metric-value">${(cacheStats.routeHits + cacheStats.routeMisses + cacheStats.stationHits + cacheStats.stationMisses).toLocaleString()}</span>
         </div>
-        ` : '<div class="empty-state">No API metrics available yet</div>'}
+        `
+            : '<div class="empty-state">No API metrics available yet</div>'
+        }
       </div>
 
       <!-- Additional Metrics -->
@@ -425,8 +427,8 @@ export async function servePerformanceDashboard(env: Env): Promise<Response> {
     status: 200,
     headers: {
       'Content-Type': 'text/html',
-      'Cache-Control': 'no-store'
-    }
+      'Cache-Control': 'no-store',
+    },
   })
 }
 
@@ -444,7 +446,7 @@ export async function recordCacheMetric(
   const metricsKey = `analytics:cache:${today}`
 
   try {
-    const existing = await env.ROUTE_CACHE.get(metricsKey, 'json') as {
+    const existing = (await env.ROUTE_CACHE.get(metricsKey, 'json')) as {
       routeHits: number
       routeMisses: number
       stationHits: number
@@ -457,7 +459,7 @@ export async function recordCacheMetric(
       routeMisses: 0,
       stationHits: 0,
       stationMisses: 0,
-      hourlyResponseTimes: []
+      hourlyResponseTimes: [],
     }
 
     // Update cache hit/miss
@@ -477,7 +479,7 @@ export async function recordCacheMetric(
 
     // Store with 7-day TTL
     await env.ROUTE_CACHE.put(metricsKey, JSON.stringify(metrics), {
-      expirationTtl: 7 * 24 * 60 * 60
+      expirationTtl: 7 * 24 * 60 * 60,
     })
   } catch (error) {
     console.error('Failed to record cache metric:', error)

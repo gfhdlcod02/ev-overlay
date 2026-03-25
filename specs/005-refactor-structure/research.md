@@ -10,12 +10,14 @@
 **Decision**: Hybrid approach - feature-based top level with type-based sub-organization
 
 **Rationale**:
+
 - Feature-based organization makes code discoverable by domain
 - Type-based sub-folders maintain separation of concerns
 - Balances discoverability with architectural clarity
 - Matches modern frontend best practices (React/Vue community standards)
 
 **Alternatives considered**:
+
 - Pure type-based (services/, components/, utils/) - rejected: features scattered across folders
 - Pure feature-based (everything in one folder per feature) - rejected: mixes concerns, harder to find all services
 
@@ -26,12 +28,14 @@
 **Decision**: Co-located with source files
 
 **Rationale**:
+
 - Imports are simpler (same directory)
 - Obvious when tests are missing for a file
 - Easier navigation (file + test together)
 - Supported by Vitest and Jest out of the box
 
 **Alternatives considered**:
+
 - Parallel `tests/` directory - rejected: harder to maintain mirrored structure
 
 ---
@@ -41,6 +45,7 @@
 **Decision**: `@` prefix with package names
 
 **Rationale**:
+
 - `@` prefix is industry standard in TypeScript/JavaScript
 - Clear distinction between:
   - `@core`, `@web`, `@api` - cross-package imports
@@ -48,6 +53,7 @@
 - Supported by TypeScript path mapping and Vite
 
 **Alternatives considered**:
+
 - `~` prefix - less common, less tooling support
 - No prefix - conflicts with npm package names
 
@@ -58,6 +64,7 @@
 **Decision**: core → web → api
 
 **Rationale**:
+
 - `core` has no dependencies - safest starting point
 - `web` depends on `core` - can leverage core's new structure
 - `api` is standalone - can be done last without blocking
@@ -66,13 +73,13 @@
 
 ## Technical Decisions Summary
 
-| Aspect | Decision | Rationale |
-|--------|----------|-----------|
+| Aspect           | Decision                | Rationale                               |
+| ---------------- | ----------------------- | --------------------------------------- |
 | Folder structure | Hybrid (feature + type) | Balances discoverability and separation |
-| Test location | Co-located | Simpler imports, obvious coverage |
-| Import aliases | `@` prefix | Industry standard, clear distinction |
-| Refactor order | core → web → api | Dependency order, minimal risk |
-| Verification | Per-package tests | Early failure detection |
+| Test location    | Co-located              | Simpler imports, obvious coverage       |
+| Import aliases   | `@` prefix              | Industry standard, clear distinction    |
+| Refactor order   | core → web → api        | Dependency order, minimal risk          |
+| Verification     | Per-package tests       | Early failure detection                 |
 
 ## References
 

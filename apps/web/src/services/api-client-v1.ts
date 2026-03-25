@@ -16,7 +16,10 @@ const routeCache = new SearchCache<RoutePlanningResponse>({
 })
 
 // Global pending requests map for deduplication
-const pendingRequests = new Map<string, PendingRequest<{ response: RoutePlanningResponse; rateLimit?: RateLimitInfo }>>()
+const pendingRequests = new Map<
+  string,
+  PendingRequest<{ response: RoutePlanningResponse; rateLimit?: RateLimitInfo }>
+>()
 
 /**
  * Vehicle parameters for route planning
@@ -184,10 +187,12 @@ function isAbortError(error: unknown): boolean {
  */
 function generateRouteCacheKey(request: RoutePlanningRequest): string {
   const vehicleKey = `${request.vehicle.batteryCapacityKwh}-${request.vehicle.rangeKmAt100Percent}-${request.vehicle.currentSocPercent}`
-  return normalizeSearchKey(
-    `${request.origin.lat},${request.origin.lng}`,
-    `${request.destination.lat},${request.destination.lng}`,
-  ) + `:${vehicleKey}`
+  return (
+    normalizeSearchKey(
+      `${request.origin.lat},${request.origin.lng}`,
+      `${request.destination.lat},${request.destination.lng}`
+    ) + `:${vehicleKey}`
+  )
 }
 
 /**
@@ -195,7 +200,7 @@ function generateRouteCacheKey(request: RoutePlanningRequest): string {
  */
 export async function planRoute(
   request: RoutePlanningRequest,
-  options: { signal?: AbortSignal } = {},
+  options: { signal?: AbortSignal } = {}
 ): Promise<{ response: RoutePlanningResponse; rateLimit?: RateLimitInfo; fromCache: boolean }> {
   const cacheKey = generateRouteCacheKey(request)
 
@@ -253,7 +258,7 @@ export async function planRoute(
 async function planRouteInternal(
   request: RoutePlanningRequest,
   signal: AbortSignal,
-  cacheKey: string,
+  cacheKey: string
 ): Promise<{ response: RoutePlanningResponse; rateLimit?: RateLimitInfo }> {
   let response: Response
 
@@ -272,7 +277,7 @@ async function planRouteInternal(
       throw e
     }
     throw new Error(
-      'Service Error: Cannot connect to API server. Please ensure the API is running (pnpm dev:all).',
+      'Service Error: Cannot connect to API server. Please ensure the API is running (pnpm dev:all).'
     )
   }
 
@@ -287,7 +292,9 @@ async function planRouteInternal(
   }
 
   if (!isJsonResponse(response)) {
-    throw new Error('Service Error: API returned unexpected format. Please check API configuration.')
+    throw new Error(
+      'Service Error: API returned unexpected format. Please check API configuration.'
+    )
   }
 
   const data: RoutePlanningResponse = await response.json()
@@ -303,7 +310,7 @@ async function planRouteInternal(
  */
 export async function queryStations(
   bbox: { lat1: number; lng1: number; lat2: number; lng2: number },
-  options: { limit?: number; offset?: number; signal?: AbortSignal } = {},
+  options: { limit?: number; offset?: number; signal?: AbortSignal } = {}
 ): Promise<{ stations: CompactStation[]; total: number; rateLimit: RateLimitInfo | undefined }> {
   const params = new URLSearchParams({
     lat1: bbox.lat1.toString(),
@@ -332,7 +339,7 @@ export async function queryStations(
     throw new Error(errorMessage)
   }
 
-  const data = await response.json() as { stations: CompactStation[]; total: number }
+  const data = (await response.json()) as { stations: CompactStation[]; total: number }
   return { ...data, rateLimit }
 }
 
@@ -341,7 +348,7 @@ export async function queryStations(
  */
 export async function getStationDetail(
   stationId: string,
-  options: { signal?: AbortSignal } = {},
+  options: { signal?: AbortSignal } = {}
 ): Promise<{ station: unknown | null; rateLimit: RateLimitInfo | undefined }> {
   const response = await fetch(`${API_BASE_URL}/api/v1/stations/${stationId}`, {
     method: 'GET',

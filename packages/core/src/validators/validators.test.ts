@@ -1,10 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import {
-  validateCoordinate,
-  validateLocation,
-  validateRange,
-  combineValidations,
-} from './index'
+import { validateCoordinate, validateLocation, validateRange, combineValidations } from './index'
 import { validateEVParameters, normalizeEVParameters } from './ev-validation'
 import type { Location } from '../types'
 

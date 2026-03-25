@@ -23,19 +23,19 @@ Migrate EV Overlay to a fully edge-native architecture on Cloudflare's platform.
 
 _GATE: Must pass before Phase 0 research. Re-check after Phase 1 design._
 
-| Principle | Status | Notes |
-|-----------|--------|-------|
-| **I. Cloudflare-First Infrastructure** | ✅ PASS | Design uses Workers, D1, KV, DO, Queues, Pages exclusively |
-| **II. Conservative Safety-First UX** | ✅ PASS | No UX changes; migration preserves all existing safety defaults |
-| **III. Deterministic Core Logic** | ✅ PASS | Core EV logic remains unchanged; only infrastructure migration |
-| **IV. Security & Privacy by Design** | ✅ PASS | Secrets remain in Workers; PII minimization preserved; rate limiting enhanced |
-| **V. Separation of Concerns** | ✅ PASS | Existing package structure (core/web/api) maintained |
-| **VI. Reliability & Performance** | ✅ PASS | KV caching (7-day TTL), timeouts, retries all maintained; observability added |
+| Principle                                | Status  | Notes                                                                         |
+| ---------------------------------------- | ------- | ----------------------------------------------------------------------------- |
+| **I. Cloudflare-First Infrastructure**   | ✅ PASS | Design uses Workers, D1, KV, DO, Queues, Pages exclusively                    |
+| **II. Conservative Safety-First UX**     | ✅ PASS | No UX changes; migration preserves all existing safety defaults               |
+| **III. Deterministic Core Logic**        | ✅ PASS | Core EV logic remains unchanged; only infrastructure migration                |
+| **IV. Security & Privacy by Design**     | ✅ PASS | Secrets remain in Workers; PII minimization preserved; rate limiting enhanced |
+| **V. Separation of Concerns**            | ✅ PASS | Existing package structure (core/web/api) maintained                          |
+| **VI. Reliability & Performance**        | ✅ PASS | KV caching (7-day TTL), timeouts, retries all maintained; observability added |
 | **VII. Definition of Done Quality Gate** | ✅ PASS | Plan includes tests (unit, E2E), error handling, mobile+desktop compatibility |
-| **VIII. Phase-Gated Delivery** | ✅ PASS | Three-phase migration with explicit criteria aligns with principle |
-| **IX. Playwright Web Testing** | ✅ PASS | E2E tests required; mobile viewport testing included |
-| **X. Code Quality Standards** | ✅ PASS | TypeScript strict mode, linting, formatting maintained |
-| **XI. Code Security Standards** | ✅ PASS | No secrets in code, parameterized queries (D1), input validation |
+| **VIII. Phase-Gated Delivery**           | ✅ PASS | Three-phase migration with explicit criteria aligns with principle            |
+| **IX. Playwright Web Testing**           | ✅ PASS | E2E tests required; mobile viewport testing included                          |
+| **X. Code Quality Standards**            | ✅ PASS | TypeScript strict mode, linting, formatting maintained                        |
+| **XI. Code Security Standards**          | ✅ PASS | No secrets in code, parameterized queries (D1), input validation              |
 
 **Constitution Compliance**: ✅ ALL PRINCIPLES SATISFIED
 
@@ -108,23 +108,25 @@ db/
 
 ### Technology Decisions
 
-| Technology | Decision | Rationale |
-|------------|----------|-----------|
-| **D1 Database** | Use for source of truth | Serverless SQLite at edge, 500MB limit sufficient for 10K stations, ACID transactions for consistency |
-| **KV Cache** | Use for hot read cache | Sub-millisecond reads at edge, 7-day TTL matches requirements, eventual consistency acceptable for route cache |
-| **Durable Objects** | Use for rate limiting + ingest locks | Strong consistency for counters, colocation with request handling, singleton pattern for locks |
-| **Queues** | Use for async ingestion | Decouples OCM fetching from API worker, handles backpressure, retry logic built-in |
-| **R2** | Use for historical snapshots | S3-compatible, cheap storage for audit data, 90-day retention per requirements |
-| **Pages** | Use for Vue SPA hosting | Native integration with Workers, automatic edge deployment, zero-config CI/CD |
+| Technology          | Decision                             | Rationale                                                                                                      |
+| ------------------- | ------------------------------------ | -------------------------------------------------------------------------------------------------------------- |
+| **D1 Database**     | Use for source of truth              | Serverless SQLite at edge, 500MB limit sufficient for 10K stations, ACID transactions for consistency          |
+| **KV Cache**        | Use for hot read cache               | Sub-millisecond reads at edge, 7-day TTL matches requirements, eventual consistency acceptable for route cache |
+| **Durable Objects** | Use for rate limiting + ingest locks | Strong consistency for counters, colocation with request handling, singleton pattern for locks                 |
+| **Queues**          | Use for async ingestion              | Decouples OCM fetching from API worker, handles backpressure, retry logic built-in                             |
+| **R2**              | Use for historical snapshots         | S3-compatible, cheap storage for audit data, 90-day retention per requirements                                 |
+| **Pages**           | Use for Vue SPA hosting              | Native integration with Workers, automatic edge deployment, zero-config CI/CD                                  |
 
 ### Key Design Patterns
 
 **Rate Limiting with Durable Objects**
+
 - Singleton DO per rate limit key (IP or user ID)
 - Sliding window counter with 1-hour expiration
 - Return 429 with Retry-After header when exceeded
 
 **Data Ingestion Pipeline**
+
 1. Cron trigger → Queue message (batch bounds)
 2. Queue consumer fetches OCM data in batches
 3. Normalize to internal schema
@@ -134,6 +136,7 @@ db/
 7. DO lock released on completion
 
 **Shadow Traffic Validation (Phase 2)**
+
 - Dual-write: New requests write to both old and new systems
 - Response comparison: Log differences without affecting users
 - Gradual ramp: 1% → 10% → 50% → 100% traffic over time
@@ -141,29 +144,30 @@ db/
 
 ### Open Questions Resolved
 
-| Question | Resolution |
-|----------|------------|
-| D1 vs KV for source of truth | D1 for ACID + relationships; KV only for cache |
-| Single worker vs split ingestion | Start with single worker; split if queue processing affects API latency |
-| Migration rollback mechanism | DNS-based cutover with TTL 60s for rapid rollback |
-| Durable Object lifecycle | Rate limit DOs auto-evict after 1h inactivity; Ingest lock DO managed by queue consumer |
+| Question                         | Resolution                                                                              |
+| -------------------------------- | --------------------------------------------------------------------------------------- |
+| D1 vs KV for source of truth     | D1 for ACID + relationships; KV only for cache                                          |
+| Single worker vs split ingestion | Start with single worker; split if queue processing affects API latency                 |
+| Migration rollback mechanism     | DNS-based cutover with TTL 60s for rapid rollback                                       |
+| Durable Object lifecycle         | Rate limit DOs auto-evict after 1h inactivity; Ingest lock DO managed by queue consumer |
 
 ### Edge Case Handling
 
 Explicit handling for spec.md edge cases:
 
-| Edge Case | Handling Strategy | Implementation |
-|-----------|-------------------|----------------|
-| OCM unavailable during ingestion | Queue retry with exponential backoff (1s, 5s, 25s); alert after 3 failures; preserve last known good data | `T041-T042`: Queue consumer retry logic; `T081`: Alert on persistent failures |
-| Traffic spike (thousands concurrent) | Durable Object rate limiting (100 req/hour/IP); KV cache serves stale data during D1 backoff; horizontal scaling via Cloudflare edge | `T065-T069`: Rate limiter implementation; `FR-004`: KV caching strategy |
-| Durable Object unavailable | Fallback to in-memory rate limiting (less precise but functional); queue messages buffered until DO recovers | `T067`: Middleware with fallback mode; Queue at-least-once delivery |
-| D1 unreachable during read | Return KV cached data with stale-while-revalidate header; queue retry for writes; degraded mode notification | `T028`: Route handler fallback; `T076`: Health check endpoint |
-| Partial ingestion failure | Per-record error tracking; failed records written to dead-letter queue; job marked "partial"; manual retry via admin endpoint | `T042`: Batch processing with per-record error handling; `T094`: Runbook for failures |
-| API version incompatibility | Version negotiation via Accept header; backward compatibility layer; feature flags for new behavior; 30-day deprecation window | `T055-T056`: Dual-write comparison; `FR-011`: Compatibility requirement |
+| Edge Case                            | Handling Strategy                                                                                                                    | Implementation                                                                        |
+| ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------- |
+| OCM unavailable during ingestion     | Queue retry with exponential backoff (1s, 5s, 25s); alert after 3 failures; preserve last known good data                            | `T041-T042`: Queue consumer retry logic; `T081`: Alert on persistent failures         |
+| Traffic spike (thousands concurrent) | Durable Object rate limiting (100 req/hour/IP); KV cache serves stale data during D1 backoff; horizontal scaling via Cloudflare edge | `T065-T069`: Rate limiter implementation; `FR-004`: KV caching strategy               |
+| Durable Object unavailable           | Fallback to in-memory rate limiting (less precise but functional); queue messages buffered until DO recovers                         | `T067`: Middleware with fallback mode; Queue at-least-once delivery                   |
+| D1 unreachable during read           | Return KV cached data with stale-while-revalidate header; queue retry for writes; degraded mode notification                         | `T028`: Route handler fallback; `T076`: Health check endpoint                         |
+| Partial ingestion failure            | Per-record error tracking; failed records written to dead-letter queue; job marked "partial"; manual retry via admin endpoint        | `T042`: Batch processing with per-record error handling; `T094`: Runbook for failures |
+| API version incompatibility          | Version negotiation via Accept header; backward compatibility layer; feature flags for new behavior; 30-day deprecation window       | `T055-T056`: Dual-write comparison; `FR-011`: Compatibility requirement               |
 
 ## Phase 1: Design Artifacts
 
 See generated files:
+
 - [research.md](./research.md) - Detailed technology research
 - [data-model.md](./data-model.md) - D1 schema and entity relationships
 - [contracts/](./contracts/) - API and queue message contracts

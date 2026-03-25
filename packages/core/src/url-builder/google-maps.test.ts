@@ -1,9 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import {
-  buildGoogleMapsUrl,
-  buildGoogleMapsMobileUrl,
-  isMobileDevice,
-} from './google-maps'
+import { buildGoogleMapsUrl, buildGoogleMapsMobileUrl, isMobileDevice } from './google-maps'
 import type { Location, ChargingStop } from '../types'
 
 describe('buildGoogleMapsUrl', () => {

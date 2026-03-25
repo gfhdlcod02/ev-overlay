@@ -195,15 +195,170 @@ export class MetricsCollector {
   }
 
   /**
-   * Flush metrics to external system (placeholder for future integration)
+   * Flush metrics to external system (T106: External metrics integration)
+   *
+   * Supports: Cloudflare Analytics, Datadog, Grafana (via environment config)
+   * Graceful degradation: Logs to console if external system unavailable
    */
   async flush(): Promise<void> {
-    // TODO: Send to external metrics system (e.g., Cloudflare Analytics, Datadog)
-    // For now, just log to console in production
-    if (this.metrics.length > 0) {
-      console.log('Metrics flush:', JSON.stringify(this.metrics))
-      this.metrics = []
+    if (this.metrics.length === 0) {
+      return
     }
+
+    const metricsToSend = [...this.metrics]
+    const provider = this.getMetricsProvider()
+
+    try {
+      switch (provider) {
+        case 'cloudflare-analytics':
+          await this.sendToCloudflareAnalytics(metricsToSend)
+          break
+        case 'datadog':
+          await this.sendToDatadog(metricsToSend)
+          break
+        case 'grafana':
+          await this.sendToGrafana(metricsToSend)
+          break
+        case 'console':
+        default:
+          console.log('Metrics flush:', JSON.stringify(metricsToSend))
+      }
+    } catch (error) {
+      // Graceful degradation: Log to console if external system fails
+      console.error('Failed to flush metrics to external system:', error)
+      console.log('Metrics fallback:', JSON.stringify(metricsToSend))
+    }
+
+    this.metrics = []
+  }
+
+  /**
+   * Determine which metrics provider to use
+   * Note: Uses global bindings for Cloudflare Workers compatibility
+   */
+  private getMetricsProvider(): string {
+    // Cloudflare Workers use global bindings (set in wrangler.toml)
+    const globalProvider = (globalThis as Record<string, unknown>).METRICS_PROVIDER
+    if (typeof globalProvider === 'string') {
+      return globalProvider
+    }
+
+    // Default to console logging
+    return 'console'
+  }
+
+  /**
+   * Send metrics to Cloudflare Analytics
+   * Requires: METRICS_ENDPOINT and METRICS_API_TOKEN env vars
+   */
+  private async sendToCloudflareAnalytics(metrics: MetricData[]): Promise<void> {
+    const endpoint = this.getEnvVar('METRICS_ENDPOINT')
+    if (!endpoint) {
+      throw new Error('METRICS_ENDPOINT not configured for Cloudflare Analytics')
+    }
+
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${this.getEnvVar('METRICS_API_TOKEN') ?? ''}`,
+      },
+      body: JSON.stringify({
+        metrics: metrics.map(m => ({
+          name: m.name,
+          value: m.value,
+          timestamp: m.timestamp,
+          tags: m.labels,
+        })),
+      }),
+    })
+
+    if (!response.ok) {
+      throw new Error(`Cloudflare Analytics error: ${response.status}`)
+    }
+  }
+
+  /**
+   * Send metrics to Datadog
+   * Requires: DATADOG_API_KEY and DATADOG_SITE env vars
+   */
+  private async sendToDatadog(metrics: MetricData[]): Promise<void> {
+    const apiKey = this.getEnvVar('DATADOG_API_KEY')
+    if (!apiKey) {
+      throw new Error('DATADOG_API_KEY not configured')
+    }
+
+    const site = this.getEnvVar('DATADOG_SITE') ?? 'datadoghq.com'
+    const endpoint = `https://api.${site}/api/v1/series`
+
+    const now = Math.floor(Date.now() / 1000)
+    const series = metrics.map(m => ({
+      metric: m.name,
+      points: [[now, m.value]],
+      tags: Object.entries(m.labels ?? {}).map(([k, v]) => `${k}:${v}`),
+      type: 'gauge',
+    }))
+
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'DD-API-KEY': apiKey,
+      },
+      body: JSON.stringify({ series }),
+    })
+
+    if (!response.ok) {
+      throw new Error(`Datadog error: ${response.status}`)
+    }
+  }
+
+  /**
+   * Send metrics to Grafana Cloud
+   * Requires: GRAFANA_URL and GRAFANA_API_KEY env vars
+   */
+  private async sendToGrafana(metrics: MetricData[]): Promise<void> {
+    const url = this.getEnvVar('GRAFANA_URL')
+    if (!url) {
+      throw new Error('GRAFANA_URL not configured')
+    }
+
+    // Convert to Prometheus remote write format
+    const payload = {
+      timeseries: metrics.map(m => ({
+        labels: [
+          { name: '__name__', value: m.name },
+          ...Object.entries(m.labels ?? {}).map(([k, v]) => ({ name: k, value: String(v) })),
+        ],
+        samples: [{ value: m.value, timestamp: m.timestamp }],
+      })),
+    }
+
+    const response = await fetch(`${url}/api/v1/push`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${this.getEnvVar('GRAFANA_API_KEY') ?? ''}`,
+      },
+      body: JSON.stringify(payload),
+    })
+
+    if (!response.ok) {
+      throw new Error(`Grafana error: ${response.status}`)
+    }
+  }
+
+  /**
+   * Get environment variable from Cloudflare Workers global bindings
+   */
+  private getEnvVar(name: string): string | undefined {
+    // Cloudflare Workers use global environment bindings
+    const value = (globalThis as Record<string, unknown>)[name]
+    if (value !== undefined && value !== null) {
+      return String(value)
+    }
+
+    return undefined
   }
 
   private record(metric: MetricData): void {

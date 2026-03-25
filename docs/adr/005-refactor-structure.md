@@ -78,35 +78,39 @@ import { something } from '../../../utils/helpers'
 ## Implementation
 
 ### Phase 1: Core Package
+
 - Moved tests from `tests/unit/` to `src/` (colocation)
 - Updated imports to use relative paths (no `@/` in libraries)
 
 ### Phase 2: Web App
+
 - Created `features/` with subfolders for each domain
 - Moved components, composables, stores to feature folders
 - Created `config/index.ts` for centralized configuration
 - Updated all imports to use `@/` aliases
 
 ### Phase 3: API Worker
+
 - Created `features/` with rate-limiting, routing, shared
 - Moved handlers, providers, cache to feature folders
 - Created `config/index.ts` for Worker configuration
 - Created `vitest.config.ts` for test resolution
 
 ### Phase 4: Configuration
+
 - Audited for hardcoded values
 - Created centralized config loaders
 - Updated `.env.example` files with all options
 
 ## Verification
 
-| Metric | Before | After |
-|--------|--------|-------|
-| `../../../` imports | 12 | 0 |
-| `@/` imports | 0 | 44 |
-| Test pass rate | 100% | 100% |
-| Build time | ~8s | ~6s |
-| Lint errors | 0 | 0 |
+| Metric              | Before | After |
+| ------------------- | ------ | ----- |
+| `../../../` imports | 12     | 0     |
+| `@/` imports        | 0      | 44    |
+| Test pass rate      | 100%   | 100%  |
+| Build time          | ~8s    | ~6s   |
+| Lint errors         | 0      | 0     |
 
 ## References
 

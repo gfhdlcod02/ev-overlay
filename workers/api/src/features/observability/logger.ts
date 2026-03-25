@@ -156,12 +156,7 @@ export class Logger {
     })
   }
 
-  private log(
-    level: LogLevel,
-    message: string,
-    context?: LogContext,
-    error?: Error,
-  ): void {
+  private log(level: LogLevel, message: string, context?: LogContext, error?: Error): void {
     const entry: LogEntry = {
       timestamp: new Date().toISOString(),
       level,

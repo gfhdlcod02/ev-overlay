@@ -7,5 +7,7 @@
       "Bash(pnpm test:*)",
       "Bash(pnpm:*)"
     ]
-  }
+  },
+  "enabledMcpjsonServers": ["code-review-graph"],
+  "enableAllProjectMcpServers": true
 }

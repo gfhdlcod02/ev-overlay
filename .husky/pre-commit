@@ -1,6 +1,10 @@
-# Block direct commits to main branch
+#!/bin/sh
+# Pre-commit Hook - EV Overlay
+# Policy: Lint และ Test ต้องผ่านก่อนทุก commit
+
 branch="$(git rev-parse --abbrev-ref HEAD)"
 
+# 1. ห้าม commit ตรงที่ main branch
 if [ "$branch" = "main" ]; then
   echo ""
   echo "❌ ไม่สามารถ commit โดยตรงที่ branch 'main' ได้"
@@ -15,5 +19,36 @@ if [ "$branch" = "main" ]; then
   exit 1
 fi
 
-# Run tests before commit
-npm test
+echo "🔍 Running pre-commit checks..."
+
+# 2. ตรวจสอบ lint
+echo "  → Running ESLint..."
+pnpm lint
+if [ $? -ne 0 ]; then
+  echo ""
+  echo "❌ Lint ไม่ผ่าน กรุณาแก้ไข error ก่อน commit"
+  echo "   รันคำสั่ง: pnpm lint:fix เพื่อแก้ไขอัตโนมัติ"
+  exit 1
+fi
+
+# 3. ตรวจสอบ code format
+echo "  → Checking code format..."
+pnpm format:check
+if [ $? -ne 0 ]; then
+  echo ""
+  echo "❌ Code format ไม่ตรงกับ Prettier config"
+  echo "   รันคำสั่ง: pnpm format เพื่อแก้ไขอัตโนมัติ"
+  exit 1
+fi
+
+# 4. รัน tests
+echo "  → Running tests..."
+pnpm test
+if [ $? -ne 0 ]; then
+  echo ""
+  echo "❌ Tests ไม่ผ่าน กรุณาแก้ไขก่อน commit"
+  exit 1
+fi
+
+echo ""
+echo "✅ Pre-commit checks passed!"

@@ -1,4 +1,4 @@
-import type { OcmStationRecord } from '../../types';
+import type { OcmStationRecord } from '../../types'
 
 /**
  * OpenChargeMap API Client
@@ -6,26 +6,26 @@ import type { OcmStationRecord } from '../../types';
  * Fetches charging station data from OpenChargeMap API.
  */
 
-const OCM_BASE_URL = 'https://api.openchargemap.io/v3';
+const OCM_BASE_URL = 'https://api.openchargemap.io/v3'
 
 export interface OcmFetchOptions {
-  apiKey: string;
-  countryCode?: string;
-  modifiedSince?: string;
+  apiKey: string
+  countryCode?: string
+  modifiedSince?: string
   boundingBox?: {
-    lat1: number;
-    lng1: number;
-    lat2: number;
-    lng2: number;
-  };
-  page: number;
-  pageSize: number;
+    lat1: number
+    lng1: number
+    lat2: number
+    lng2: number
+  }
+  page: number
+  pageSize: number
 }
 
 export interface OcmFetchResult {
-  stations: OcmStationRecord[];
-  hasMore: boolean;
-  total: number;
+  stations: OcmStationRecord[]
+  hasMore: boolean
+  total: number
 }
 
 /**
@@ -39,86 +39,86 @@ export async function fetchOcmStations(options: OcmFetchOptions): Promise<OcmFet
     page: options.page.toString(),
     includecomments: 'false',
     camelcase: 'true',
-    compact: 'true'
-  });
+    compact: 'true',
+  })
 
   if (options.countryCode) {
-    params.set('countrycode', options.countryCode);
+    params.set('countrycode', options.countryCode)
   }
 
   if (options.modifiedSince) {
-    params.set('modifiedsince', options.modifiedSince);
+    params.set('modifiedsince', options.modifiedSince)
   }
 
   if (options.boundingBox) {
-    const { lat1, lng1, lat2, lng2 } = options.boundingBox;
-    params.set('boundingbox', `(${lat1},${lng1}),(${lat2},${lng2})`);
+    const { lat1, lng1, lat2, lng2 } = options.boundingBox
+    params.set('boundingbox', `(${lat1},${lng1}),(${lat2},${lng2})`)
   }
 
-  const url = `${OCM_BASE_URL}/poi?${params.toString()}`;
+  const url = `${OCM_BASE_URL}/poi?${params.toString()}`
 
   // Fetch with timeout and retry
   const response = await fetchWithRetry(url, {
     timeout: 30000,
-    retries: 3
-  });
+    retries: 3,
+  })
 
   if (!response.ok) {
-    throw new Error(`OCM API error: ${response.status} - ${await response.text()}`);
+    throw new Error(`OCM API error: ${response.status} - ${await response.text()}`)
   }
 
-  const data = await response.json() as OcmApiResponse[];
+  const data = (await response.json()) as OcmApiResponse[]
 
   // Transform to internal format
-  const stations = data.map(normalizeOcmStation);
+  const stations = data.map(normalizeOcmStation)
 
   return {
     stations,
     hasMore: data.length === options.pageSize,
-    total: data.length
-  };
+    total: data.length,
+  }
 }
 
 interface OcmApiResponse {
-  ID: number;
-  UUID: string;
-  DataProviderID: number;
-  OperatorID?: number;
-  UsageTypeID?: number;
+  ID: number
+  UUID: string
+  DataProviderID: number
+  OperatorID?: number
+  UsageTypeID?: number
   AddressInfo: {
-    Title: string;
-    AddressLine1?: string;
-    AddressLine2?: string;
-    Town?: string;
-    StateOrProvince?: string;
-    Postcode?: string;
-    CountryID?: number;
-    Latitude: number;
-    Longitude: number;
-  };
-  Connections?: OcmConnection[];
-  NumberOfPoints?: number;
-  StatusTypeID?: number;
-  DateLastStatusUpdate?: string;
-  DataQualityLevel?: number;
-  DateCreated?: string;
-  SubmissionStatusTypeID?: number;
+    Title: string
+    AddressLine1?: string
+    AddressLine2?: string
+    Town?: string
+    StateOrProvince?: string
+    Postcode?: string
+    CountryID?: number
+    Latitude: number
+    Longitude: number
+  }
+  Connections?: OcmConnection[]
+  NumberOfPoints?: number
+  StatusTypeID?: number
+  DateLastStatusUpdate?: string
+  DataQualityLevel?: number
+  DateCreated?: string
+  SubmissionStatusTypeID?: number
 }
 
 interface OcmConnection {
-  ID: number;
-  ConnectionTypeID?: number;
-  StatusTypeID?: number;
-  LevelID?: number;
-  Amps?: number;
-  Voltage?: number;
-  PowerKW?: number;
-  CurrentTypeID?: number;
-  Quantity?: number;
+  ID: number
+  ConnectionTypeID?: number
+  StatusTypeID?: number
+  LevelID?: number
+  Amps?: number
+  Voltage?: number
+  PowerKW?: number
+  CurrentTypeID?: number
+  Quantity?: number
 }
 
 function normalizeOcmStation(data: OcmApiResponse): OcmStationRecord {
-  const address = data.AddressInfo;
+  const address = data.AddressInfo
 
   return {
     externalId: data.ID.toString(),
@@ -136,14 +136,14 @@ function normalizeOcmStation(data: OcmApiResponse): OcmStationRecord {
       voltage: conn.Voltage,
       amperage: conn.Amps,
       status: mapConnectionStatus(conn.StatusTypeID),
-      quantity: conn.Quantity || 1
+      quantity: conn.Quantity || 1,
     })),
     metadata: {
       usageType: mapUsageType(data.UsageTypeID),
       paymentRequired: undefined,
-      accessRestrictions: undefined
-    }
-  };
+      accessRestrictions: undefined,
+    },
+  }
 }
 
 function mapStatusType(statusId?: number): string {
@@ -157,9 +157,9 @@ function mapStatusType(statusId?: number): string {
     75: 'operational',
     100: 'out_of_order',
     150: 'planned',
-    200: 'closed'
-  };
-  return statusMap[statusId || 0] || 'unknown';
+    200: 'closed',
+  }
+  return statusMap[statusId || 0] || 'unknown'
 }
 
 function mapConnectionType(typeId?: number): string {
@@ -187,9 +187,9 @@ function mapConnectionType(typeId?: number): string {
     31: 'CCS',
     32: 'Type 1 (J1772)',
     33: 'Type 2 (Mennekes)',
-    34: 'CCS'
-  };
-  return typeMap[typeId || 0] || 'Unknown';
+    34: 'CCS',
+  }
+  return typeMap[typeId || 0] || 'Unknown'
 }
 
 function mapConnectionStatus(statusId?: number): string {
@@ -199,9 +199,9 @@ function mapConnectionStatus(statusId?: number): string {
     20: 'occupied',
     30: 'out_of_order',
     50: 'available',
-    100: 'out_of_order'
-  };
-  return statusMap[statusId || 0] || 'unknown';
+    100: 'out_of_order',
+  }
+  return statusMap[statusId || 0] || 'unknown'
 }
 
 function mapUsageType(usageTypeId?: number): string {
@@ -213,46 +213,46 @@ function mapUsageType(usageTypeId?: number): string {
     4: 'public',
     5: 'private',
     6: 'public',
-    7: 'public'
-  };
-  return usageMap[usageTypeId || 0] || 'unknown';
+    7: 'public',
+  }
+  return usageMap[usageTypeId || 0] || 'unknown'
 }
 
 interface FetchOptions {
-  timeout: number;
-  retries: number;
+  timeout: number
+  retries: number
 }
 
 async function fetchWithRetry(url: string, options: FetchOptions): Promise<Response> {
-  let lastError: Error | undefined;
+  let lastError: Error | undefined
 
   for (let attempt = 0; attempt < options.retries; attempt++) {
     try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), options.timeout);
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), options.timeout)
 
       const response = await fetch(url, {
         signal: controller.signal,
         headers: {
-          'Accept': 'application/json',
-          'User-Agent': 'EV-Overlay/1.0'
-        }
-      });
+          Accept: 'application/json',
+          'User-Agent': 'EV-Overlay/1.0',
+        },
+      })
 
-      clearTimeout(timeoutId);
-      return response;
+      clearTimeout(timeoutId)
+      return response
     } catch (error) {
-      lastError = error instanceof Error ? error : new Error(String(error));
+      lastError = error instanceof Error ? error : new Error(String(error))
 
       // Exponential backoff: 1s, 5s, 25s
       if (attempt < options.retries - 1) {
-        const delay = Math.pow(5, attempt) * 1000;
-        await new Promise(resolve => setTimeout(resolve, delay));
+        const delay = Math.pow(5, attempt) * 1000
+        await new Promise(resolve => setTimeout(resolve, delay))
       }
     }
   }
 
-  throw lastError || new Error('Fetch failed after retries');
+  throw lastError || new Error('Fetch failed after retries')
 }
 
-export { fetchWithRetry };
+export { fetchWithRetry }

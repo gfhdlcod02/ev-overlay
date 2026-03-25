@@ -15,28 +15,28 @@ Calculate a route with EV charging stops.
 ```typescript
 interface RouteRequest {
   origin: {
-    name?: string;           // "Bangkok"
-    lat: number;             // 13.7563
-    lng: number;             // 100.5018
-  };
+    name?: string // "Bangkok"
+    lat: number // 13.7563
+    lng: number // 100.5018
+  }
   destination: {
-    name?: string;           // "Chiang Mai"
-    lat: number;             // 18.7883
-    lng: number;             // 98.9853
-  };
+    name?: string // "Chiang Mai"
+    lat: number // 18.7883
+    lng: number // 98.9853
+  }
   vehicle: {
-    batteryCapacityKwh: number;  // e.g., 77.4 (Ioniq 5)
-    rangeKmAt100Percent: number; // e.g., 450
-    currentSocPercent: number;   // 0-100
-    reserveSocPercent?: number;  // default: 20
-    bufferKm?: number;           // default: 10
-    drivingFactor?: number;      // default: 1.0
-  };
+    batteryCapacityKwh: number // e.g., 77.4 (Ioniq 5)
+    rangeKmAt100Percent: number // e.g., 450
+    currentSocPercent: number // 0-100
+    reserveSocPercent?: number // default: 20
+    bufferKm?: number // default: 10
+    drivingFactor?: number // default: 1.0
+  }
   preferences?: {
-    maxChargingStops?: number;   // default: 5
-    chargeToPercent?: number;    // default: 80
-    connectorTypes?: string[];   // ["CCS", "CHAdeMO"]
-  };
+    maxChargingStops?: number // default: 5
+    chargeToPercent?: number // default: 80
+    connectorTypes?: string[] // ["CCS", "CHAdeMO"]
+  }
 }
 ```
 
@@ -45,51 +45,51 @@ interface RouteRequest {
 ```typescript
 interface RouteResponse {
   route: {
-    distance: number;        // Total distance in meters
-    duration: number;        // Total duration in seconds
-    polyline: string;        // Encoded Google Maps polyline
-    legs: RouteLeg[];
-  };
-  chargingStops: ChargingStop[];
-  safeRangeKm: number;       // Calculated safe range for this trip
-  warnings?: string[];       // e.g., "No charging stations near destination"
+    distance: number // Total distance in meters
+    duration: number // Total duration in seconds
+    polyline: string // Encoded Google Maps polyline
+    legs: RouteLeg[]
+  }
+  chargingStops: ChargingStop[]
+  safeRangeKm: number // Calculated safe range for this trip
+  warnings?: string[] // e.g., "No charging stations near destination"
 }
 
 interface RouteLeg {
-  from: LocationPoint;
-  to: LocationPoint;
-  distance: number;
-  duration: number;
-  consumptionKwh: number;    // Estimated kWh used
+  from: LocationPoint
+  to: LocationPoint
+  distance: number
+  duration: number
+  consumptionKwh: number // Estimated kWh used
 }
 
 interface ChargingStop {
-  station: StationSummary;
-  arrivalSoc: number;        // % battery on arrival
-  departureSoc: number;      // % battery on departure
-  chargeDurationMinutes: number;
-  legIndex: number;          // Which route leg this stop is after
+  station: StationSummary
+  arrivalSoc: number // % battery on arrival
+  departureSoc: number // % battery on departure
+  chargeDurationMinutes: number
+  legIndex: number // Which route leg this stop is after
 }
 
 interface StationSummary {
-  id: number;
-  name: string;
-  lat: number;
-  lng: number;
-  operator?: string;
-  connectors: ConnectorInfo[];
+  id: number
+  name: string
+  lat: number
+  lng: number
+  operator?: string
+  connectors: ConnectorInfo[]
 }
 
 interface ConnectorInfo {
-  type: string;              // "CCS", "CHAdeMO", "Type2"
-  powerKw: number;
-  status: "available" | "occupied" | "unknown";
+  type: string // "CCS", "CHAdeMO", "Type2"
+  powerKw: number
+  status: 'available' | 'occupied' | 'unknown'
 }
 
 interface LocationPoint {
-  name?: string;
-  lat: number;
-  lng: number;
+  name?: string
+  lat: number
+  lng: number
 }
 ```
 
@@ -128,14 +128,14 @@ Query charging stations within a geographic bounding box.
 
 ```typescript
 interface StationsQuery {
-  lat1: number;              // South latitude
-  lng1: number;              // West longitude
-  lat2: number;              // North latitude
-  lng2: number;              // East longitude
-  connectorType?: string;    // Filter by connector
-  minPowerKw?: number;       // Filter by minimum power
-  limit?: number;            // Max results (default: 100, max: 500)
-  offset?: number;           // Pagination offset
+  lat1: number // South latitude
+  lng1: number // West longitude
+  lat2: number // North latitude
+  lng2: number // East longitude
+  connectorType?: string // Filter by connector
+  minPowerKw?: number // Filter by minimum power
+  limit?: number // Max results (default: 100, max: 500)
+  offset?: number // Pagination offset
 }
 ```
 
@@ -143,34 +143,34 @@ interface StationsQuery {
 
 ```typescript
 interface StationsResponse {
-  stations: StationDetail[];
-  total: number;
-  limit: number;
-  offset: number;
+  stations: StationDetail[]
+  total: number
+  limit: number
+  offset: number
 }
 
 interface StationDetail {
-  id: number;
-  externalId: string;
-  name: string;
-  operator?: string;
-  lat: number;
-  lng: number;
-  address?: string;
-  city?: string;
-  status: "operational" | "closed" | "planned";
-  connectors: ConnectorDetail[];
-  lastUpdated: string;       // ISO timestamp
+  id: number
+  externalId: string
+  name: string
+  operator?: string
+  lat: number
+  lng: number
+  address?: string
+  city?: string
+  status: 'operational' | 'closed' | 'planned'
+  connectors: ConnectorDetail[]
+  lastUpdated: string // ISO timestamp
 }
 
 interface ConnectorDetail {
-  id: number;
-  type: string;
-  powerKw: number;
-  voltage?: number;
-  amperage?: number;
-  status: "available" | "occupied" | "out_of_order";
-  quantity: number;
+  id: number
+  type: string
+  powerKw: number
+  voltage?: number
+  amperage?: number
+  status: 'available' | 'occupied' | 'out_of_order'
+  quantity: number
 }
 ```
 
@@ -184,7 +184,7 @@ Get details for a specific charging station.
 
 ```typescript
 interface StationResponse {
-  station: StationDetail;
+  station: StationDetail
 }
 ```
 
@@ -208,14 +208,14 @@ Health check for load balancers and monitoring.
 
 ```typescript
 interface HealthResponse {
-  status: "healthy" | "degraded" | "unhealthy";
-  timestamp: string;
-  version: string;
+  status: 'healthy' | 'degraded' | 'unhealthy'
+  timestamp: string
+  version: string
   checks: {
-    database: "ok" | "error";
-    cache: "ok" | "error";
-    externalApis?: "ok" | "degraded" | "error";
-  };
+    database: 'ok' | 'error'
+    cache: 'ok' | 'error'
+    externalApis?: 'ok' | 'degraded' | 'error'
+  }
 }
 ```
 
@@ -229,10 +229,10 @@ Get API version and deployment info.
 
 ```typescript
 interface VersionResponse {
-  version: string;           // "1.2.0"
-  commit: string;            // "abc1234"
-  deployedAt: string;        // ISO timestamp
-  environment: "production" | "staging" | "development";
+  version: string // "1.2.0"
+  commit: string // "abc1234"
+  deployedAt: string // ISO timestamp
+  environment: 'production' | 'staging' | 'development'
 }
 ```
 
@@ -266,6 +266,7 @@ X-Cache: HIT  # or MISS
 ## Backward Compatibility
 
 During migration:
+
 - API contracts remain unchanged from existing implementation
 - New D1-based endpoints available at `/api/v1/...`
 - Old endpoints proxy to new implementation

@@ -15,32 +15,35 @@ Fetch a page of charging station data from OpenChargeMap.
 
 ```typescript
 interface FetchOcmPageMessage {
-  type: "FETCH_OCM_PAGE";
-  jobId: number;             // References ingestion_jobs.id
-  page: number;              // Page number (1-based)
-  pageSize: number;          // Records per page (max: 1000)
+  type: 'FETCH_OCM_PAGE'
+  jobId: number // References ingestion_jobs.id
+  page: number // Page number (1-based)
+  pageSize: number // Records per page (max: 1000)
   filters: {
-    modifiedSince?: string;  // ISO timestamp
-    countryCode?: string;    // "TH", etc.
-    boundingBox?: {          // [lat1, lng1, lat2, lng2]
-      lat1: number;
-      lng1: number;
-      lat2: number;
-      lng2: number;
-    };
-  };
-  retryCount: number;        // Current retry attempt (0-indexed)
-  createdAt: string;         // ISO timestamp
+    modifiedSince?: string // ISO timestamp
+    countryCode?: string // "TH", etc.
+    boundingBox?: {
+      // [lat1, lng1, lat2, lng2]
+      lat1: number
+      lng1: number
+      lat2: number
+      lng2: number
+    }
+  }
+  retryCount: number // Current retry attempt (0-indexed)
+  createdAt: string // ISO timestamp
 }
 ```
 
 **Behavior**:
+
 - Fetches data from OCM API
 - Emits PROCESS_BATCH message for each batch of records
 - If more pages exist, emits next FETCH_OCM_PAGE
 - Updates ingestion_jobs record with progress
 
 **Retry Policy**:
+
 - Max 3 retries with exponential backoff (1s, 5s, 25s)
 - After max retries, marks job as "partial" and alerts
 
@@ -52,47 +55,48 @@ Process and normalize a batch of charging station records.
 
 ```typescript
 interface ProcessBatchMessage {
-  type: "PROCESS_BATCH";
-  jobId: number;
-  batchId: string;           // UUID for this batch
-  records: OcmStationRecord[];
+  type: 'PROCESS_BATCH'
+  jobId: number
+  batchId: string // UUID for this batch
+  records: OcmStationRecord[]
   options: {
-    skipValidation?: boolean; // For recovery scenarios
-    dryRun?: boolean;         // Validate without writing (for testing)
-  };
-  retryCount: number;
-  createdAt: string;
+    skipValidation?: boolean // For recovery scenarios
+    dryRun?: boolean // Validate without writing (for testing)
+  }
+  retryCount: number
+  createdAt: string
 }
 
 // Raw OCM record format (normalized)
 interface OcmStationRecord {
-  externalId: string;        // OCM ID
-  name: string;
-  operator?: string;
-  latitude: number;
-  longitude: number;
-  address?: string;
-  city?: string;
-  country?: string;
-  status?: string;
-  connectors: OcmConnector[];
+  externalId: string // OCM ID
+  name: string
+  operator?: string
+  latitude: number
+  longitude: number
+  address?: string
+  city?: string
+  country?: string
+  status?: string
+  connectors: OcmConnector[]
   metadata?: {
-    usageType?: string;
-    paymentRequired?: boolean;
-    accessRestrictions?: string[];
-  };
+    usageType?: string
+    paymentRequired?: boolean
+    accessRestrictions?: string[]
+  }
 }
 
 interface OcmConnector {
-  type: string;              // OCM connector type ID
-  powerKw?: number;
-  voltage?: number;
-  amperage?: number;
-  status?: string;
+  type: string // OCM connector type ID
+  powerKw?: number
+  voltage?: number
+  amperage?: number
+  status?: string
 }
 ```
 
 **Behavior**:
+
 - Validates records against schema
 - Upserts to D1 (charging_stations, station_connectors)
 - Invalidates affected KV cache entries
@@ -100,6 +104,7 @@ interface OcmConnector {
 - Idempotent: Re-processing same batch is safe
 
 **Deduplication**:
+
 - Uses external_id for station deduplication
 - Checks last_synced_at to avoid unnecessary updates
 
@@ -111,18 +116,19 @@ Write historical snapshot to R2 for audit trail.
 
 ```typescript
 interface WriteSnapshotMessage {
-  type: "WRITE_SNAPSHOT";
-  jobId: number;
-  batchId: string;
-  stationIds: number[];      // IDs of stations in this snapshot
-  r2Key: string;             // Pre-computed R2 key
-  format: "jsonl" | "parquet"; // Future: Parquet for analytics
-  retryCount: number;
-  createdAt: string;
+  type: 'WRITE_SNAPSHOT'
+  jobId: number
+  batchId: string
+  stationIds: number[] // IDs of stations in this snapshot
+  r2Key: string // Pre-computed R2 key
+  format: 'jsonl' | 'parquet' // Future: Parquet for analytics
+  retryCount: number
+  createdAt: string
 }
 ```
 
 **Behavior**:
+
 - Fetches current state of stations from D1
 - Writes to R2 in JSON Lines format
 - Updates station_snapshots table with R2 key
@@ -136,14 +142,15 @@ Invalidate KV cache entries after data changes.
 
 ```typescript
 interface InvalidateCacheMessage {
-  type: "INVALIDATE_CACHE";
-  patterns: string[];        // Key patterns to invalidate, e.g., ["stations:bbox:*"]
-  stationIds?: number[];     // Specific station IDs to invalidate
-  createdAt: string;
+  type: 'INVALIDATE_CACHE'
+  patterns: string[] // Key patterns to invalidate, e.g., ["stations:bbox:*"]
+  stationIds?: number[] // Specific station IDs to invalidate
+  createdAt: string
 }
 ```
 
 **Behavior**:
+
 - Deletes matching keys from KV
 - Non-blocking: Cache miss falls back to D1
 - Usually emitted after PROCESS_BATCH completes
@@ -158,18 +165,19 @@ Dead-letter queue for failed messages requiring manual review.
 
 ```typescript
 interface FailedOperationMessage {
-  originalMessage: FetchOcmPageMessage | ProcessBatchMessage | WriteSnapshotMessage;
+  originalMessage: FetchOcmPageMessage | ProcessBatchMessage | WriteSnapshotMessage
   error: {
-    code: string;
-    message: string;
-    stack?: string;
-  };
-  failedAt: string;
-  retryable: boolean;        // Can this be retried later?
+    code: string
+    message: string
+    stack?: string
+  }
+  failedAt: string
+  retryable: boolean // Can this be retried later?
 }
 ```
 
 **Behavior**:
+
 - Manual review via Cloudflare dashboard or CLI
 - Retryable messages can be re-queued
 - Non-retryable messages alert for manual intervention
@@ -233,26 +241,26 @@ dead_letter_queue = "ingestion-retries"
 
 ### Metrics to Track
 
-| Metric | Source | Alert Threshold |
-|--------|--------|-----------------|
-| Queue depth | Cloudflare | > 1000 messages |
-| Message age | Cloudflare | > 5 minutes |
-| Processing failures | Worker logs | > 1% failure rate |
-| Retry rate | Worker logs | > 5% of messages |
-| Dead letter queue size | Cloudflare | > 10 messages |
+| Metric                 | Source      | Alert Threshold   |
+| ---------------------- | ----------- | ----------------- |
+| Queue depth            | Cloudflare  | > 1000 messages   |
+| Message age            | Cloudflare  | > 5 minutes       |
+| Processing failures    | Worker logs | > 1% failure rate |
+| Retry rate             | Worker logs | > 5% of messages  |
+| Dead letter queue size | Cloudflare  | > 10 messages     |
 
 ### Log Format
 
 ```typescript
 interface QueueLogEntry {
-  timestamp: string;
-  level: "info" | "warn" | "error";
-  messageType: string;
-  jobId?: number;
-  batchId?: string;
-  duration?: number;
-  error?: string;
-  metadata?: Record<string, unknown>;
+  timestamp: string
+  level: 'info' | 'warn' | 'error'
+  messageType: string
+  jobId?: number
+  batchId?: string
+  duration?: number
+  error?: string
+  metadata?: Record<string, unknown>
 }
 ```
 

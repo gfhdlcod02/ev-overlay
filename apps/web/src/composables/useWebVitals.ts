@@ -63,7 +63,7 @@ export function useWebVitals() {
   }
 
   function measureFCP() {
-    const observer = new PerformanceObserver((list) => {
+    const observer = new PerformanceObserver(list => {
       const entries = list.getEntries()
       for (const entry of entries) {
         if (entry.name === 'first-contentful-paint') {
@@ -83,7 +83,7 @@ export function useWebVitals() {
   function measureLCP() {
     let lcpValue = 0
 
-    const observer = new PerformanceObserver((list) => {
+    const observer = new PerformanceObserver(list => {
       const entries = list.getEntries()
       for (const entry of entries) {
         // Get the last (largest) entry
@@ -100,7 +100,7 @@ export function useWebVitals() {
   }
 
   function measureFID() {
-    const observer = new PerformanceObserver((list) => {
+    const observer = new PerformanceObserver(list => {
       const entries = list.getEntries()
       for (const entry of entries) {
         const fidEntry = entry as PerformanceEventTiming
@@ -118,10 +118,10 @@ export function useWebVitals() {
 
   function measureCLS() {
     let clsValue = 0
-    let sessionEntries: PerformanceEntry[] = []
+    const sessionEntries: PerformanceEntry[] = []
     let sessionValue = 0
 
-    const observer = new PerformanceObserver((list) => {
+    const observer = new PerformanceObserver(list => {
       const entries = list.getEntries()
       for (const entry of entries) {
         // Only count layout shifts without recent user input
@@ -150,7 +150,7 @@ export function useWebVitals() {
       interactionId?: number
     }
 
-    const observer = new PerformanceObserver((list) => {
+    const observer = new PerformanceObserver(list => {
       const entries = list.getEntries() as PerformanceEventTimingExt[]
       for (const entry of entries) {
         if (entry.interactionId && entry.interactionId > 0) {
@@ -190,7 +190,7 @@ export function useWebVitals() {
       url: window.location.href,
       timestamp: new Date().toISOString(),
       userAgent: navigator.userAgent,
-      connection: (navigator as NavigatorWithConnection).connection?.effectiveType
+      connection: (navigator as NavigatorWithConnection).connection?.effectiveType,
     }
 
     // Send to analytics endpoint
@@ -199,14 +199,17 @@ export function useWebVitals() {
       const data = JSON.stringify(report)
 
       if (navigator.sendBeacon) {
-        navigator.sendBeacon('/api/v1/analytics/web-vitals', new Blob([data], { type: 'application/json' }))
+        navigator.sendBeacon(
+          '/api/v1/analytics/web-vitals',
+          new Blob([data], { type: 'application/json' })
+        )
       } else {
         // Fallback to fetch
         await fetch('/api/v1/analytics/web-vitals', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: data,
-          keepalive: true
+          keepalive: true,
         })
       }
     } catch {
@@ -221,13 +224,13 @@ export function useWebVitals() {
       // Score thresholds per Core Web Vitals
       scores: {
         lcp: getScore(metrics.value.lcp, 2500, 4000), // Good < 2.5s, Poor > 4s
-        fid: getScore(metrics.value.fid, 100, 300),   // Good < 100ms, Poor > 300ms
-        cls: getScore(metrics.value.cls, 0.1, 0.25),  // Good < 0.1, Poor > 0.25
+        fid: getScore(metrics.value.fid, 100, 300), // Good < 100ms, Poor > 300ms
+        cls: getScore(metrics.value.cls, 0.1, 0.25), // Good < 0.1, Poor > 0.25
         fcp: getScore(metrics.value.fcp, 1800, 3000), // Good < 1.8s, Poor > 3s
         ttfb: getScore(metrics.value.ttfb, 800, 1800), // Good < 800ms, Poor > 1.8s
-        inp: getScore(metrics.value.inp, 200, 500)    // Good < 200ms, Poor > 500ms
-      }
-    })
+        inp: getScore(metrics.value.inp, 200, 500), // Good < 200ms, Poor > 500ms
+      },
+    }),
   }
 }
 

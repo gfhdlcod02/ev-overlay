@@ -1,6 +1,8 @@
 <template>
   <div v-if="result" data-testid="route-results" class="bg-white rounded-lg shadow p-4">
-    <h3 data-testid="route-summary" class="text-lg font-semibold text-gray-900 mb-3">Trip Summary</h3>
+    <h3 data-testid="route-summary" class="text-lg font-semibold text-gray-900 mb-3">
+      Trip Summary
+    </h3>
 
     <div class="grid grid-cols-2 gap-4">
       <div class="bg-gray-50 rounded p-3">

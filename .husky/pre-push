@@ -1,0 +1,32 @@
+#!/bin/sh
+# Pre-push Hook - EV Overlay
+# Policy: ตรวจสอบก่อน push และเตือนเรื่อง PR
+
+branch="$(git rev-parse --abbrev-ref HEAD)"
+
+# ห้าม push --force ที่ main
+if [ "$branch" = "main" ]; then
+  echo ""
+  echo "❌ ห้าม push โดยตรงที่ branch 'main'"
+  echo ""
+  echo "กรุณาใช้ Pull Request workflow:"
+  echo "  git checkout -b <branch-name>"
+  echo "  git push -u origin <branch-name>"
+  echo "  gh pr create"
+  echo ""
+  exit 1
+fi
+
+# ตรวจสอบว่าเป็น force push หรือไม่
+if grep -q "force" "$HUSKY_GIT_PARAMS" 2>/dev/null || grep -q "delete" "$HUSKY_GIT_PARAMS" 2>/dev/null; then
+  echo ""
+  echo "⚠️  Warning: กำลังทำ force push หรือ delete"
+  echo ""
+fi
+
+echo ""
+echo "📋 อย่าลืมเปิด Pull Request เมื่อพร้อม:"
+echo "   gh pr create --title \"feat: ...\" --body \"...\""
+echo ""
+
+exit 0

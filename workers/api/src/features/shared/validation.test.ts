@@ -140,7 +140,7 @@ describe('Input Validation', () => {
       }
       const result = validateRouteRequest(request)
       expect(result.valid).toBe(false)
-      expect(result.errors?.some((e) => e.includes('Latitude'))).toBe(true)
+      expect(result.errors?.some(e => e.includes('Latitude'))).toBe(true)
     })
 
     it('should reject invalid SoC', () => {
@@ -151,7 +151,7 @@ describe('Input Validation', () => {
       }
       const result = validateRouteRequest(request)
       expect(result.valid).toBe(false)
-      expect(result.errors?.some((e) => e.includes('SoC'))).toBe(true)
+      expect(result.errors?.some(e => e.includes('SoC'))).toBe(true)
     })
   })
 

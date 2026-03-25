@@ -22,7 +22,7 @@ export async function serveRateLimitDashboard(env: Env): Promise<Response> {
   let metrics: RateLimitMetrics | null = null
 
   try {
-    metrics = await env.ROUTE_CACHE.get(metricsKey, 'json') as RateLimitMetrics | null
+    metrics = (await env.ROUTE_CACHE.get(metricsKey, 'json')) as RateLimitMetrics | null
   } catch {
     metrics = null
   }
@@ -32,12 +32,11 @@ export async function serveRateLimitDashboard(env: Env): Promise<Response> {
     totalRequests: 0,
     blockedRequests: 0,
     topClients: [],
-    hourlyStats: Array.from({ length: 24 }, (_, i) => ({ hour: i, requests: 0, blocked: 0 }))
+    hourlyStats: Array.from({ length: 24 }, (_, i) => ({ hour: i, requests: 0, blocked: 0 })),
   }
 
-  const blockRate = data.totalRequests > 0
-    ? ((data.blockedRequests / data.totalRequests) * 100).toFixed(2)
-    : '0.00'
+  const blockRate =
+    data.totalRequests > 0 ? ((data.blockedRequests / data.totalRequests) * 100).toFixed(2) : '0.00'
 
   const html = `<!DOCTYPE html>
 <html lang="en">
@@ -208,18 +207,22 @@ export async function serveRateLimitDashboard(env: Env): Promise<Response> {
     <div class="card" style="margin-bottom: 1.5rem;">
       <h2>Hourly Request Distribution</h2>
       <div class="chart">
-        ${data.hourlyStats.map(h => {
-          const maxRequests = Math.max(...data.hourlyStats.map(s => s.requests), 1)
-          const height = maxRequests > 0 ? (h.requests / maxRequests) * 100 : 0
-          const blockedHeight = h.requests > 0 ? (h.blocked / h.requests) * height : 0
-          return `<div class="bar ${h.blocked > 0 ? 'blocked' : ''}" style="height: ${height}%;" data-hour="${h.hour}:00 - ${h.requests} req, ${h.blocked} blocked"></div>`
-        }).join('')}
+        ${data.hourlyStats
+          .map(h => {
+            const maxRequests = Math.max(...data.hourlyStats.map(s => s.requests), 1)
+            const height = maxRequests > 0 ? (h.requests / maxRequests) * 100 : 0
+            // Blocked visualization calculated inline
+            return `<div class="bar ${h.blocked > 0 ? 'blocked' : ''}" style="height: ${height}%;" data-hour="${h.hour}:00 - ${h.requests} req, ${h.blocked} blocked"></div>`
+          })
+          .join('')}
       </div>
     </div>
 
     <div class="card">
       <h2>Top Clients by Request Volume</h2>
-      ${data.topClients.length > 0 ? `
+      ${
+        data.topClients.length > 0
+          ? `
       <table>
         <thead>
           <tr>
@@ -230,20 +233,34 @@ export async function serveRateLimitDashboard(env: Env): Promise<Response> {
           </tr>
         </thead>
         <tbody>
-          ${data.topClients.slice(0, 10).map(client => {
-            const blockRate = client.requests > 0 ? (client.blocked / client.requests * 100).toFixed(1) : '0.0'
-            const status = client.blocked > client.requests * 0.5 ? 'danger' : client.blocked > 0 ? 'warning' : 'success'
-            const statusText = client.blocked > client.requests * 0.5 ? 'Throttled' : client.blocked > 0 ? 'Limited' : 'Normal'
-            return `<tr>
+          ${data.topClients
+            .slice(0, 10)
+            .map(client => {
+              const status =
+                client.blocked > client.requests * 0.5
+                  ? 'danger'
+                  : client.blocked > 0
+                    ? 'warning'
+                    : 'success'
+              const statusText =
+                client.blocked > client.requests * 0.5
+                  ? 'Throttled'
+                  : client.blocked > 0
+                    ? 'Limited'
+                    : 'Normal'
+              return `<tr>
               <td><code>${client.key.substring(0, 24)}...</code></td>
               <td>${client.requests.toLocaleString()}</td>
               <td>${client.blocked.toLocaleString()}</td>
               <td><span class="badge ${status}">${statusText}</span></td>
             </tr>`
-          }).join('')}
+            })
+            .join('')}
         </tbody>
       </table>
-      ` : '<div class="empty-state">No client data available yet</div>'}
+      `
+          : '<div class="empty-state">No client data available yet</div>'
+      }
     </div>
   </div>
 
@@ -260,8 +277,8 @@ export async function serveRateLimitDashboard(env: Env): Promise<Response> {
     status: 200,
     headers: {
       'Content-Type': 'text/html',
-      'Cache-Control': 'no-store'
-    }
+      'Cache-Control': 'no-store',
+    },
   })
 }
 
@@ -272,7 +289,7 @@ export async function recordRateLimitMetric(
   env: Env,
   clientKey: string,
   allowed: boolean,
-  remaining: number
+  _remaining: number
 ): Promise<void> {
   const now = new Date()
   const today = now.toISOString().split('T')[0]
@@ -281,7 +298,7 @@ export async function recordRateLimitMetric(
 
   try {
     // Get existing metrics
-    const existing = await env.ROUTE_CACHE.get(metricsKey, 'json') as {
+    const existing = (await env.ROUTE_CACHE.get(metricsKey, 'json')) as {
       totalRequests: number
       blockedRequests: number
       topClients: Array<{ key: string; requests: number; blocked: number }>
@@ -292,7 +309,7 @@ export async function recordRateLimitMetric(
       totalRequests: 0,
       blockedRequests: 0,
       topClients: [],
-      hourlyStats: Array.from({ length: 24 }, (_, i) => ({ hour: i, requests: 0, blocked: 0 }))
+      hourlyStats: Array.from({ length: 24 }, (_, i) => ({ hour: i, requests: 0, blocked: 0 })),
     }
 
     // Update totals
@@ -318,7 +335,7 @@ export async function recordRateLimitMetric(
       metrics.topClients.push({
         key: clientKey,
         requests: 1,
-        blocked: allowed ? 0 : 1
+        blocked: allowed ? 0 : 1,
       })
     }
 
@@ -328,7 +345,7 @@ export async function recordRateLimitMetric(
 
     // Store with 7-day TTL
     await env.ROUTE_CACHE.put(metricsKey, JSON.stringify(metrics), {
-      expirationTtl: 7 * 24 * 60 * 60
+      expirationTtl: 7 * 24 * 60 * 60,
     })
   } catch (error) {
     // Silently fail - don't block requests due to metrics errors

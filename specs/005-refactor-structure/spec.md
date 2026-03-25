@@ -100,12 +100,12 @@ As an operations engineer, I want all configuration centralized and separated fr
 
 ### Terminology Glossary
 
-| Term | Definition | Example |
-|------|------------|---------|
-| **Package** | A deployable unit with its own `package.json`, dependencies, and build output | `packages/core`, `apps/web`, `workers/api` |
-| **Feature** | A domain-specific grouping of related code at the top level of a package | `features/trip-planning/`, `features/map/` |
-| **Module** | A logical subdivision within a feature by code type | `components/`, `composables/`, `handlers/` |
-| **Co-located Tests** | Test files placed in the same directory as the source file they test | `api-client.ts` + `api-client.test.ts` |
+| Term                 | Definition                                                                    | Example                                    |
+| -------------------- | ----------------------------------------------------------------------------- | ------------------------------------------ |
+| **Package**          | A deployable unit with its own `package.json`, dependencies, and build output | `packages/core`, `apps/web`, `workers/api` |
+| **Feature**          | A domain-specific grouping of related code at the top level of a package      | `features/trip-planning/`, `features/map/` |
+| **Module**           | A logical subdivision within a feature by code type                           | `components/`, `composables/`, `handlers/` |
+| **Co-located Tests** | Test files placed in the same directory as the source file they test          | `api-client.ts` + `api-client.test.ts`     |
 
 ## Success Criteria
 
@@ -114,10 +114,10 @@ As an operations engineer, I want all configuration centralized and separated fr
 - **SC-001**: New developers can locate any feature's code in under 2 minutes without assistance
 - **SC-002**: Build time improves by at least 20% due to better organization and reduced circular dependencies
 - **SC-003**: Code review time reduces by 30% due to predictable structure and clear separation of concerns
-  - *Measurement*: Median time from PR open to first approval (GitHub API data)
-  - *Baseline*: Measure last 20 PRs before refactor; exclude PRs >500 lines, weekend PRs
-  - *Calculation*: `(median_baseline - median_post) / median_baseline * 100`
-  - *Data collection*: `gh pr list --state merged --limit 20 --json number,createdAt,reviews`
+  - _Measurement_: Median time from PR open to first approval (GitHub API data)
+  - _Baseline_: Measure last 20 PRs before refactor; exclude PRs >500 lines, weekend PRs
+  - _Calculation_: `(median_baseline - median_post) / median_baseline * 100`
+  - _Data collection_: `gh pr list --state merged --limit 20 --json number,createdAt,reviews`
 - **SC-004**: Zero circular dependencies exist between core, web, and api packages
 - **SC-005**: 100% of configuration is externalized (no hardcoded environment-specific values in source code)
 - **SC-006**: All import paths use aliases or absolute paths (no `../../../` style relative imports)

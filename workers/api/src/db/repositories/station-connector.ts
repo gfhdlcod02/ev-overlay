@@ -1,5 +1,5 @@
-import type { D1Client } from '../client';
-import type { StationConnector } from '../../types';
+import type { D1Client } from '../client'
+import type { StationConnector } from '../../types'
 
 /**
  * Station Connector Repository
@@ -8,22 +8,22 @@ import type { StationConnector } from '../../types';
  */
 
 export interface CreateConnectorInput {
-  stationId: number;
-  connectorType: string;
-  powerKw?: number;
-  voltage?: number;
-  amperage?: number;
-  status?: string;
-  quantity?: number;
+  stationId: number
+  connectorType: string
+  powerKw?: number
+  voltage?: number
+  amperage?: number
+  status?: string
+  quantity?: number
 }
 
 export interface UpdateConnectorInput {
-  connectorType?: string;
-  powerKw?: number;
-  voltage?: number;
-  amperage?: number;
-  status?: string;
-  quantity?: number;
+  connectorType?: string
+  powerKw?: number
+  voltage?: number
+  amperage?: number
+  status?: string
+  quantity?: number
 }
 
 export class StationConnectorRepository {
@@ -36,8 +36,8 @@ export class StationConnectorRepository {
     const result = await this.client.queryOne<Record<string, unknown>>(
       `SELECT * FROM station_connectors WHERE id = ?`,
       [id]
-    );
-    return result ? this.mapFromDb(result) : null;
+    )
+    return result ? this.mapFromDb(result) : null
   }
 
   /**
@@ -47,8 +47,8 @@ export class StationConnectorRepository {
     const result = await this.client.query<Record<string, unknown>>(
       `SELECT * FROM station_connectors WHERE station_id = ? ORDER BY id`,
       [stationId]
-    );
-    return result.results.map(c => this.mapFromDb(c));
+    )
+    return result.results.map(c => this.mapFromDb(c))
   }
 
   /**
@@ -66,52 +66,70 @@ export class StationConnectorRepository {
         input.voltage ?? null,
         input.amperage ?? null,
         input.status ?? 'available',
-        input.quantity ?? 1
+        input.quantity ?? 1,
       ]
-    );
+    )
 
     if (!result.success) {
-      throw new Error('Failed to create connector');
+      throw new Error('Failed to create connector')
     }
 
-    const connector = await this.findById(result.lastRowId);
+    const connector = await this.findById(result.lastRowId)
     if (!connector) {
-      throw new Error('Created connector not found');
+      throw new Error('Created connector not found')
     }
 
-    return connector;
+    return connector
   }
 
   /**
    * Update connector by ID
    */
   async update(id: number, input: UpdateConnectorInput): Promise<StationConnector | null> {
-    const sets: string[] = [];
-    const values: unknown[] = [];
+    const sets: string[] = []
+    const values: unknown[] = []
 
-    if (input.connectorType !== undefined) { sets.push('connector_type = ?'); values.push(input.connectorType); }
-    if (input.powerKw !== undefined) { sets.push('power_kw = ?'); values.push(input.powerKw); }
-    if (input.voltage !== undefined) { sets.push('voltage = ?'); values.push(input.voltage); }
-    if (input.amperage !== undefined) { sets.push('amperage = ?'); values.push(input.amperage); }
-    if (input.status !== undefined) { sets.push('status = ?'); values.push(input.status); }
-    if (input.quantity !== undefined) { sets.push('quantity = ?'); values.push(input.quantity); }
-
-    if (sets.length === 0) {
-      return this.findById(id);
+    if (input.connectorType !== undefined) {
+      sets.push('connector_type = ?')
+      values.push(input.connectorType)
+    }
+    if (input.powerKw !== undefined) {
+      sets.push('power_kw = ?')
+      values.push(input.powerKw)
+    }
+    if (input.voltage !== undefined) {
+      sets.push('voltage = ?')
+      values.push(input.voltage)
+    }
+    if (input.amperage !== undefined) {
+      sets.push('amperage = ?')
+      values.push(input.amperage)
+    }
+    if (input.status !== undefined) {
+      sets.push('status = ?')
+      values.push(input.status)
+    }
+    if (input.quantity !== undefined) {
+      sets.push('quantity = ?')
+      values.push(input.quantity)
     }
 
-    values.push(id);
+    if (sets.length === 0) {
+      return this.findById(id)
+    }
+
+    values.push(id)
 
     const result = await this.client.execute(
       `UPDATE station_connectors SET ${sets.join(', ')} WHERE id = ?`,
       values
-    );
+    )
 
     if (result.changes === 0) {
-      return null;
+      return null
     }
 
-    return this.findById(id);
+    return this.findById(id)
   }
 
   /**
@@ -127,37 +145,34 @@ export class StationConnectorRepository {
     const existing = await this.client.queryOne<Record<string, unknown>>(
       `SELECT * FROM station_connectors WHERE station_id = ? AND connector_type = ?`,
       [stationId, connectorType]
-    );
+    )
 
     if (existing) {
       const updated = await this.update(existing.id as number, {
         ...input,
-        connectorType
-      });
+        connectorType,
+      })
       if (!updated) {
-        throw new Error('Failed to update connector');
+        throw new Error('Failed to update connector')
       }
-      return { connector: updated, isNew: false };
+      return { connector: updated, isNew: false }
     }
 
     const created = await this.create({
       stationId,
       connectorType,
-      ...input
-    });
+      ...input,
+    })
 
-    return { connector: created, isNew: true };
+    return { connector: created, isNew: true }
   }
 
   /**
    * Delete connector by ID
    */
   async delete(id: number): Promise<boolean> {
-    const result = await this.client.execute(
-      `DELETE FROM station_connectors WHERE id = ?`,
-      [id]
-    );
-    return result.changes > 0;
+    const result = await this.client.execute(`DELETE FROM station_connectors WHERE id = ?`, [id])
+    return result.changes > 0
   }
 
   /**
@@ -167,8 +182,8 @@ export class StationConnectorRepository {
     const result = await this.client.execute(
       `DELETE FROM station_connectors WHERE station_id = ?`,
       [stationId]
-    );
-    return result.changes;
+    )
+    return result.changes
   }
 
   /**
@@ -180,26 +195,25 @@ export class StationConnectorRepository {
   async syncConnectors(
     stationId: number,
     connectors: Array<{
-      connectorType: string;
-      powerKw?: number;
-      voltage?: number;
-      amperage?: number;
-      status?: string;
-      quantity?: number;
+      connectorType: string
+      powerKw?: number
+      voltage?: number
+      amperage?: number
+      status?: string
+      quantity?: number
     }>
   ): Promise<{ created: number; updated: number; deleted: number }> {
-    const stats = { created: 0, updated: 0, deleted: 0 };
+    const stats = { created: 0, updated: 0, deleted: 0 }
 
     // Get current connectors
-    const currentConnectors = await this.findByStationId(stationId);
-    const currentTypes = new Map(currentConnectors.map(c => [c.connectorType, c]));
-    const newTypes = new Set(connectors.map(c => c.connectorType));
+    const currentConnectors = await this.findByStationId(stationId)
+    const newTypes = new Set(connectors.map(c => c.connectorType))
 
     // Delete connectors no longer present
     for (const current of currentConnectors) {
       if (!newTypes.has(current.connectorType)) {
-        await this.delete(current.id);
-        stats.deleted++;
+        await this.delete(current.id)
+        stats.deleted++
       }
     }
 
@@ -210,17 +224,17 @@ export class StationConnectorRepository {
         voltage: connector.voltage,
         amperage: connector.amperage,
         status: connector.status,
-        quantity: connector.quantity
-      });
+        quantity: connector.quantity,
+      })
 
       if (result.isNew) {
-        stats.created++;
+        stats.created++
       } else {
-        stats.updated++;
+        stats.updated++
       }
     }
 
-    return stats;
+    return stats
   }
 
   /**
@@ -230,8 +244,8 @@ export class StationConnectorRepository {
     const result = await this.client.queryOne<{ count: number }>(
       `SELECT COUNT(*) as count FROM station_connectors WHERE station_id = ?`,
       [stationId]
-    );
-    return result?.count ?? 0;
+    )
+    return result?.count ?? 0
   }
 
   /**
@@ -248,7 +262,7 @@ export class StationConnectorRepository {
       status: row.status as 'available' | 'occupied' | 'out_of_order',
       quantity: row.quantity as number,
       createdAt: row.created_at as string,
-      updatedAt: row.updated_at as string
-    };
+      updatedAt: row.updated_at as string,
+    }
   }
 }

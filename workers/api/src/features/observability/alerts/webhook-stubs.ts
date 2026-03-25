@@ -59,28 +59,28 @@ export async function handlePagerDutyWebhook(
   requestId: string
 ): Promise<Response> {
   if (request.method !== 'POST') {
-    return new Response(
-      JSON.stringify({ error: 'Method not allowed' }),
-      { status: 405, headers: { 'Content-Type': 'application/json' } }
-    )
+    return new Response(JSON.stringify({ error: 'Method not allowed' }), {
+      status: 405,
+      headers: { 'Content-Type': 'application/json' },
+    })
   }
 
   try {
-    const payload = await request.json() as PagerDutyPayload
+    const payload = (await request.json()) as PagerDutyPayload
 
     // Validate required fields
     if (!payload.routing_key) {
-      return new Response(
-        JSON.stringify({ error: 'Missing routing_key' }),
-        { status: 400, headers: { 'Content-Type': 'application/json' } }
-      )
+      return new Response(JSON.stringify({ error: 'Missing routing_key' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      })
     }
 
     if (!payload.event_action) {
-      return new Response(
-        JSON.stringify({ error: 'Missing event_action' }),
-        { status: 400, headers: { 'Content-Type': 'application/json' } }
-      )
+      return new Response(JSON.stringify({ error: 'Missing event_action' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' },
+      })
     }
 
     // Store the alert
@@ -89,38 +89,41 @@ export async function handlePagerDutyWebhook(
       timestamp: new Date().toISOString(),
       type: 'pagerduty',
       payload,
-      source: request.headers.get('X-Forwarded-For') || 'unknown'
+      source: request.headers.get('X-Forwarded-For') || 'unknown',
     }
 
     await storeAlert(env, alert)
 
     // Log the alert
-    console.log('[PagerDuty Stub]', JSON.stringify({
-      requestId,
-      alertId: alert.id,
-      eventAction: payload.event_action,
-      summary: payload.payload?.summary || 'N/A',
-      severity: payload.payload?.severity || 'unknown'
-    }))
+    console.log(
+      '[PagerDuty Stub]',
+      JSON.stringify({
+        requestId,
+        alertId: alert.id,
+        eventAction: payload.event_action,
+        summary: payload.payload?.summary || 'N/A',
+        severity: payload.payload?.severity || 'unknown',
+      })
+    )
 
     // Return PagerDuty-style response
     return new Response(
       JSON.stringify({
         status: 'success',
         message: 'Event processed',
-        dedup_key: payload.dedup_key || crypto.randomUUID()
+        dedup_key: payload.dedup_key || crypto.randomUUID(),
       }),
       {
         status: 202,
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json' },
       }
     )
   } catch (error) {
     console.error('PagerDuty webhook error:', error)
-    return new Response(
-      JSON.stringify({ error: 'Invalid JSON payload' }),
-      { status: 400, headers: { 'Content-Type': 'application/json' } }
-    )
+    return new Response(JSON.stringify({ error: 'Invalid JSON payload' }), {
+      status: 400,
+      headers: { 'Content-Type': 'application/json' },
+    })
   }
 }
 
@@ -133,19 +136,21 @@ export async function handleSlackWebhook(
   requestId: string
 ): Promise<Response> {
   if (request.method !== 'POST') {
-    return new Response(
-      JSON.stringify({ error: 'Method not allowed' }),
-      { status: 405, headers: { 'Content-Type': 'application/json' } }
-    )
+    return new Response(JSON.stringify({ error: 'Method not allowed' }), {
+      status: 405,
+      headers: { 'Content-Type': 'application/json' },
+    })
   }
 
   try {
-    const payload = await request.json() as SlackPayload
+    const payload = (await request.json()) as SlackPayload
 
     // Validate - either text or blocks must be present
     if (!payload.text && !payload.blocks && !payload.attachments) {
       return new Response(
-        JSON.stringify({ error: 'Missing message content (text, blocks, or attachments required)' }),
+        JSON.stringify({
+          error: 'Missing message content (text, blocks, or attachments required)',
+        }),
         { status: 400, headers: { 'Content-Type': 'application/json' } }
       )
     }
@@ -156,40 +161,44 @@ export async function handleSlackWebhook(
       timestamp: new Date().toISOString(),
       type: 'slack',
       payload,
-      source: request.headers.get('X-Forwarded-For') || 'unknown'
+      source: request.headers.get('X-Forwarded-For') || 'unknown',
     }
 
     await storeAlert(env, alert)
 
     // Log the alert
-    const messageText = payload.text ||
+    const messageText =
+      payload.text ||
       payload.attachments?.[0]?.text ||
       payload.blocks?.find(b => b.text)?.text?.text ||
       'N/A'
 
-    console.log('[Slack Stub]', JSON.stringify({
-      requestId,
-      alertId: alert.id,
-      message: messageText.substring(0, 200)
-    }))
+    console.log(
+      '[Slack Stub]',
+      JSON.stringify({
+        requestId,
+        alertId: alert.id,
+        message: messageText.substring(0, 200),
+      })
+    )
 
     // Return Slack-style response
     return new Response(
       JSON.stringify({
         ok: true,
-        warning: 'This is a stub endpoint - no actual Slack notification sent'
+        warning: 'This is a stub endpoint - no actual Slack notification sent',
       }),
       {
         status: 200,
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json' },
       }
     )
   } catch (error) {
     console.error('Slack webhook error:', error)
-    return new Response(
-      JSON.stringify({ error: 'Invalid JSON payload' }),
-      { status: 400, headers: { 'Content-Type': 'application/json' } }
-    )
+    return new Response(JSON.stringify({ error: 'Invalid JSON payload' }), {
+      status: 400,
+      headers: { 'Content-Type': 'application/json' },
+    })
   }
 }
 
@@ -356,7 +365,13 @@ export async function serveAlertHistory(env: Env): Promise<Response> {
     </div>
 
     <div class="alert-list">
-      ${alerts.length > 0 ? alerts.slice().reverse().map(alert => `
+      ${
+        alerts.length > 0
+          ? alerts
+              .slice()
+              .reverse()
+              .map(
+                alert => `
         <div class="alert-item ${alert.type}">
           <div class="alert-header">
             <span class="alert-type ${alert.type}">${alert.type}</span>
@@ -364,7 +379,11 @@ export async function serveAlertHistory(env: Env): Promise<Response> {
           </div>
           <pre class="alert-content">${JSON.stringify(alert.payload, null, 2).substring(0, 500)}${JSON.stringify(alert.payload, null, 2).length > 500 ? '...' : ''}</pre>
         </div>
-      `).join('') : '<div class="empty-state">No alerts received yet</div>'}
+      `
+              )
+              .join('')
+          : '<div class="empty-state">No alerts received yet</div>'
+      }
     </div>
   </div>
 
@@ -375,7 +394,7 @@ export async function serveAlertHistory(env: Env): Promise<Response> {
 
   return new Response(html, {
     status: 200,
-    headers: { 'Content-Type': 'text/html', 'Cache-Control': 'no-store' }
+    headers: { 'Content-Type': 'text/html', 'Cache-Control': 'no-store' },
   })
 }
 
@@ -384,7 +403,7 @@ export async function serveAlertHistory(env: Env): Promise<Response> {
  */
 async function storeAlert(env: Env, alert: StoredAlert): Promise<void> {
   try {
-    const existing = await env.ROUTE_CACHE.get(ALERTS_STORE_KEY, 'json') as StoredAlert[] | null
+    const existing = (await env.ROUTE_CACHE.get(ALERTS_STORE_KEY, 'json')) as StoredAlert[] | null
     const alerts = existing || []
 
     alerts.push(alert)
@@ -396,7 +415,7 @@ async function storeAlert(env: Env, alert: StoredAlert): Promise<void> {
 
     // Store with 7-day TTL
     await env.ROUTE_CACHE.put(ALERTS_STORE_KEY, JSON.stringify(alerts), {
-      expirationTtl: 7 * 24 * 60 * 60
+      expirationTtl: 7 * 24 * 60 * 60,
     })
   } catch (error) {
     console.error('Failed to store alert:', error)
@@ -408,7 +427,7 @@ async function storeAlert(env: Env, alert: StoredAlert): Promise<void> {
  */
 async function getStoredAlerts(env: Env): Promise<StoredAlert[]> {
   try {
-    return await env.ROUTE_CACHE.get(ALERTS_STORE_KEY, 'json') as StoredAlert[] || []
+    return ((await env.ROUTE_CACHE.get(ALERTS_STORE_KEY, 'json')) as StoredAlert[]) || []
   } catch {
     return []
   }
@@ -417,41 +436,41 @@ async function getStoredAlerts(env: Env): Promise<StoredAlert[]> {
 /**
  * Trigger a test alert (for manual testing)
  */
-export async function triggerTestAlert(
-  type: 'pagerduty' | 'slack',
-  env: Env
-): Promise<Response> {
+export async function triggerTestAlert(type: 'pagerduty' | 'slack', env: Env): Promise<Response> {
   const alert: StoredAlert = {
     id: crypto.randomUUID(),
     timestamp: new Date().toISOString(),
     type,
-    payload: type === 'pagerduty'
-      ? {
-          routing_key: 'test-key',
-          event_action: 'trigger',
-          payload: {
-            summary: 'Test alert from EV Overlay',
-            severity: 'warning',
-            source: 'test-endpoint',
-            custom_details: {
-              test: true,
-              timestamp: new Date().toISOString()
-            }
+    payload:
+      type === 'pagerduty'
+        ? {
+            routing_key: 'test-key',
+            event_action: 'trigger',
+            payload: {
+              summary: 'Test alert from EV Overlay',
+              severity: 'warning',
+              source: 'test-endpoint',
+              custom_details: {
+                test: true,
+                timestamp: new Date().toISOString(),
+              },
+            },
           }
-        }
-      : {
-          text: 'Test alert from EV Overlay',
-          attachments: [{
-            color: 'warning',
-            title: 'Test Alert',
-            text: 'This is a test message',
-            fields: [
-              { title: 'Environment', value: 'test', short: true },
-              { title: 'Timestamp', value: new Date().toISOString(), short: true }
-            ]
-          }]
-        },
-    source: 'test-trigger'
+        : {
+            text: 'Test alert from EV Overlay',
+            attachments: [
+              {
+                color: 'warning',
+                title: 'Test Alert',
+                text: 'This is a test message',
+                fields: [
+                  { title: 'Environment', value: 'test', short: true },
+                  { title: 'Timestamp', value: new Date().toISOString(), short: true },
+                ],
+              },
+            ],
+          },
+    source: 'test-trigger',
   }
 
   await storeAlert(env, alert)
@@ -460,7 +479,7 @@ export async function triggerTestAlert(
     JSON.stringify({
       success: true,
       message: `Test ${type} alert created`,
-      alertId: alert.id
+      alertId: alert.id,
     }),
     { status: 200, headers: { 'Content-Type': 'application/json' } }
   )

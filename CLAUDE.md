@@ -3,6 +3,7 @@
 Auto-generated from all feature plans. Last updated: 2026-03-06
 
 ## Active Technologies
+
 - TypeScript 5.3, Node 20+ + Vue 3.4, Vite 5, Cloudflare Workers (005-refactor-structure)
 - N/A (structural refactor only) (005-refactor-structure)
 - TypeScript 5.3, Node 20+ + Cloudflare Workers Runtime, Vue 3.4, Vite 5, Leaflet 1.9 (006-cloudflare-edge-arch)
@@ -54,12 +55,12 @@ specs/             # Feature documentation
 
 ## Terminology
 
-| Term | Definition | Example |
-|------|------------|---------|
-| **Package** | A deployable unit with its own `package.json`, dependencies, and build output | `packages/core`, `apps/web`, `workers/api` |
-| **Feature** | A domain-specific grouping of related code at the top level of a package | `features/trip-planning/`, `features/map/` |
-| **Module** | A logical subdivision within a feature by code type | `components/`, `composables/`, `handlers/` |
-| **Co-located Tests** | Test files placed in the same directory as the source file they test | `api-client.ts` + `api-client.test.ts` |
+| Term                 | Definition                                                                    | Example                                    |
+| -------------------- | ----------------------------------------------------------------------------- | ------------------------------------------ |
+| **Package**          | A deployable unit with its own `package.json`, dependencies, and build output | `packages/core`, `apps/web`, `workers/api` |
+| **Feature**          | A domain-specific grouping of related code at the top level of a package      | `features/trip-planning/`, `features/map/` |
+| **Module**           | A logical subdivision within a feature by code type                           | `components/`, `composables/`, `handlers/` |
+| **Co-located Tests** | Test files placed in the same directory as the source file they test          | `api-client.ts` + `api-client.test.ts`     |
 
 ## Commands
 
@@ -124,20 +125,20 @@ The codebase follows a feature-based organization pattern:
 
 ### apps/web/src/features/
 
-| Feature | Purpose | Key Files |
-|---------|---------|-----------|
-| `ev-params/` | EV parameter inputs | `EVParameterInputs.vue`, `LoadingState.vue` |
-| `map/` | Route visualization, geolocation | `RouteMap.vue`, `useGeolocation.ts`, `location.ts` |
-| `trip-planning/` | Trip input and results | `TripInputForm.vue`, `TripSummary.vue`, `ChargingStopList.vue` |
-| `ui/` | Shared UI components | `ErrorDisplay.vue` |
+| Feature          | Purpose                          | Key Files                                                      |
+| ---------------- | -------------------------------- | -------------------------------------------------------------- |
+| `ev-params/`     | EV parameter inputs              | `EVParameterInputs.vue`, `LoadingState.vue`                    |
+| `map/`           | Route visualization, geolocation | `RouteMap.vue`, `useGeolocation.ts`, `location.ts`             |
+| `trip-planning/` | Trip input and results           | `TripInputForm.vue`, `TripSummary.vue`, `ChargingStopList.vue` |
+| `ui/`            | Shared UI components             | `ErrorDisplay.vue`                                             |
 
 ### workers/api/src/features/
 
-| Feature | Purpose | Key Files |
-|---------|---------|-----------|
-| `rate-limiting/` | API rate limiting | `rate-limit.ts` |
-| `routing/` | Route calculation, caching | `route.ts`, `osrm-client.ts`, `kv-cache.ts`, `normalize.ts` |
-| `shared/` | Cross-cutting concerns | `cors.ts` |
+| Feature          | Purpose                    | Key Files                                                   |
+| ---------------- | -------------------------- | ----------------------------------------------------------- |
+| `rate-limiting/` | API rate limiting          | `rate-limit.ts`                                             |
+| `routing/`       | Route calculation, caching | `route.ts`, `osrm-client.ts`, `kv-cache.ts`, `normalize.ts` |
+| `shared/`        | Cross-cutting concerns     | `cors.ts`                                                   |
 
 ### Benefits
 
@@ -148,16 +149,17 @@ The codebase follows a feature-based organization pattern:
 
 ### Measuring Success (005-refactor-structure)
 
-| Metric | Measurement Method | Target |
-|--------|-------------------|--------|
-| Code Location Time | Developer time-to-find exercise | < 2 minutes |
-| Build Time | `time pnpm build` | Baseline + 20% improvement |
-| Review Time | GitHub PR median time-to-approval | Baseline + 30% improvement |
-| Circular Dependencies | `npm ls` or madge analysis | Zero cycles |
-| Config Externalization | Audit source for hardcoded env values | 100% externalized |
-| Import Quality | Grep for `../../../` patterns | Zero deep relative imports |
+| Metric                 | Measurement Method                    | Target                     |
+| ---------------------- | ------------------------------------- | -------------------------- |
+| Code Location Time     | Developer time-to-find exercise       | < 2 minutes                |
+| Build Time             | `time pnpm build`                     | Baseline + 20% improvement |
+| Review Time            | GitHub PR median time-to-approval     | Baseline + 30% improvement |
+| Circular Dependencies  | `npm ls` or madge analysis            | Zero cycles                |
+| Config Externalization | Audit source for hardcoded env values | 100% externalized          |
+| Import Quality         | Grep for `../../../` patterns         | Zero deep relative imports |
 
 **Review Time Calculation**:
+
 ```bash
 # Extract PR review times from GitHub
 gh pr list --state merged --limit 20 --json number,createdAt,reviews
@@ -166,10 +168,10 @@ gh pr list --state merged --limit 20 --json number,createdAt,reviews
 ```
 
 ## Recent Changes
+
 - 006-cloudflare-edge-arch: Added TypeScript 5.3, Node 20+ + Cloudflare Workers Runtime, Vue 3.4, Vite 5, Leaflet 1.9
 - 006-cloudflare-edge-arch: Added TypeScript 5.3, Node 20+ + Cloudflare Workers Runtime, Vue 3.4, Vite 5, Leaflet 1.9
 - 005-refactor-structure: Added TypeScript 5.3, Node 20+ + Vue 3.4, Vite 5, Cloudflare Workers
-
 
 <!-- MANUAL ADDITIONS START -->
 
@@ -254,6 +256,7 @@ git push --tags
 ## Simplify Search Form (004-simplify-search-form)
 
 ### Features
+
 - **Plain Text Inputs**: Origin and Destination are plain text inputs with no autocomplete/typeahead
 - **Request Deduplication**: Identical in-flight requests share the same promise
 - **LRU Cache**: 60-second TTL, max 50 entries for search results
@@ -261,12 +264,14 @@ git push --tags
 - **Preserved UX**: Existing validation, geolocation auto-populate, and error handling unchanged
 
 ### Key Files
+
 - `apps/web/src/services/request-cache.ts` - LRU cache with TTL implementation
 - `apps/web/src/services/api-client.ts` - Deduplication and cancellation logic
 - `apps/web/src/components/TripInputForm.vue` - Plain text inputs with autocomplete="off"
 - `apps/web/src/composables/useRoutePlanning.ts` - AbortError handling
 
 ### Technical Decisions
+
 - Native Map for pending request deduplication (no new dependencies)
 - AbortController for cancellation (native API)
 - Case-insensitive, trimmed, collapsed whitespace for cache key normalization

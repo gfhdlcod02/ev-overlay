@@ -1,5 +1,5 @@
-import type { D1Client } from '../client';
-import type { IngestionJob } from '../../types';
+import type { D1Client } from '../client'
+import type { IngestionJob } from '../../types'
 
 /**
  * Ingestion Job Repository
@@ -8,15 +8,15 @@ import type { IngestionJob } from '../../types';
  */
 
 export interface CreateJobInput {
-  source?: string;
-  paramsJson?: string;
+  source?: string
+  paramsJson?: string
 }
 
 export interface JobStats {
-  recordsProcessed: number;
-  recordsCreated: number;
-  recordsUpdated: number;
-  recordsFailed: number;
+  recordsProcessed: number
+  recordsCreated: number
+  recordsUpdated: number
+  recordsFailed: number
 }
 
 export class IngestionJobRepository {
@@ -29,18 +29,18 @@ export class IngestionJobRepository {
     const result = await this.client.execute(
       `INSERT INTO ingestion_jobs (source, paramsJson, status) VALUES (?, ?, 'running')`,
       [input.source ?? 'openchargemap', input.paramsJson ?? null]
-    );
+    )
 
     if (!result.success) {
-      throw new Error('Failed to create ingestion job');
+      throw new Error('Failed to create ingestion job')
     }
 
-    const job = await this.findById(result.lastRowId);
+    const job = await this.findById(result.lastRowId)
     if (!job) {
-      throw new Error('Created job not found');
+      throw new Error('Created job not found')
     }
 
-    return job;
+    return job
   }
 
   /**
@@ -50,8 +50,8 @@ export class IngestionJobRepository {
     const result = await this.client.queryOne<Record<string, unknown>>(
       `SELECT * FROM ingestion_jobs WHERE id = ?`,
       [id]
-    );
-    return result ? this.mapFromDb(result) : null;
+    )
+    return result ? this.mapFromDb(result) : null
   }
 
   /**
@@ -61,8 +61,8 @@ export class IngestionJobRepository {
     const result = await this.client.query<Record<string, unknown>>(
       `SELECT * FROM ingestion_jobs ORDER BY started_at DESC LIMIT ?`,
       [limit]
-    );
-    return result.results.map(j => this.mapFromDb(j));
+    )
+    return result.results.map(j => this.mapFromDb(j))
   }
 
   /**
@@ -71,50 +71,50 @@ export class IngestionJobRepository {
   async findRunning(): Promise<IngestionJob[]> {
     const result = await this.client.query<Record<string, unknown>>(
       `SELECT * FROM ingestion_jobs WHERE status = 'running' ORDER BY started_at`
-    );
-    return result.results.map(j => this.mapFromDb(j));
+    )
+    return result.results.map(j => this.mapFromDb(j))
   }
 
   /**
    * Update job statistics
    */
   async updateStats(id: number, stats: Partial<JobStats>): Promise<IngestionJob | null> {
-    const sets: string[] = [];
-    const values: unknown[] = [];
+    const sets: string[] = []
+    const values: unknown[] = []
 
     if (stats.recordsProcessed !== undefined) {
-      sets.push('records_processed = ?');
-      values.push(stats.recordsProcessed);
+      sets.push('records_processed = ?')
+      values.push(stats.recordsProcessed)
     }
     if (stats.recordsCreated !== undefined) {
-      sets.push('records_created = ?');
-      values.push(stats.recordsCreated);
+      sets.push('records_created = ?')
+      values.push(stats.recordsCreated)
     }
     if (stats.recordsUpdated !== undefined) {
-      sets.push('records_updated = ?');
-      values.push(stats.recordsUpdated);
+      sets.push('records_updated = ?')
+      values.push(stats.recordsUpdated)
     }
     if (stats.recordsFailed !== undefined) {
-      sets.push('records_failed = ?');
-      values.push(stats.recordsFailed);
+      sets.push('records_failed = ?')
+      values.push(stats.recordsFailed)
     }
 
     if (sets.length === 0) {
-      return this.findById(id);
+      return this.findById(id)
     }
 
-    values.push(id);
+    values.push(id)
 
     const result = await this.client.execute(
       `UPDATE ingestion_jobs SET ${sets.join(', ')} WHERE id = ?`,
       values
-    );
+    )
 
     if (result.changes === 0) {
-      return null;
+      return null
     }
 
-    return this.findById(id);
+    return this.findById(id)
   }
 
   /**
@@ -128,13 +128,13 @@ export class IngestionJobRepository {
         duration_ms = ?
       WHERE id = ? AND status = 'running'`,
       [durationMs, id]
-    );
+    )
 
     if (result.changes === 0) {
-      return null;
+      return null
     }
 
-    return this.findById(id);
+    return this.findById(id)
   }
 
   /**
@@ -149,13 +149,13 @@ export class IngestionJobRepository {
         duration_ms = ?
       WHERE id = ? AND status = 'running'`,
       [errorMessage, durationMs ?? null, id]
-    );
+    )
 
     if (result.changes === 0) {
-      return null;
+      return null
     }
 
-    return this.findById(id);
+    return this.findById(id)
   }
 
   /**
@@ -169,34 +169,34 @@ export class IngestionJobRepository {
         duration_ms = ?
       WHERE id = ? AND status = 'running'`,
       [durationMs, id]
-    );
+    )
 
     if (result.changes === 0) {
-      return null;
+      return null
     }
 
-    return this.findById(id);
+    return this.findById(id)
   }
 
   /**
    * Get job statistics summary
    */
   async getStatsSummary(since?: string): Promise<{
-    total: number;
-    completed: number;
-    failed: number;
-    partial: number;
-    totalRecordsProcessed: number;
+    total: number
+    completed: number
+    failed: number
+    partial: number
+    totalRecordsProcessed: number
   }> {
-    const whereClause = since ? 'WHERE started_at > ?' : '';
-    const params = since ? [since] : [];
+    const whereClause = since ? 'WHERE started_at > ?' : ''
+    const params = since ? [since] : []
 
     const result = await this.client.queryOne<{
-      total: number;
-      completed: number;
-      failed: number;
-      partial: number;
-      totalRecords: number;
+      total: number
+      completed: number
+      failed: number
+      partial: number
+      totalRecords: number
     }>(
       `SELECT
         COUNT(*) as total,
@@ -207,15 +207,15 @@ export class IngestionJobRepository {
       FROM ingestion_jobs
       ${whereClause}`,
       params
-    );
+    )
 
     return {
       total: result?.total ?? 0,
       completed: result?.completed ?? 0,
       failed: result?.failed ?? 0,
       partial: result?.partial ?? 0,
-      totalRecordsProcessed: result?.totalRecords ?? 0
-    };
+      totalRecordsProcessed: result?.totalRecords ?? 0,
+    }
   }
 
   /**
@@ -227,8 +227,8 @@ export class IngestionJobRepository {
        WHERE status IN ('completed', 'failed', 'partial')
        AND started_at < datetime('now', '-' || ? || ' days')`,
       [olderThanDays]
-    );
-    return result.changes;
+    )
+    return result.changes
   }
 
   /**
@@ -247,7 +247,7 @@ export class IngestionJobRepository {
       recordsUpdated: row.records_updated as number,
       recordsFailed: row.records_failed as number,
       errorMessage: row.error_message as string | null,
-      durationMs: row.duration_ms as number | null
-    };
+      durationMs: row.duration_ms as number | null,
+    }
   }
 }

@@ -160,15 +160,15 @@ CREATE INDEX idx_ratelog_client ON rate_limit_log(client_key, window_start);
 
 ```typescript
 interface CachedRoute {
-  version: 1;
-  origin: { lat: number; lng: number; name: string };
-  destination: { lat: number; lng: number; name: string };
-  distance: number;           // meters
-  duration: number;           // seconds
-  polyline: string;           // Encoded polyline
-  chargingStops: ChargingStop[];
-  cachedAt: string;           // ISO timestamp
-  expiresAt: string;          // ISO timestamp
+  version: 1
+  origin: { lat: number; lng: number; name: string }
+  destination: { lat: number; lng: number; name: string }
+  distance: number // meters
+  duration: number // seconds
+  polyline: string // Encoded polyline
+  chargingStops: ChargingStop[]
+  cachedAt: string // ISO timestamp
+  expiresAt: string // ISO timestamp
 }
 ```
 
@@ -179,19 +179,19 @@ interface CachedRoute {
 
 ```typescript
 interface CachedStationQuery {
-  version: 1;
-  bbox: [number, number, number, number]; // [lat1, lng1, lat2, lng2]
-  stations: CompactStation[];
-  totalCount: number;
-  cachedAt: string;
+  version: 1
+  bbox: [number, number, number, number] // [lat1, lng1, lat2, lng2]
+  stations: CompactStation[]
+  totalCount: number
+  cachedAt: string
 }
 
 interface CompactStation {
-  id: number;
-  name: string;
-  lat: number;
-  lng: number;
-  connectors: CompactConnector[];
+  id: number
+  name: string
+  lat: number
+  lng: number
+  connectors: CompactConnector[]
 }
 ```
 
@@ -202,10 +202,10 @@ interface CompactStation {
 
 ```typescript
 interface CachedStation {
-  version: 1;
-  station: ChargingStation;
-  connectors: StationConnector[];
-  cachedAt: string;
+  version: 1
+  station: ChargingStation
+  connectors: StationConnector[]
+  cachedAt: string
 }
 ```
 
@@ -217,11 +217,11 @@ interface CachedStation {
 
 ```typescript
 interface RateLimitState {
-  clientKey: string;          // IP hash or user ID
-  requests: number[];         // Timestamps of requests (last hour)
-  limit: number;              // Max requests per hour (default: 100)
-  windowMs: number;           // Time window (default: 3600000)
-  lastReset: number;          // Timestamp of last counter reset
+  clientKey: string // IP hash or user ID
+  requests: number[] // Timestamps of requests (last hour)
+  limit: number // Max requests per hour (default: 100)
+  windowMs: number // Time window (default: 3600000)
+  lastReset: number // Timestamp of last counter reset
 }
 ```
 
@@ -231,11 +231,11 @@ interface RateLimitState {
 
 ```typescript
 interface IngestionLockState {
-  locked: boolean;
-  acquiredAt: number | null;
-  acquiredBy: string | null;  // Job ID or worker instance
-  timeoutMs: number;          // Lock timeout (default: 300000 = 5min)
-  lastHeartbeat: number;
+  locked: boolean
+  acquiredAt: number | null
+  acquiredBy: string | null // Job ID or worker instance
+  timeoutMs: number // Lock timeout (default: 300000 = 5min)
+  lastHeartbeat: number
 }
 ```
 
@@ -324,12 +324,12 @@ ON CONFLICT(external_id) DO UPDATE SET
 
 ## Size Estimates
 
-| Entity | Count | Avg Size | Total |
-|--------|-------|----------|-------|
-| Charging stations | 10,000 | 500 bytes | 5 MB |
-| Connectors | 30,000 | 200 bytes | 6 MB |
-| Ingestion jobs (1 year) | 365 | 200 bytes | 73 KB |
-| Snapshots (metadata) | 10,000 | 100 bytes | 1 MB |
-| **Total D1** | - | - | **~12 MB** |
+| Entity                  | Count  | Avg Size  | Total      |
+| ----------------------- | ------ | --------- | ---------- |
+| Charging stations       | 10,000 | 500 bytes | 5 MB       |
+| Connectors              | 30,000 | 200 bytes | 6 MB       |
+| Ingestion jobs (1 year) | 365    | 200 bytes | 73 KB      |
+| Snapshots (metadata)    | 10,000 | 100 bytes | 1 MB       |
+| **Total D1**            | -      | -         | **~12 MB** |
 
 Well within 500MB D1 limit.

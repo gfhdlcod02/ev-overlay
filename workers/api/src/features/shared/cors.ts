@@ -5,9 +5,9 @@
 
 // Allowed origins - configure based on environment
 const ALLOWED_ORIGINS = [
-  'http://localhost:5173',  // Vite dev server
-  'http://localhost:3000',  // Alternative dev port
-  'https://ev-overlay.pages.dev',     // Cloudflare Pages staging
+  'http://localhost:5173', // Vite dev server
+  'http://localhost:3000', // Alternative dev port
+  'https://ev-overlay.pages.dev', // Cloudflare Pages staging
   'https://ev-overlay-prod.pages.dev', // Cloudflare Pages production
 ]
 
@@ -48,7 +48,11 @@ export function handleCorsPreflight(request: Request, env: Record<string, string
 /**
  * Add CORS headers to response
  */
-export function addCorsHeaders(response: Response, request: Request, env: Record<string, string>): Response {
+export function addCorsHeaders(
+  response: Response,
+  request: Request,
+  env: Record<string, string>
+): Response {
   const allowedOrigins = getAllowedOrigins(env)
   const origin = request.headers.get('Origin')
 
@@ -58,7 +62,10 @@ export function addCorsHeaders(response: Response, request: Request, env: Record
   const newHeaders = new Headers(response.headers)
   newHeaders.set('Access-Control-Allow-Origin', allowedOrigin)
   newHeaders.set('Access-Control-Allow-Credentials', 'true')
-  newHeaders.set('Access-Control-Expose-Headers', 'X-Request-ID, X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset')
+  newHeaders.set(
+    'Access-Control-Expose-Headers',
+    'X-Request-ID, X-RateLimit-Limit, X-RateLimit-Remaining, X-RateLimit-Reset'
+  )
 
   return new Response(response.body, {
     status: response.status,

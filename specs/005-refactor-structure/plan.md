@@ -23,19 +23,19 @@ Refactor the EV Overlay project codebase to follow consistent organizational pat
 
 _GATE: Must pass before Phase 0 research. Re-check after Phase 1 design._
 
-| Principle | Status | Notes |
-|-----------|--------|-------|
-| I. Cloudflare-First Infrastructure | [PASS] | No infrastructure changes |
-| II. Conservative Safety-First UX | [PASS] | No UX changes |
-| III. Deterministic Core Logic | [PASS] | No logic changes |
-| IV. Security & Privacy by Design | [PASS] | No security changes |
-| V. Separation of Concerns Architecture | [PASS] | This refactor enhances this principle |
-| VI. Reliability & Performance | [PASS] | Build time improvement aligns with performance goals |
-| VII. Definition of Done Quality Gate | [PASS] | All tests must pass |
-| VIII. Phase-Gated Delivery | [PASS] | Incremental refactor per package |
-| IX. Playwright Web Testing | [PASS] | E2E tests preserved |
-| X. Code Quality Standards | [PASS] | Improves code organization |
-| XI. Code Security Standards | [PASS] | No security impact |
+| Principle                              | Status | Notes                                                |
+| -------------------------------------- | ------ | ---------------------------------------------------- |
+| I. Cloudflare-First Infrastructure     | [PASS] | No infrastructure changes                            |
+| II. Conservative Safety-First UX       | [PASS] | No UX changes                                        |
+| III. Deterministic Core Logic          | [PASS] | No logic changes                                     |
+| IV. Security & Privacy by Design       | [PASS] | No security changes                                  |
+| V. Separation of Concerns Architecture | [PASS] | This refactor enhances this principle                |
+| VI. Reliability & Performance          | [PASS] | Build time improvement aligns with performance goals |
+| VII. Definition of Done Quality Gate   | [PASS] | All tests must pass                                  |
+| VIII. Phase-Gated Delivery             | [PASS] | Incremental refactor per package                     |
+| IX. Playwright Web Testing             | [PASS] | E2E tests preserved                                  |
+| X. Code Quality Standards              | [PASS] | Improves code organization                           |
+| XI. Code Security Standards            | [PASS] | No security impact                                   |
 
 **Gate Result**: [PASS] ALL CLEAR - Proceed to Phase 0
 
@@ -55,12 +55,12 @@ Based on clarifications from spec:
 
 ### Decisions
 
-| Decision | Rationale |
-|----------|-----------|
-| **Incremental approach** | Reduces risk, allows learning and adjustment between packages |
-| **Co-located tests** | Simpler imports, obvious test coverage, easier navigation |
-| **Hybrid folder structure** | Balances feature discoverability with type separation |
-| **@ prefix aliases** | Industry standard, clear cross-package vs internal distinction |
+| Decision                      | Rationale                                                        |
+| ----------------------------- | ---------------------------------------------------------------- |
+| **Incremental approach**      | Reduces risk, allows learning and adjustment between packages    |
+| **Co-located tests**          | Simpler imports, obvious test coverage, easier navigation        |
+| **Hybrid folder structure**   | Balances feature discoverability with type separation            |
+| **@ prefix aliases**          | Industry standard, clear cross-package vs internal distinction   |
 | **core → web → api sequence** | Core has no dependencies, web depends on core, api is standalone |
 
 ---

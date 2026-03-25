@@ -1,7 +1,11 @@
 import type { Env, RouteRequest, QueueMessage } from './types'
 import { handleRouteRequest } from './features/routing/route-handler'
 import { handleStationList, handleStationDetail } from './features/stations/station-handler'
-import { checkRateLimit, getRateLimitHeaders, createRateLimitError } from './features/rate-limiting/middleware'
+import {
+  checkRateLimit,
+  getRateLimitHeaders,
+  createRateLimitError,
+} from './features/rate-limiting/middleware'
 import { createD1Client } from './db/client'
 import { RateLimiter } from './features/rate-limiting/rate-limiter'
 import { IngestionLock } from './features/ingestion/ingestion-lock'
@@ -10,11 +14,16 @@ import {
   handleProcessBatch,
   handleWriteSnapshot,
   handleInvalidateCache,
-  triggerIngestionJob
+  triggerIngestionJob,
 } from './features/ingestion/message-handlers'
-import { serveRateLimitDashboard, recordRateLimitMetric } from './features/observability/dashboards/rate-limit-dashboard'
-import { servePerformanceDashboard, recordCacheMetric } from './features/observability/dashboards/performance-dashboard'
-import { handlePagerDutyWebhook, handleSlackWebhook, serveAlertHistory, triggerTestAlert } from './features/observability/alerts/webhook-stubs'
+import { serveRateLimitDashboard } from './features/observability/dashboards/rate-limit-dashboard'
+import { servePerformanceDashboard } from './features/observability/dashboards/performance-dashboard'
+import {
+  handlePagerDutyWebhook,
+  handleSlackWebhook,
+  serveAlertHistory,
+  triggerTestAlert,
+} from './features/observability/alerts/webhook-stubs'
 
 // Version - replaced during build
 const VERSION = '1.0.0'
@@ -35,8 +44,8 @@ export default {
           'Access-Control-Allow-Origin': '*',
           'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
           'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-          'Access-Control-Max-Age': '86400'
-        }
+          'Access-Control-Max-Age': '86400',
+        },
       })
     }
 
@@ -50,7 +59,7 @@ export default {
           JSON.stringify({
             version: VERSION,
             commit: COMMIT,
-            environment: 'production'
+            environment: 'production',
           }),
           { status: 200, headers: { 'Content-Type': 'application/json' } }
         )
@@ -97,11 +106,11 @@ export default {
           })
         } else {
           // Handle new route API with KV caching
-          const body = await request.json() as RouteRequest
+          const body = (await request.json()) as RouteRequest
           const result = await handleRouteRequest({
             request: body,
             env,
-            requestId
+            requestId,
           })
 
           response = new Response(JSON.stringify(result.response), {
@@ -110,8 +119,8 @@ export default {
               'Content-Type': 'application/json',
               'X-Cache': result.cacheHit ? 'HIT' : 'MISS',
               'X-Response-Time': `${result.durationMs}ms`,
-              'X-Request-Id': requestId
-            }
+              'X-Request-Id': requestId,
+            },
           })
         }
       } else if (url.pathname === '/api/v1/stations' && request.method === 'GET') {
@@ -140,7 +149,9 @@ export default {
 
           if (isNaN(lat1) || isNaN(lng1) || isNaN(lat2) || isNaN(lng2)) {
             response = new Response(
-              JSON.stringify({ error: { code: 'BAD_REQUEST', message: 'Missing or invalid bbox parameters' } }),
+              JSON.stringify({
+                error: { code: 'BAD_REQUEST', message: 'Missing or invalid bbox parameters' },
+              }),
               { status: 400, headers: { 'Content-Type': 'application/json' } }
             )
           } else {
@@ -153,8 +164,8 @@ export default {
                   'Content-Type': 'application/json',
                   'X-Cache': result.cacheHit ? 'HIT' : 'MISS',
                   'X-Response-Time': `${result.durationMs}ms`,
-                  'X-Request-Id': requestId
-                }
+                  'X-Request-Id': requestId,
+                },
               }
             )
           }
@@ -195,35 +206,11 @@ export default {
                   'Content-Type': 'application/json',
                   'X-Cache': result.cacheHit ? 'HIT' : 'MISS',
                   'X-Response-Time': `${result.durationMs}ms`,
-                  'X-Request-Id': requestId
-                }
+                  'X-Request-Id': requestId,
+                },
               })
             }
           }
-        }
-      } else if (url.pathname === '/api/route' && request.method === 'POST') {
-        // Legacy route endpoint - maintain backward compatibility
-        const rateLimitResult = await checkRateLimit(request, env, 'route', ctx)
-        rateLimitHeaders = getRateLimitHeaders(rateLimitResult)
-
-        if (!rateLimitResult.allowed) {
-          const retryAfter = rateLimitHeaders['Retry-After'] || '60'
-          const errorBody = createRateLimitError(parseInt(retryAfter, 10))
-          response = new Response(JSON.stringify(errorBody), {
-            status: 429,
-            headers: {
-              'Content-Type': 'application/json',
-              ...rateLimitHeaders,
-            },
-          })
-        } else {
-          // TODO: Legacy handler or proxy to new handler
-          const body = await request.json() as RouteRequest
-          const result = await handleRouteRequest({ request: body, env, requestId })
-          response = new Response(JSON.stringify(result.response), {
-            status: 200,
-            headers: { 'Content-Type': 'application/json' }
-          })
         }
       } else {
         response = new Response(
@@ -238,7 +225,7 @@ export default {
           error: {
             code: 'INTERNAL_ERROR',
             message: 'Internal server error',
-            requestId
+            requestId,
           },
         }),
         { status: 500, headers: { 'Content-Type': 'application/json' } }
@@ -255,7 +242,7 @@ export default {
       response = new Response(response.body, {
         status: response.status,
         statusText: response.statusText,
-        headers: newHeaders
+        headers: newHeaders,
       })
     }
 
@@ -266,7 +253,7 @@ export default {
     return new Response(response.body, {
       status: response.status,
       statusText: response.statusText,
-      headers: finalHeaders
+      headers: finalHeaders,
     })
   },
 
@@ -291,7 +278,7 @@ export default {
 
     // Trigger hourly ingestion job
     ctx.waitUntil(triggerIngestionJob(env))
-  }
+  },
 }
 
 async function handleHealthCheck(env: Env): Promise<Response> {
@@ -299,7 +286,7 @@ async function handleHealthCheck(env: Env): Promise<Response> {
 
   const checks = {
     database: false,
-    cache: false
+    cache: false,
   }
 
   // Check D1
@@ -319,7 +306,7 @@ async function handleHealthCheck(env: Env): Promise<Response> {
       status,
       timestamp: new Date().toISOString(),
       version: VERSION,
-      checks
+      checks,
     }),
     { status: status === 'healthy' ? 200 : 503, headers: { 'Content-Type': 'application/json' } }
   )
@@ -327,7 +314,7 @@ async function handleHealthCheck(env: Env): Promise<Response> {
 
 async function handleWebVitals(request: Request, env: Env, requestId: string): Promise<Response> {
   try {
-    const body = await request.json() as {
+    const body = (await request.json()) as {
       metrics: Record<string, number>
       url: string
       timestamp: string
@@ -337,13 +324,16 @@ async function handleWebVitals(request: Request, env: Env, requestId: string): P
 
     // Log Web Vitals metrics for monitoring
     // In production, these would be sent to analytics platform (e.g., Grafana, Datadog)
-    console.log('[WebVitals]', JSON.stringify({
-      requestId,
-      timestamp: body.timestamp,
-      url: body.url,
-      connection: body.connection,
-      metrics: body.metrics
-    }))
+    console.log(
+      '[WebVitals]',
+      JSON.stringify({
+        requestId,
+        timestamp: body.timestamp,
+        url: body.url,
+        connection: body.connection,
+        metrics: body.metrics,
+      })
+    )
 
     // Store aggregated metrics in KV for dashboard (optional)
     // This is a simplified implementation - production would use proper analytics
@@ -357,7 +347,8 @@ async function handleWebVitals(request: Request, env: Env, requestId: string): P
       (async () => {
         try {
           // Get existing data or initialize
-          const existing = await env.ROUTE_CACHE.get(metricsKey, 'json') as Record<string, number[]> || {}
+          const existing =
+            ((await env.ROUTE_CACHE.get(metricsKey, 'json')) as Record<string, number[]>) || {}
 
           // Aggregate metrics
           for (const [key, value] of Object.entries(body.metrics)) {
@@ -373,7 +364,7 @@ async function handleWebVitals(request: Request, env: Env, requestId: string): P
 
           // Store with 30-day TTL
           await env.ROUTE_CACHE.put(metricsKey, JSON.stringify(existing), {
-            expirationTtl: 30 * 24 * 60 * 60
+            expirationTtl: 30 * 24 * 60 * 60,
           })
         } catch (e) {
           console.error('Failed to store Web Vitals metrics:', e)
@@ -383,7 +374,7 @@ async function handleWebVitals(request: Request, env: Env, requestId: string): P
 
     return new Response(JSON.stringify({ success: true }), {
       status: 200,
-      headers: { 'Content-Type': 'application/json' }
+      headers: { 'Content-Type': 'application/json' },
     })
   } catch (error) {
     console.error('Web Vitals handler error:', error)
@@ -406,7 +397,10 @@ async function processQueueMessage(message: QueueMessage, env: Env): Promise<voi
       await handleWriteSnapshot(message as Extract<QueueMessage, { type: 'WRITE_SNAPSHOT' }>, env)
       break
     case 'INVALIDATE_CACHE':
-      await handleInvalidateCache(message as Extract<QueueMessage, { type: 'INVALIDATE_CACHE' }>, env)
+      await handleInvalidateCache(
+        message as Extract<QueueMessage, { type: 'INVALIDATE_CACHE' }>,
+        env
+      )
       break
     default:
       console.warn('Unknown message type:', (message as { type: string }).type)

@@ -1,7 +1,7 @@
-import type { RouteRequest, RouteResponse, Env } from '../../types';
-import { RouteCache, RouteCache as RouteCacheManager } from '../../kv/route-cache';
-import { createD1Client } from '../../db/client';
-import { ChargingStationRepository } from '../../db/repositories';
+import type { RouteRequest, RouteResponse, Env } from '../../types'
+import { RouteCache } from '../../kv/route-cache'
+import { createD1Client } from '../../db/client'
+import { ChargingStationRepository } from '../../db/repositories'
 
 /**
  * Route Handler
@@ -9,133 +9,148 @@ import { ChargingStationRepository } from '../../db/repositories';
  * Handles POST /api/v1/routes with KV caching and Google Maps integration.
  */
 
-const GOOGLE_MAPS_ROUTES_API = 'https://routes.googleapis.com/directions/v2:computeRoutes';
+const GOOGLE_MAPS_ROUTES_API = 'https://routes.googleapis.com/directions/v2:computeRoutes'
 
 export interface RouteHandlerOptions {
-  request: RouteRequest;
-  env: Env;
-  requestId: string;
+  request: RouteRequest
+  env: Env
+  requestId: string
 }
 
 export interface RouteHandlerResult {
-  response: RouteResponse;
-  cacheHit: boolean;
-  durationMs: number;
+  response: RouteResponse
+  cacheHit: boolean
+  durationMs: number
 }
 
 export async function handleRouteRequest(
   options: RouteHandlerOptions
 ): Promise<RouteHandlerResult> {
-  const { request, env, requestId } = options;
-  const startTime = Date.now();
+  const { request, env } = options
+  const startTime = Date.now()
 
   // Initialize cache
-  const routeCache = new RouteCacheManager(env.ROUTE_CACHE);
+  const routeCache = new RouteCache(env.ROUTE_CACHE)
 
   // Generate cache key
-  const cacheKeyParts = RouteCacheManager.extractKeyParts(request);
-  const cacheKey = RouteCacheManager.generateKey(cacheKeyParts);
+  const cacheKeyParts = RouteCache.extractKeyParts(request)
+  const cacheKey = RouteCache.generateKey(cacheKeyParts)
 
   // Check cache
-  const cached = await routeCache.get(cacheKey);
+  const cached = await routeCache.get(cacheKey)
   if (cached) {
-    const durationMs = Date.now() - startTime;
+    const durationMs = Date.now() - startTime
+
+    // Calculate safe range from cached EV parameters (T103)
+    const safeRangeKm = calculateSafeRangeFromCache(cached.vehicleParams)
+
     return {
       response: {
         route: {
           distance: cached.distance,
           duration: cached.duration,
           polyline: cached.polyline,
-          legs: [] // TODO: Reconstruct legs from cached data
+          legs: cached.legs, // T102: Legs reconstructed from cached data
         },
         chargingStops: cached.chargingStops,
-        safeRangeKm: 0 // TODO: Calculate from cached data
+        safeRangeKm,
       },
       cacheHit: true,
-      durationMs
-    };
+      durationMs,
+    }
   }
 
   // Fetch route from Google Maps
-  const route = await fetchGoogleMapsRoute(request, env);
+  const route = await fetchGoogleMapsRoute(request, env)
 
   // Find charging stations along route
-  const chargingStops = await findChargingStops(route, request, env);
+  const chargingStops = await findChargingStops(route, request, env)
 
   // Calculate safe range
-  const safeRangeKm = calculateSafeRange(request);
+  const safeRangeKm = calculateSafeRange(request)
 
   const response: RouteResponse = {
     route: {
       distance: route.distance,
       duration: route.duration,
       polyline: route.polyline,
-      legs: route.legs
+      legs: route.legs,
     },
     chargingStops,
-    safeRangeKm
-  };
+    safeRangeKm,
+  }
 
-  // Cache the response
+  // Calculate consumption for each leg (T104)
+  const legsWithConsumption = route.legs.map(leg => ({
+    ...leg,
+    consumptionKwh: calculateLegConsumption(leg.distance, request.vehicle),
+  }))
+
+  // Cache the response with legs and vehicle params (T102, T103)
   await routeCache.set(cacheKey, {
     origin: {
       lat: request.origin.lat,
       lng: request.origin.lng,
-      name: request.origin.name || ''
+      name: request.origin.name || '',
     },
     destination: {
       lat: request.destination.lat,
       lng: request.destination.lng,
-      name: request.destination.name || ''
+      name: request.destination.name || '',
     },
     distance: response.route.distance,
     duration: response.route.duration,
     polyline: response.route.polyline,
-    chargingStops: response.chargingStops
-  });
+    legs: legsWithConsumption, // T102: Store legs with consumption
+    chargingStops: response.chargingStops,
+    vehicleParams: {
+      batteryCapacityKwh: request.vehicle.batteryCapacityKwh,
+      rangeKmAt100Percent: request.vehicle.rangeKmAt100Percent,
+      currentSocPercent: request.vehicle.currentSocPercent,
+      reserveSocPercent: request.vehicle.reserveSocPercent ?? 20,
+      drivingFactor: request.vehicle.drivingFactor ?? 1.0,
+    },
+  })
 
-  const durationMs = Date.now() - startTime;
+  const durationMs = Date.now() - startTime
 
   return {
     response,
     cacheHit: false,
-    durationMs
-  };
+    durationMs,
+  }
 }
 
 interface GoogleMapsRoute {
-  distance: number;
-  duration: number;
-  polyline: string;
+  distance: number
+  duration: number
+  polyline: string
   legs: Array<{
-    from: { lat: number; lng: number; name?: string };
-    to: { lat: number; lng: number; name?: string };
-    distance: number;
-    duration: number;
-    consumptionKwh: number;
-  }>;
+    from: { lat: number; lng: number; name?: string }
+    to: { lat: number; lng: number; name?: string }
+    distance: number
+    duration: number
+    consumptionKwh: number
+  }>
 }
 
-async function fetchGoogleMapsRoute(
-  request: RouteRequest,
-  env: Env
-): Promise<GoogleMapsRoute> {
+async function fetchGoogleMapsRoute(request: RouteRequest, env: Env): Promise<GoogleMapsRoute> {
   const body = {
     origin: {
       location: {
         latLng: {
           latitude: request.origin.lat,
-          longitude: request.origin.lng
-        }
-      }
+          longitude: request.origin.lng,
+        },
+      },
     },
     destination: {
       location: {
         latLng: {
           latitude: request.destination.lat,
-          longitude: request.destination.lng
-        }
-      }
+          longitude: request.destination.lng,
+        },
+      },
     },
     travelMode: 'DRIVE',
     routingPreference: 'TRAFFIC_AWARE',
@@ -143,44 +158,45 @@ async function fetchGoogleMapsRoute(
     routeModifiers: {
       avoidTolls: false,
       avoidHighways: false,
-      avoidFerries: false
+      avoidFerries: false,
     },
     languageCode: 'en-US',
-    units: 'METRIC'
-  };
+    units: 'METRIC',
+  }
 
   const response = await fetch(GOOGLE_MAPS_ROUTES_API, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       'X-Goog-Api-Key': env.GOOGLE_MAPS_API_KEY,
-      'X-Goog-FieldMask': 'routes.duration,routes.distanceMeters,routes.polyline.encodedPolyline,routes.legs'
+      'X-Goog-FieldMask':
+        'routes.duration,routes.distanceMeters,routes.polyline.encodedPolyline,routes.legs',
     },
-    body: JSON.stringify(body)
-  });
+    body: JSON.stringify(body),
+  })
 
   if (!response.ok) {
-    const error = await response.text();
-    throw new Error(`Google Maps API error: ${response.status} - ${error}`);
+    const error = await response.text()
+    throw new Error(`Google Maps API error: ${response.status} - ${error}`)
   }
 
-  const data = await response.json() as {
+  const data = (await response.json()) as {
     routes: Array<{
-      duration: string;
-      distanceMeters: number;
-      polyline: { encodedPolyline: string };
+      duration: string
+      distanceMeters: number
+      polyline: { encodedPolyline: string }
       legs: Array<{
-        startLocation: { latLng: { latitude: number; longitude: number } };
-        endLocation: { latLng: { latitude: number; longitude: number } };
-        distanceMeters: number;
-        duration: string;
-      }>;
-    }>;
-  };
+        startLocation: { latLng: { latitude: number; longitude: number } }
+        endLocation: { latLng: { latitude: number; longitude: number } }
+        distanceMeters: number
+        duration: string
+      }>
+    }>
+  }
 
-  const route = data.routes[0];
+  const route = data.routes[0]
   if (!route) {
-    throw new Error('No route found');
+    throw new Error('No route found')
   }
 
   return {
@@ -191,27 +207,27 @@ async function fetchGoogleMapsRoute(
       from: {
         lat: leg.startLocation.latLng.latitude,
         lng: leg.startLocation.latLng.longitude,
-        name: index === 0 ? request.origin.name : undefined
+        name: index === 0 ? request.origin.name : undefined,
       },
       to: {
         lat: leg.endLocation.latLng.latitude,
         lng: leg.endLocation.latLng.longitude,
-        name: index === route.legs.length - 1 ? request.destination.name : undefined
+        name: index === route.legs.length - 1 ? request.destination.name : undefined,
       },
       distance: leg.distanceMeters,
       duration: parseDuration(leg.duration),
-      consumptionKwh: 0 // TODO: Calculate based on EV parameters
-    }))
-  };
+      consumptionKwh: calculateLegConsumption(leg.distanceMeters, request.vehicle), // T104: Calculate from EV parameters
+    })),
+  }
 }
 
 function parseDuration(duration: string): number {
   // Parse "300s" or "300.5s" to seconds
-  const match = duration.match(/^(\d+(?:\.\d+)?)s$/);
+  const match = duration.match(/^(\d+(?:\.\d+)?)s$/)
   if (!match) {
-    return 0;
+    return 0
   }
-  return Math.round(parseFloat(match[1]));
+  return Math.round(parseFloat(match[1]))
 }
 
 async function findChargingStops(
@@ -220,17 +236,17 @@ async function findChargingStops(
   env: Env
 ): Promise<RouteResponse['chargingStops']> {
   // Initialize D1 client
-  const db = createD1Client(env.DB);
-  const stationRepo = new ChargingStationRepository(db);
+  const db = createD1Client(env.DB)
+  const stationRepo = new ChargingStationRepository(db)
 
   // Calculate safe range for this vehicle
-  const safeRangeKm = calculateSafeRange(request);
+  const safeRangeKm = calculateSafeRange(request)
   if (safeRangeKm <= 0) {
-    return [];
+    return []
   }
 
   // Get route bounding box for station query
-  const bounds = calculateRouteBounds(route);
+  const bounds = calculateRouteBounds(route)
 
   // Query stations within route corridor
   const stations = await stationRepo.findWithinBounds(
@@ -238,115 +254,115 @@ async function findChargingStops(
     bounds.maxLat,
     bounds.minLng,
     bounds.maxLng
-  );
+  )
 
   if (stations.length === 0) {
-    return [];
+    return []
   }
 
   // Calculate optimal charging stops along route
-  const stops = calculateOptimalStops(route, stations, safeRangeKm, request);
+  const stops = calculateOptimalStops(route, stations, safeRangeKm, request)
 
-  return stops;
+  return stops
 }
 
 interface RouteBounds {
-  minLat: number;
-  maxLat: number;
-  minLng: number;
-  maxLng: number;
+  minLat: number
+  maxLat: number
+  minLng: number
+  maxLng: number
 }
 
 function calculateRouteBounds(route: GoogleMapsRoute): RouteBounds {
-  const legs = route.legs;
+  const legs = route.legs
   if (legs.length === 0) {
-    return { minLat: 0, maxLat: 0, minLng: 0, maxLng: 0 };
+    return { minLat: 0, maxLat: 0, minLng: 0, maxLng: 0 }
   }
 
-  let minLat = legs[0].from.lat;
-  let maxLat = legs[0].from.lat;
-  let minLng = legs[0].from.lng;
-  let maxLng = legs[0].from.lng;
+  let minLat = legs[0].from.lat
+  let maxLat = legs[0].from.lat
+  let minLng = legs[0].from.lng
+  let maxLng = legs[0].from.lng
 
   for (const leg of legs) {
-    minLat = Math.min(minLat, leg.from.lat, leg.to.lat);
-    maxLat = Math.max(maxLat, leg.from.lat, leg.to.lat);
-    minLng = Math.min(minLng, leg.from.lng, leg.to.lng);
-    maxLng = Math.max(maxLng, leg.from.lng, leg.to.lng);
+    minLat = Math.min(minLat, leg.from.lat, leg.to.lat)
+    maxLat = Math.max(maxLat, leg.from.lat, leg.to.lat)
+    minLng = Math.min(minLng, leg.from.lng, leg.to.lng)
+    maxLng = Math.max(maxLng, leg.from.lng, leg.to.lng)
   }
 
   // Add buffer for station search (10km ~ 0.1 degrees)
-  const buffer = 0.1;
+  const buffer = 0.1
   return {
     minLat: minLat - buffer,
     maxLat: maxLat + buffer,
     minLng: minLng - buffer,
-    maxLng: maxLng + buffer
-  };
+    maxLng: maxLng + buffer,
+  }
 }
 
 function calculateOptimalStops(
   route: GoogleMapsRoute,
   stations: Array<{
-    id: string;
-    externalId: string;
-    name: string;
-    latitude: number;
-    longitude: number;
-    address?: string | null;
-    city?: string | null;
-    status: string;
+    id: string
+    externalId: string
+    name: string
+    latitude: number
+    longitude: number
+    address?: string | null
+    city?: string | null
+    status: string
     connectors: Array<{
-      type: string;
-      powerKw: number | null;
-      status: string;
-    }>;
+      type: string
+      powerKw: number | null
+      status: string
+    }>
   }>,
   safeRangeKm: number,
   request: RouteRequest
 ): RouteResponse['chargingStops'] {
-  const stops: RouteResponse['chargingStops'] = [];
-  const totalDistance = route.distance / 1000; // Convert to km
-  let distanceCovered = 0;
-  let currentSoc = request.vehicle.currentSocPercent;
-  const targetSoc = request.preferences?.chargeToPercent ?? 80;
-  const minChargeSoc = request.vehicle.reserveSocPercent ?? 20;
+  const stops: RouteResponse['chargingStops'] = []
+  const totalDistance = route.distance / 1000 // Convert to km
+  let distanceCovered = 0
+  let currentSoc = request.vehicle.currentSocPercent
+  const targetSoc = request.preferences?.chargeToPercent ?? 80
+  const minChargeSoc = request.vehicle.reserveSocPercent ?? 20
 
   // Sort stations by distance along route (approximate using distance from origin)
   const sortedStations = stations
     .filter(s => s.status === 'operational' && s.connectors.some(c => c.powerKw && c.powerKw >= 50))
     .map(s => ({
       ...s,
-      distanceFromStart: estimateDistanceAlongRoute(route, s.latitude, s.longitude)
+      distanceFromStart: estimateDistanceAlongRoute(route, s.latitude, s.longitude),
     }))
-    .sort((a, b) => a.distanceFromStart - b.distanceFromStart);
+    .sort((a, b) => a.distanceFromStart - b.distanceFromStart)
 
   while (distanceCovered + safeRangeKm < totalDistance) {
     // Find the farthest reachable station within safe range
-    const targetDistance = distanceCovered + safeRangeKm * 0.8; // Use 80% of safe range for buffer
-    const reachableStations = sortedStations.filter(s =>
-      s.distanceFromStart > distanceCovered &&
-      s.distanceFromStart <= targetDistance
-    );
+    const targetDistance = distanceCovered + safeRangeKm * 0.8 // Use 80% of safe range for buffer
+    const reachableStations = sortedStations.filter(
+      s => s.distanceFromStart > distanceCovered && s.distanceFromStart <= targetDistance
+    )
 
     if (reachableStations.length === 0) {
       // No reachable stations, break to avoid infinite loop
-      break;
+      break
     }
 
     // Pick the farthest reachable station with highest power
     const bestStation = reachableStations.reduce((best, current) => {
-      const bestPower = Math.max(...best.connectors.map(c => c.powerKw || 0));
-      const currentPower = Math.max(...current.connectors.map(c => c.powerKw || 0));
-      if (currentPower > bestPower) return current;
-      if (currentPower === bestPower && current.distanceFromStart > best.distanceFromStart) return current;
-      return best;
-    });
+      const bestPower = Math.max(...best.connectors.map(c => c.powerKw || 0))
+      const currentPower = Math.max(...current.connectors.map(c => c.powerKw || 0))
+      if (currentPower > bestPower) return current
+      if (currentPower === bestPower && current.distanceFromStart > best.distanceFromStart)
+        return current
+      return best
+    })
 
     // Calculate charging time needed
-    const maxPower = Math.max(...bestStation.connectors.map(c => c.powerKw || 0));
-    const energyNeededKwh = request.vehicle.batteryCapacityKwh * (targetSoc - minChargeSoc) / 100;
-    const chargingMinutes = Math.ceil((energyNeededKwh / maxPower) * 60);
+    const maxPower = Math.max(...bestStation.connectors.map(c => c.powerKw || 0))
+    const energyNeededKwh = (request.vehicle.batteryCapacityKwh * (targetSoc - minChargeSoc)) / 100
+    const chargingMinutes = Math.ceil((energyNeededKwh / maxPower) * 60)
 
     stops.push({
       station: {
@@ -358,70 +374,112 @@ function calculateOptimalStops(
         connectors: bestStation.connectors.map(c => ({
           type: c.type || 'Unknown',
           powerKw: c.powerKw || 0,
-          status: (c.status as 'available' | 'occupied' | 'unknown') || 'unknown'
-        }))
+          status: (c.status as 'available' | 'occupied' | 'unknown') || 'unknown',
+        })),
       },
       arrivalSoc: currentSoc - (distanceCovered / safeRangeKm) * currentSoc,
       departureSoc: targetSoc,
       chargeDurationMinutes: chargingMinutes,
-      legIndex: stops.length
-    });
+      legIndex: stops.length,
+    })
 
-    distanceCovered = bestStation.distanceFromStart;
-    currentSoc = targetSoc;
+    distanceCovered = bestStation.distanceFromStart
+    currentSoc = targetSoc
   }
 
-  return stops;
+  return stops
 }
 
-function estimateDistanceAlongRoute(
-  route: GoogleMapsRoute,
-  lat: number,
-  lng: number
-): number {
+function estimateDistanceAlongRoute(route: GoogleMapsRoute, lat: number, lng: number): number {
   // Simple estimation: find closest point on route legs
-  let minDistance = Infinity;
-  let accumulatedDistance = 0;
+  let minDistance = Infinity
+  let accumulatedDistance = 0
 
   for (const leg of route.legs) {
     // Check distance to start of leg
-    const distToStart = haversineDistance(lat, lng, leg.from.lat, leg.from.lng);
+    const distToStart = haversineDistance(lat, lng, leg.from.lat, leg.from.lng)
     if (distToStart < minDistance) {
-      minDistance = distToStart;
+      minDistance = distToStart
     }
 
     // Check distance to end of leg
-    const distToEnd = haversineDistance(lat, lng, leg.to.lat, leg.to.lng);
+    const distToEnd = haversineDistance(lat, lng, leg.to.lat, leg.to.lng)
     if (distToEnd < minDistance) {
-      minDistance = distToEnd;
-      accumulatedDistance += leg.distance / 1000;
+      minDistance = distToEnd
+      accumulatedDistance += leg.distance / 1000
     }
   }
 
-  return accumulatedDistance;
+  return accumulatedDistance
 }
 
 function haversineDistance(lat1: number, lng1: number, lat2: number, lng2: number): number {
-  const R = 6371; // Earth's radius in km
-  const dLat = (lat2 - lat1) * Math.PI / 180;
-  const dLng = (lng2 - lng1) * Math.PI / 180;
-  const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
-    Math.sin(dLng / 2) * Math.sin(dLng / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  return R * c;
+  const R = 6371 // Earth's radius in km
+  const dLat = ((lat2 - lat1) * Math.PI) / 180
+  const dLng = ((lng2 - lng1) * Math.PI) / 180
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLng / 2) *
+      Math.sin(dLng / 2)
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
+  return R * c
 }
 
 function calculateSafeRange(request: RouteRequest): number {
-  const vehicle = request.vehicle;
-  const reserveSoc = vehicle.reserveSocPercent ?? 20;
-  const factor = vehicle.drivingFactor ?? 1.0;
+  const vehicle = request.vehicle
+  const reserveSoc = vehicle.reserveSocPercent ?? 20
+  const factor = vehicle.drivingFactor ?? 1.0
 
-  // safeRangeKm = ((socNow - reserveArrival)/100) * (range100Km / factor)
-  const usableSoc = vehicle.currentSocPercent - reserveSoc;
+  return calculateSafeRangeKm(
+    vehicle.currentSocPercent,
+    reserveSoc,
+    vehicle.rangeKmAt100Percent,
+    factor
+  )
+}
+
+/**
+ * Calculate safe range from cached vehicle parameters (T103)
+ * Formula: ((socNow - reserveArrival)/100) * (range100Km / factor)
+ */
+function calculateSafeRangeFromCache(vehicleParams: {
+  currentSocPercent: number
+  reserveSocPercent: number
+  rangeKmAt100Percent: number
+  drivingFactor: number
+}): number {
+  return calculateSafeRangeKm(
+    vehicleParams.currentSocPercent,
+    vehicleParams.reserveSocPercent,
+    vehicleParams.rangeKmAt100Percent,
+    vehicleParams.drivingFactor
+  )
+}
+
+function calculateSafeRangeKm(
+  currentSocPercent: number,
+  reserveSocPercent: number,
+  rangeKmAt100Percent: number,
+  drivingFactor: number
+): number {
+  const usableSoc = currentSocPercent - reserveSocPercent
   if (usableSoc <= 0) {
-    return 0;
+    return 0
   }
 
-  return (usableSoc / 100) * (vehicle.rangeKmAt100Percent / factor);
+  return (usableSoc / 100) * (rangeKmAt100Percent / drivingFactor)
+}
+
+/**
+ * Calculate energy consumption for a leg (T104)
+ * Formula: (distanceKm / range100Km) * batteryCapacityKwh
+ */
+function calculateLegConsumption(distanceMeters: number, vehicle: RouteRequest['vehicle']): number {
+  const distanceKm = distanceMeters / 1000
+  const consumptionKwh = (distanceKm / vehicle.rangeKmAt100Percent) * vehicle.batteryCapacityKwh
+
+  // Round to 2 decimal places for precision
+  return Math.round(consumptionKwh * 100) / 100
 }
