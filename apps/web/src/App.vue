@@ -31,7 +31,6 @@
 import { onMounted } from 'vue'
 import { useTripInput } from '@/features/trip-planning/composables/useTripInput'
 import { useGeolocation } from '@/features/map/composables/useGeolocation'
-import { useWebVitals } from '@/composables/useWebVitals'
 import TripInputForm from '@/features/trip-planning/components/TripInputForm.vue'
 import RouteMap from '@/features/map/components/RouteMap.vue'
 import TripSummary from '@/features/trip-planning/components/TripSummary.vue'
@@ -46,9 +45,6 @@ const { requestLocation } = useGeolocation({
   timeout: 5000,
   accuracyThreshold: 1000,
 })
-
-// Initialize Web Vitals tracking for performance monitoring
-useWebVitals()
 
 // Request geolocation on mount
 onMounted(() => {

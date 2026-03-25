@@ -1,7 +1,6 @@
 <template>
   <div
     v-if="error"
-    data-testid="error-message"
     class="rounded-md bg-red-50 p-4 border border-red-200"
     role="alert"
     aria-live="assertive"

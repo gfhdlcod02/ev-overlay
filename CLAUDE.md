@@ -1,12 +1,10 @@
-# ev-overlay Development Guidelines
+﻿# ev-overlay Development Guidelines
 
 Auto-generated from all feature plans. Last updated: 2026-03-06
 
 ## Active Technologies
 - TypeScript 5.3, Node 20+ + Vue 3.4, Vite 5, Cloudflare Workers (005-refactor-structure)
 - N/A (structural refactor only) (005-refactor-structure)
-- TypeScript 5.3, Node 20+ + Cloudflare Workers Runtime, Vue 3.4, Vite 5, Leaflet 1.9 (006-cloudflare-edge-arch)
-- Cloudflare D1 (SQLite), KV, R2 (object storage) (006-cloudflare-edge-arch)
 
 - TypeScript 5.3 + Vue 3.4, Leaflet 1.9, Vite 5 (003-geolocation-map-defaults)
 - sessionStorage (browser session only) (003-geolocation-map-defaults)
@@ -166,10 +164,10 @@ gh pr list --state merged --limit 20 --json number,createdAt,reviews
 ```
 
 ## Recent Changes
-- 006-cloudflare-edge-arch: Added TypeScript 5.3, Node 20+ + Cloudflare Workers Runtime, Vue 3.4, Vite 5, Leaflet 1.9
-- 006-cloudflare-edge-arch: Added TypeScript 5.3, Node 20+ + Cloudflare Workers Runtime, Vue 3.4, Vite 5, Leaflet 1.9
 - 005-refactor-structure: Added TypeScript 5.3, Node 20+ + Vue 3.4, Vite 5, Cloudflare Workers
 
+- 004-simplify-search-form: Added TypeScript 5.3, Node 20+ + Vue 3.4, Vite 5, Leaflet 1.9 (existing stack)
+- **2026-03-03**: Added automated version management - sync to all packages, inject to builds, API endpoint
 
 <!-- MANUAL ADDITIONS START -->
 
