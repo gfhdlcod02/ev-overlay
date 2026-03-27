@@ -10,6 +10,9 @@ jobs:
   build:
     name: Build and Test
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -62,6 +65,9 @@ jobs:
     needs: build
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      deployments: write
     steps:
       - name: Download build artifacts
         uses: actions/download-artifact@v4
@@ -83,6 +89,10 @@ jobs:
     needs: build
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      deployments: write
+      pull-requests: write
     steps:
       - name: Download build artifacts
         uses: actions/download-artifact@v4
