@@ -5,32 +5,24 @@
 
 ## Prerequisites
 
-- [ ] Cloudflare account with Pages access
+- [x] Cloudflare account with Pages access
 - [ ] Repository admin access to add secrets
 
 ## Tasks
 
-### Task 1: Create GitHub Actions Workflow
+### Task 1: Create GitHub Actions Workflow ✅
 **File**: `.github/workflows/deploy-web.yml`
 **Priority**: High
 **Dependencies**: None
 
-```yaml
-# Workflow structure:
-# - Trigger: push to main, pull_request
-# - Jobs:
-#   1. build: Setup pnpm, install, build, test
-#   2. deploy: Deploy to Cloudflare Pages (main only)
-```
-
 **Acceptance Criteria**:
-- [ ] Workflow triggers on push to main
-- [ ] Workflow triggers on PR open/update
-- [ ] pnpm dependencies are cached
-- [ ] `pnpm version:sync` runs before build
-- [ ] Build succeeds with `pnpm build`
-- [ ] Tests pass before deployment
-- [ ] Deployment only happens on main branch
+- [x] Workflow triggers on push to main
+- [x] Workflow triggers on PR open/update
+- [x] pnpm dependencies are cached
+- [x] `pnpm version:sync` runs before build
+- [x] Build succeeds with `pnpm build`
+- [x] Tests pass before deployment
+- [x] Deployment only happens on main branch
 
 ### Task 2: Add Cloudflare Secrets to GitHub
 **Priority**: High
@@ -44,44 +36,29 @@ Add repository secrets at Settings > Secrets and variables > Actions:
 - [ ] Secrets added to repository
 - [ ] Secrets accessible in workflow
 
-### Task 3: Create Cloudflare Pages Project
+### Task 3: Create Cloudflare Pages Project ✅
 **Priority**: High
 **Dependencies**: None
 
-Option A: Via Dashboard
-1. Go to Cloudflare Dashboard > Pages
-2. Create project, connect GitHub repo
-3. Configure build settings (but we'll use Actions, so minimal config)
-
-Option B: Via Wrangler (optional)
-```bash
-wrangler pages project create ev-overlay-web
-```
+**Result**: Project `ev-overlay` already exists (created 2 weeks ago)
+- Domain: `ev-overlay.pages.dev`
 
 **Acceptance Criteria**:
-- [ ] Pages project created
-- [ ] Project name noted for workflow
+- [x] Pages project exists
+- [x] Project name updated in workflow (`ev-overlay`, not `ev-overlay-web`)
 
-### Task 4: Implement Deploy Step in Workflow
+### Task 4: Implement Deploy Step in Workflow ✅
 **Priority**: High
 **Dependencies**: Task 1, Task 2, Task 3
 
-Add deploy step using `cloudflare/pages-action`:
-```yaml
-- name: Deploy to Cloudflare Pages
-  uses: cloudflare/pages-action@v1
-  with:
-    apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-    accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-    projectName: ev-overlay-web
-    directory: apps/web/dist
-    gitHubToken: ${{ secrets.GITHUB_TOKEN }}
-```
+Deploy step implemented using `cloudflare/pages-action@v1`:
+- Production deploy on push to main
+- Preview deploy on PR
 
 **Acceptance Criteria**:
-- [ ] Deploy step added to workflow
-- [ ] Deploy uses correct directory (`apps/web/dist`)
-- [ ] Deploy includes PR comment support
+- [x] Deploy step added to workflow
+- [x] Deploy uses correct directory (`apps/web/dist`)
+- [x] Deploy includes PR comment support
 
 ### Task 5: Test End-to-End
 **Priority**: High
