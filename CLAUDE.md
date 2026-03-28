@@ -163,6 +163,48 @@ gh pr list --state merged --limit 20 --json number,createdAt,reviews
 # Calculate: (median_baseline - median_post) / median_baseline * 100
 ```
 
+## Deployment
+
+### Cloudflare Pages CI/CD (007-cloudflare-pages-cicd)
+
+Automated deployment via GitHub Actions.
+
+| Workflow | Trigger | Deploys To |
+|----------|---------|------------|
+| `deploy-web.yml` | Pull Request | Preview (unique URL per PR) |
+| `deploy.yml` | Tag `v*.*.*` | Production (release) |
+
+### Required Secrets
+
+```
+CLOUDFLARE_API_TOKEN    # Cloudflare Pages:Edit permission
+CLOUDFLARE_ACCOUNT_ID   # From Cloudflare dashboard
+```
+
+### Preview Deployments
+
+Every PR automatically creates a preview deployment:
+- URL format: `https://<commit-hash>.ev-overlay.pages.dev`
+- Posted as PR comment via `cloudflare/pages-action`
+
+### Production Deployment
+
+Production deploys are triggered by creating a release tag:
+
+```bash
+# 1. Create and push a tag
+git tag v1.3.0
+git push --tags
+
+# Or use GitHub Releases
+gh release create v1.3.0 --generate-notes
+```
+
+Manual deployment (if needed):
+```bash
+npx wrangler pages deploy apps/web/dist --project-name=ev-overlay
+```
+
 ## Recent Changes
 - 005-refactor-structure: Added TypeScript 5.3, Node 20+ + Vue 3.4, Vite 5, Cloudflare Workers
 
