@@ -13,14 +13,13 @@ Automated deployment to Cloudflare Pages via GitHub Actions.
 
 ## Workflows
 
-### Continuous Deployment (`.github/workflows/deploy-web.yml`)
+### Preview Deployment (`.github/workflows/deploy-web.yml`)
 
-| Trigger | Branch | Action |
-|---------|--------|--------|
-| Push | `main` | Deploy to Production |
-| Pull Request | `main` | Deploy Preview |
+| Trigger | Action |
+|---------|--------|
+| Pull Request | Deploy Preview |
 
-### Release Deployment (`.github/workflows/deploy.yml`)
+### Production Deployment (`.github/workflows/deploy.yml`)
 
 | Trigger | Action |
 |---------|--------|
@@ -33,6 +32,17 @@ Configure at Settings > Secrets and variables > Actions:
 ```
 CLOUDFLARE_API_TOKEN    # Cloudflare Pages:Edit permission
 CLOUDFLARE_ACCOUNT_ID   # From Cloudflare dashboard
+```
+
+## Creating a Production Release
+
+```bash
+# Option 1: Create tag via CLI
+git tag v1.3.0
+git push --tags
+
+# Option 2: Create GitHub Release
+gh release create v1.3.0 --generate-notes
 ```
 
 ## Local Development

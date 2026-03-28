@@ -171,7 +171,6 @@ Automated deployment via GitHub Actions.
 
 | Workflow | Trigger | Deploys To |
 |----------|---------|------------|
-| `deploy-web.yml` | Push to `main` | Production (ev-overlay.pages.dev) |
 | `deploy-web.yml` | Pull Request | Preview (unique URL per PR) |
 | `deploy.yml` | Tag `v*.*.*` | Production (release) |
 
@@ -190,11 +189,19 @@ Every PR automatically creates a preview deployment:
 
 ### Production Deployment
 
-```bash
-# Continuous deployment (on merge to main)
-# Happens automatically via GitHub Actions
+Production deploys are triggered by creating a release tag:
 
-# Manual deployment (if needed)
+```bash
+# 1. Create and push a tag
+git tag v1.3.0
+git push --tags
+
+# Or use GitHub Releases
+gh release create v1.3.0 --generate-notes
+```
+
+Manual deployment (if needed):
+```bash
 npx wrangler pages deploy apps/web/dist --project-name=ev-overlay
 ```
 
